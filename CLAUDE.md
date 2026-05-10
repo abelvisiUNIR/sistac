@@ -58,22 +58,36 @@
 ## Folder Structure
 
 ```
-clo-author/
-├── CLAUDE.MD                    # Este archivo
+sistac/
+├── CLAUDE.md                    # Este archivo
+├── MEMORY.md                    # Decisiones aprendidas entre sesiones
+├── .env.example                 # Template de variables de entorno
+├── Bibliography_base.bib        # Referencias APA 7 (exportar a Mendeley/Zotero)
 ├── .claude/                     # Reglas, skills, agentes, hooks
-├── Bibliography_base.bib        # Referencia bibliográfica (exportar a Mendeley/Zotero)
-├── paper/                       # Documentos Word del TFE (fuente de verdad)
-│   ├── SISTAC_TFE.docx          # Documento principal (tesis completa)
-│   ├── SISTAC_TFE_portada.docx  # Portada UNIR (si se entrega por separado)
-│   ├── figures/                 # Figuras (.png, .svg) para insertar en Word
-│   └── tables/                  # Tablas generadas por scripts (.docx, .csv)
+│   ├── agents/                  # writer, coder, strategist, etc.
+│   ├── rules/                   # invariantes, workflow, calidad
+│   ├── skills/                  # /write, /analyze, /discover, etc.
+│   ├── references/              # domain-profile, coding-standards-python
+│   └── hooks/                   # pre-compact, post-compact-restore
+├── paper/
+│   ├── SISTAC_TFE.docx          # Documento principal — FUENTE DE VERDAD
+│   ├── figures/                 # Figuras .png generadas por scripts
+│   └── tables/                  # Tablas .csv exportadas por scripts
 ├── data/
-│   ├── raw/                     # CVs sintéticos originales (PrivBayes)
-│   └── cleaned/                 # Datasets procesados
-├── scripts/python/              # Código de análisis (Python primario)
-├── quality_reports/             # Planes, logs, revisiones
-├── explorations/                # Sandbox de investigación y textos extraídos de .docx
-├── master_supporting_docs/      # Documentos .docx fuente y plantilla UNIR
+│   ├── raw/                     # CVs sintéticos (PrivBayes) — gitignoreados
+│   └── cleaned/                 # Datasets procesados — gitignoreados
+├── scripts/python/
+│   ├── config.py                # Rutas y configuración global
+│   ├── requirements.txt         # Dependencias
+│   ├── pii/                     # Módulo PII — SistacAnonymizer (Mario, H3) ✅
+│   ├── rag/                     # Pipeline RAG (David, H2) 🔵
+│   ├── scoring/                 # Scorer LLM
+│   ├── evaluation/              # Métricas H1/H2/H3 ✅
+│   ├── experiments/             # Orquestador C0-C3
+│   ├── data/                    # Generación corpus sintético
+│   └── utils/                   # docx_extractor, logger
+├── explorations/                # Sandbox de investigación
+├── quality_reports/             # Planes y logs de sesión
 └── templates/                   # Plantillas de sesión y calidad
 ```
 
@@ -82,17 +96,21 @@ clo-author/
 ## Commands
 
 ```bash
-# Extraer texto de .docx fuente (para migración de contenido)
-python scripts/python/utils/docx_extractor.py
+# Instalar dependencias del proyecto
+pip install -r scripts/python/requirements.txt
+python -m spacy download es_core_news_lg
 
-# Ejecutar experimentos y exportar tablas Word
+# Tests módulo PII (H3)
+pytest scripts/python/pii/test_anonymization.py -v
+
+# Demo de anonimización
+python -m pii.anonymizer   # desde scripts/python/
+
+# Ejecutar experimentos (cuando estén implementados)
 python scripts/python/experiments/orquestador_c0_c3.py
 
-# Validar el .docx principal
-python scripts/office/validate.py paper/SISTAC_TFE.docx
-
-# Verificar dependencias Python
-pip install -r scripts/python/requirements.txt
+# Extraer texto de .docx fuente
+python scripts/python/utils/docx_extractor.py
 ```
 
 ---
@@ -101,10 +119,9 @@ pip install -r scripts/python/requirements.txt
 
 | Score | Gate | Applies To |
 |-------|------|------------|
-| 80 | Commit | Ponderado (bloqueante) |
-| 90 | PR | Ponderado (bloqueante) |
-| 95 | Submission | Agregado + todos los componentes >= 80 |
-| -- | Advisory | Presentaciones (informativo, no bloqueante) |
+| 80 | Commit en `desarrollo` | Bloqueante |
+| 90 | PR `desarrollo` → `main` | Bloqueante |
+| 95 | Entrega UNIR | Todos los componentes ≥ 80 |
 
 ---
 
@@ -137,7 +154,7 @@ Output organization: by-script
 | Cap. 6 — Validación experimental | `paper/SISTAC_TFE.docx` | 🔵 En redacción (estructura definida) |
 | Cap. 7-9 — Resultados, Discusión, Conclusiones | `paper/SISTAC_TFE.docx` | ⬜ Post-experimento |
 | Dataset sintético | `data/raw/` | ⬜ No iniciado (PrivBayes + LLM) |
-| Pipeline RAG (David, H2) | `scripts/python/rag/` | 🔵 En desarrollo |
-| Módulo PII (Mario, H3) | `scripts/python/pii/` | 🔵 En desarrollo |
-| Métricas H1/H2/H3 | `scripts/python/evaluation/` | ✅ Scaffolded |
-| Orquestador C0-C3 | `scripts/python/experiments/` | ✅ Scaffolded |
+| Pipeline RAG (David, H2) | `scripts/python/rag/` | ⬜ No iniciado |
+| Módulo PII (Mario, H3) | `scripts/python/pii/` | ✅ Completo — 10/10 tests PASSED |
+| Métricas H1/H2/H3 | `scripts/python/evaluation/` | ✅ Implementadas |
+| Orquestador C0-C3 | `scripts/python/experiments/` | 🔵 Scaffolded (stubs) |

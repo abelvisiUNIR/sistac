@@ -1,20 +1,45 @@
-# Meta-Governance: This Repository's Dual Nature
+# Meta-Governance: SISTAC TFE
 
-This repository is both a working project and a public template for empirical economics research. It can be adapted to adjacent fields (finance, accounting, marketing, management) by customizing the domain profile and journal profiles.
+Este repositorio es el proyecto SISTAC — Trabajo Fin de Estudios del Máster en
+Inteligencia Artificial y Data Science (UNIR). No es un template genérico.
 
-## Working Project
-- We develop research papers, seminars, guides, and documentation
-- We accumulate project-specific learnings and institutional context (UAB)
-- We test and iterate on the architecture itself
+## Propósito único
 
-## Public Template
-- Others fork this repo to run their own research workflows
-- They share the same pipeline (identify → estimate → write → submit) and tools (LaTeX, R/Python/Julia, Beamer)
-- Field-specific differences (journals, methods, conventions) are handled by `.claude/references/domain-profile.md` and `.claude/references/journal-profiles.md`
+Desarrollar, versionar y documentar el sistema SISTAC que evalúa cuatro
+configuraciones (C0-C3) de pre-selección de CVs con LLMs, midiendo eficacia
+(H2), eficiencia (H1) y equidad algorítmica (H3).
 
-## The One Rule
+## Qué va en el repo (Azure DevOps)
 
-Before committing, ask: **would another empirical researcher forking this repo benefit from this?**
+**SÍ versionar:**
+- `scripts/python/` — todo el código (PII, RAG, scoring, evaluation, experiments)
+- `paper/SISTAC_TFE.docx` — documento principal del TFE
+- `paper/figures/` — figuras generadas por scripts (.png)
+- `paper/tables/` — tablas exportadas por scripts (.csv)
+- `Bibliography_base.bib` — referencias APA 7
+- `.claude/` — configuración de agentes, reglas, skills
+- `CLAUDE.md`, `MEMORY.md` — memoria del proyecto
+- `data/` — estructura de carpetas solo (datos gitignoreados)
 
-- **Yes** → commit (workflow patterns, skills, agents, rules, templates)
-- **No** → keep local in `.claude/state/` (machine paths, tool versions, institutional requirements, API keys)
+**NO versionar (gitignore):**
+- `data/raw/*.csv`, `data/raw/*.jsonl` — CVs sintéticos (pueden contener proxies de datos personales)
+- `data/cleaned/*.csv` — datasets procesados
+- `data/vectorstore/`, `*.faiss`, `*.pkl` — índices vectoriales (regenerables)
+- `.env` — API keys (solo `.env.example`)
+- `master_supporting_docs/**/*.docx` — documentos fuente grandes (compartir por OneDrive)
+- `guide/`, `paper/preambles/`, `paper/sections/` — carpetas heredadas del template, eliminadas
+
+## Branches
+
+| Branch | Uso |
+|--------|-----|
+| `desarrollo` | Todo el trabajo diario — commits frecuentes |
+| `main` | Estable — solo recibe PR al cerrar hitos |
+
+## Regla de commit
+
+Antes de cada commit, verificar:
+- El código corre sin errores (`python script.py`)
+- Los tests pasan (`pytest pii/test_anonymization.py -v`)
+- No hay rutas absolutas (usar `config.py`)
+- No hay credenciales o datos personales en el diff
