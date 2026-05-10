@@ -59,12 +59,12 @@ Podés entrar en cualquier etapa. Para tareas puntuales, invocá el skill direct
 
 | Componente | Archivo | Estado |
 |------------|---------|--------|
-| TFE (Cap. 1-4) | `paper/SISTAC_TFE.docx` | ✅ Migrado |
+| TFE (Cap. 1-4) | `paper/SISTAC_TFE.docx` | ✅ Escritos |
 | TFE (Cap. 5-9) | `paper/SISTAC_TFE.docx` | 🟡 Por redactar |
 | Dataset sintético | `data/raw/` | ⬜ No iniciado |
-| Pipeline RAG (David) | `scripts/python/rag/pipeline.py` | 🟡 Scaffolded |
-| Módulo PII (Mario) | `scripts/python/pii/anonymizer.py` | 🟡 Scaffolded |
-| Métricas H1/H2/H3 | `scripts/python/evaluation/` | ✅ Scaffolded |
+| Pipeline RAG (David, H2) | `scripts/python/rag/pipeline.py` | ⬜ No iniciado |
+| Módulo PII (Mario, H3) | `scripts/python/pii/anonymizer.py` | ✅ Completo (10/10 tests) |
+| Métricas H1/H2/H3 | `scripts/python/evaluation/` | ✅ Implementadas |
 | Experimento C0-C3 | `scripts/python/experiments/orquestador_c0_c3.py` | 🟡 Stub |
 
 ---
@@ -101,17 +101,21 @@ Podés entrar en cualquier etapa. Para tareas puntuales, invocá el skill direct
 ## Comandos de uso frecuente
 
 ```bash
-# Extraer texto de .docx fuente para revisión
-python scripts/python/utils/docx_extractor.py
+# Instalar dependencias
+pip install -r scripts/python/requirements.txt
+python -m spacy download es_core_news_lg
 
-# Ejecutar experimentos (cuando estén implementados)
+# Tests módulo PII
+pytest scripts/python/pii/test_anonymization.py -v
+
+# Demo anonimización (desde scripts/python/)
+python -m pii.anonymizer
+
+# Ejecutar experimentos
 python scripts/python/experiments/orquestador_c0_c3.py
 
-# Instalar dependencias del proyecto
-pip install -r scripts/python/requirements.txt
-
-# Verificar estructura del .docx principal
-python scripts/office/validate.py paper/SISTAC_TFE.docx
+# Extraer texto de .docx fuente
+python scripts/python/utils/docx_extractor.py
 ```
 
 ---
