@@ -85,3 +85,41 @@ quality_reports/plans/
 # MLflow / experimentos
 mlruns/
 mlflow.db
+
+# ==============================================================================
+# Carpetas del template clo-author no usadas en SISTAC
+# ==============================================================================
+
+# Website Quarto del framework (no es SISTAC)
+guide/
+
+# Estructura LaTeX (SISTAC usa Word)
+paper/preambles/
+paper/sections/
+paper/quarto/
+paper/replication/
+paper/supplementary/
+paper/talks/
+
+# Scripts R (SISTAC usa solo Python)
+scripts/R/
+
+# Documentos fuente grandes — compartir por OneDrive/Drive
+master_supporting_docs/**/*.docx
+master_supporting_docs/**/*.pdf
+master_supporting_docs/**/*.pptx
+
+# Changelog y README del framework original
+CHANGELOG.md
+README.md
+
+# Logs y planes del autor original del template
+quality_reports/session_logs/2026-02-*.md
+quality_reports/session_logs/2026-03-*.md
+quality_reports/plans/2026-04-09_*.md
+
+# Template de skills del framework (no SISTAC)
+templates/skill-template.md
+
+# Reglas LaTeX/R de tablas y figuras (SISTAC usa Word/Excel)
+.claude/rules/content-standards.md
