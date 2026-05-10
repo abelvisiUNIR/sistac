@@ -1,8 +1,71 @@
 # ==============================================================================
-# .gitignore for Academic Claude Code Projects
+# .gitignore — SISTAC TFE
 # ==============================================================================
 
-# LaTeX build artifacts
+# Windows OS artifacts
+desktop.ini
+Thumbs.db
+ehthumbs.db
+.DS_Store
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.env
+.venv/
+venv/
+*.egg-info/
+dist/
+build/
+.pytest_cache/
+.mypy_cache/
+*.ipynb_checkpoints/
+
+# Jupyter Notebooks — checkpoints
+.ipynb_checkpoints/
+
+# Data — nunca versionar CVs reales o sintéticos con atributos personales
+data/raw/*.jsonl
+data/raw/*.csv
+data/cleaned/*.jsonl
+data/cleaned/*.csv
+# Excepción: metadatos del corpus (sin datos personales)
+!data/raw/corpus_metadata.json
+!data/cleaned/corpus_metadata.json
+
+# Vector store (índices grandes, regenerables)
+data/vectorstore/
+*.faiss
+*.pkl
+
+# Credenciales y claves
+.env
+*.key
+secrets/
+openai_key.txt
+
+# Outputs de experimentos (versionar solo los resultados finales curados)
+quality_reports/session_logs/
+quality_reports/plans/
+
+# Claude Code local files (no compartir entre máquinas)
+.claude/settings.local.json
+.claude/state/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Word / Office temporales
+~$*.docx
+~$*.xlsx
+
+# LaTeX (heredado del template — ya no se usa)
 *.aux
 *.bbl
 *.blg
@@ -17,42 +80,8 @@
 *.synctex.gz
 *.run.xml
 *-blx.bib
-
-# Compiled PDFs (uncomment to track specific PDFs)
-# *.pdf
-
-# Python
-__pycache__/
-*.pyc
-*.pyo
-
-# R
-.Rproj.user/
-.Rhistory
-.RData
-.Rdata
-
-# OS files
-.DS_Store
-Thumbs.db
-
-# Claude Code local files (not shared across machines)
-.claude/settings.local.json
-.claude/state/
-
-# IDE
-.vscode/
-.idea/
-*.swp
-*.swo
-*~
-
-# Quarto rendering artifacts
 /.quarto/
-paper/quarto/*_files/
-paper/quarto/.quarto/
 
-# Output artifacts — uncomment lines below based on your preference
-# *.rds
-# output/**/*.rds
-docs/
+# MLflow / experimentos
+mlruns/
+mlflow.db

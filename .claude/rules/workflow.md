@@ -99,12 +99,11 @@ The Orchestrator selects agents based on what the task requires:
 | Data sourcing | explorer + explorer-critic |
 | Data engineering | data-engineer + coder-critic |
 | Identification strategy | strategist + strategist-critic |
-| R/Python/Julia scripts | coder + coder-critic |
-| Paper manuscript | writer + writer-critic |
-| Peer review | Orchestrator → domain-referee + methods-referee |
-| Beamer talks | storyteller + storyteller-critic |
+| Python scripts | coder + coder-critic |
+| TFE manuscript (Word/español) | writer + writer-critic |
+| Revisión de tutora | writer-critic (modo revisión) |
 | Replication package | verifier (submission mode) |
-| Compilation only | verifier (standard mode) |
+| Validation only | verifier (standard mode) |
 
 ### Parallel Dispatch
 
@@ -120,9 +119,9 @@ Independent phases run concurrently:
 - **Verification retries:** max 2 attempts
 - Never loop indefinitely
 
-### Simplified Mode (R Scripts / Explorations)
+### Simplified Mode (Python scripts / Explorations)
 
-For standalone R scripts, simulations, and explorations — use the simplified loop:
+For standalone Python scripts, simulations, and explorations — use the simplified loop:
 
 ```
 Plan approved → implement → run code → check outputs → score → done
@@ -131,11 +130,11 @@ Plan approved → implement → run code → check outputs → score → done
 No multi-agent reviews. Just: write, test, verify quality >= 80.
 
 **Verification Checklist (Simplified):**
-- [ ] Script runs without errors
-- [ ] All packages loaded at top
-- [ ] No hardcoded absolute paths
-- [ ] `set.seed()` once at top if stochastic
-- [ ] Output files created at expected paths
+- [ ] Script runs without errors (`python script.py`)
+- [ ] All imports at top of file
+- [ ] No hardcoded absolute paths (usar `config.py`)
+- [ ] `random.seed()` + `np.random.seed()` al inicio si hay elementos estocásticos
+- [ ] Output files creados en `paper/tables/` o `paper/figures/`
 - [ ] Quality score >= 80
 
 ### "Just Do It" Mode
@@ -157,12 +156,11 @@ When user says "just do it" / "handle it":
 | Phase | Requires | Can Re-enter? |
 |-------|----------|---------------|
 | Discovery | Research idea | Always — librarian is persistent |
-| Strategy | At least one of: literature review OR data assessment | Yes — new data or literature can trigger re-strategy |
+| Strategy | Literature review OR data assessment | Yes — nueva evidencia puede triggear re-estrategia |
 | Execution (Code) | Approved strategy (strategist-critic >= 80) | Yes — strategy revision triggers re-coding |
 | Execution (Write) | Approved code (coder-critic >= 80) | Yes — new results trigger rewriting |
-| Peer Review | Approved paper (writer-critic >= 80) + approved code | Yes — major revisions loop back |
-| Submission | Orchestrator accepts + Verifier PASS + overall >= 95 | No — terminal |
-| Presentation | Approved paper (can run parallel with Peer Review) | Yes — paper revisions trigger talk updates |
+| Review (tutora) | Approved paper (writer-critic >= 80) + approved code | Yes — major revisions loop back |
+| Entrega UNIR | Verifier PASS + overall >= 95 | No — terminal |
 
 ### How It Works
 
@@ -179,7 +177,6 @@ A referee says "control for X." The Orchestrator routes back to coder (not throu
 Independent phases run concurrently:
 - Literature (librarian + librarian-critic) and Data (explorer + explorer-critic) run in parallel
 - Code (coder + coder-critic) and Paper (writer + writer-critic) run in parallel after Strategy
-- Presentation can run parallel with Peer Review
 
 ---
 
@@ -217,15 +214,13 @@ All skills in the reference below work without pipeline context when invoked dir
 
 | Skill | What It Does |
 |-------|-------------|
-| `/discover` | Literature search + data discovery |
-| `/strategize` | Identification strategy design + review |
-| `/analyze` | End-to-end data analysis (code + debug) |
-| `/write` | Draft paper sections + humanizer pass |
-| `/review` | Simulated peer review (domain + methods referees) |
-| `/revise` | R&R routing per revision-protocol |
-| `/talk` | Beamer talk from paper |
-| `/submit` | Final gate: score >= 95, all components >= 80 |
-| `/tools` | Utility skills (compile, validate-bib, commit, etc.) |
+| `/discover` | Búsqueda bibliográfica + exploración de datos |
+| `/strategize` | Diseño del experimento factorial C0-C3, plan de análisis |
+| `/analyze` | Análisis end-to-end Python (scripts, métricas H1/H2/H3, debug) |
+| `/write` | Redactar secciones del TFE en español (output texto plano para Word) |
+| `/review` | Revisión de calidad del documento (writer-critic + verifier) |
+| `/revise` | Ciclo de corrección de tutora — clasifica y rutea comentarios |
+| `/tools` | Utility skills (commit, validate-bib, learn, context) |
 
 ### Constraint
 

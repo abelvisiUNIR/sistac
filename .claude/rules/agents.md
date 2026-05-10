@@ -15,16 +15,16 @@
 | data-engineer | coder-critic | Data pipeline quality, reproducibility, transformation correctness |
 | strategist | strategist-critic | Identification validity, assumptions, robustness |
 | coder | coder-critic | Code quality, reproducibility, code-strategy alignment |
-| writer | writer-critic | Manuscript polish, LaTeX quality, hedging |
-| storyteller | storyteller-critic | Talk structure, audience calibration, visual quality |
+| writer | writer-critic | Manuscript polish (Word/español), APA 7 compliance, hedging |
 
-### Peer Review (Special Case)
+### Revisión de tutora (Special Case)
 
-Peer Review uses a different structure — the Orchestrator dispatches two independent referees:
+La revisión de la Dra. Arguedas Lafuente usa una estructura diferente — el Orchestrator
+despacha al writer-critic en modo "tutora":
 
-1. Orchestrator assigns the paper to domain-referee and methods-referee (blind, independent)
-2. Both referees produce scored reports
-3. Orchestrator synthesizes a decision: Accept / Minor Revisions / Major Revisions / Reject
+1. Orchestrator asigna el capítulo al writer-critic con los comentarios de la tutora
+2. Writer-critic clasifica cada comentario (NEW ANALYSIS / CLARIFICATION / DISAGREE / MINOR)
+3. Orchestrator rutea según clasificación — ver `rules/revision.md`
 
 ### Enforcement
 
@@ -64,9 +64,8 @@ A creator cannot evaluate the quality of its own work. The score always comes fr
 | explorer | Data assessment | explorer-critic |
 | data-engineer | Data pipeline and cleaned datasets | coder-critic |
 | strategist | Strategy memo | strategist-critic |
-| coder | R/Python/Julia scripts | coder-critic |
-| writer | Paper manuscript | writer-critic |
-| storyteller | Beamer talk | storyteller-critic |
+| coder | Python scripts | coder-critic |
+| writer | TFE manuscript (Word/español) | writer-critic |
 
 ### Enforcement
 
@@ -101,7 +100,6 @@ Round 3: Critic reviews → Worker fixes
 | strategist + strategist-critic | User | Fundamental design question — needs human judgment |
 | librarian + librarian-critic | User | Scope disagreement — user decides breadth vs depth |
 | explorer + explorer-critic | User | Data feasibility deadlock — user decides resource trade-offs |
-| storyteller + storyteller-critic | User | Talk scope/format disagreement |
 
 ### Rules
 

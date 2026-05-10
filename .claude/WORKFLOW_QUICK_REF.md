@@ -1,90 +1,119 @@
-# Workflow Quick Reference
+# Workflow Quick Reference — SISTAC TFE
 
-**Model:** Contractor (you direct, Claude orchestrates via dependency graph)
+**Proyecto:** SISTAC | **Institución:** UNIR | **Entrega:** 15 julio 2026
 
 ---
 
-## The Research Pipeline
+## Pipeline del TFE
 
 ```
-/discover interview → Research Spec + Domain Profile
+/discover lit [tema]      → Revisión bibliográfica (Librarian + librarian-critic)
     ↓
-/discover lit → Literature Synthesis (Librarian + librarian-critic)
+/strategize [pregunta]    → Estrategia experimental (Strategist + strategist-critic)
     ↓
-/discover data → Data Assessment (Explorer + explorer-critic)
+/analyze [dataset]        → Pipeline Python: scripts, outputs, code review (Coder + coder-critic)
     ↓
-/strategize → Strategy Memo (Strategist + strategist-critic)
+/write [sección]          → Redactar capítulo en español (Writer + writer-critic)
     ↓
-/analyze → Scripts + Output (Coder/Data-engineer + coder-critic)
+/review [archivo]         → Revisión de calidad con score (Writer-critic + Verifier)
     ↓
-/write → Paper Sections (Writer + writer-critic)
-    ↓
-/review → Weighted Score + Peer Review (domain-referee + methods-referee)
-    ↓
-/submit → Final Gate (score >= 95, all components >= 80)
+/revise [reporte]         → Ciclo de corrección con tutora
 ```
 
-Enter at any stage. Use `/new-project` for the full pipeline.
+Podés entrar en cualquier etapa. Para tareas puntuales, invocá el skill directamente.
 
 ---
 
-## The 10 Commands
+## Los 8 comandos activos
 
-| Command | What It Does |
-|---------|-------------|
-| `/new-project [topic]` | Full pipeline: idea to paper (orchestrated) |
-| `/discover [interview\|lit\|data]` | Research spec, literature review, or data discovery |
-| `/strategize [question]` | Identification strategy + Econometrician review |
-| `/analyze [dataset]` | End-to-end analysis: scripts, output, code review |
-| `/write [section]` | Draft paper sections + humanizer pass |
-| `/review [file]` | Multi-agent quality review + weighted score |
-| `/revise [report]` | Route referee comments, draft response letter |
-| `/talk [format]` | Beamer presentation from paper (4 formats) |
-| `/submit [journal]` | Final gate: score >= 95, all components >= 80 |
-| `/tools [subcommand]` | commit, compile, validate-bib, journal, learn, deploy, context |
+| Comando | Qué hace |
+|---------|---------|
+| `/discover [lit\|data\|interview]` | Búsqueda bibliográfica, exploración de datos, entrevista de descubrimiento |
+| `/strategize [pregunta]` | Diseño del experimento factorial C0-C3, plan de análisis estadístico |
+| `/analyze [dataset]` | Análisis end-to-end: scripts Python, métricas H1/H2/H3, code review |
+| `/write [sección]` | Redactar secciones del TFE en español (output texto plano para Word) |
+| `/review [archivo]` | Revisión de calidad del documento + score 0-100 |
+| `/revise [reporte]` | Procesar comentarios de la tutora, clasificar y rutear correcciones |
+| `/tools [subcomando]` | commit, validate-bib, learn, context |
+| `/new-project [tema]` | Pipeline completo desde cero (solo para nueva investigación) |
 
----
-
-## Quality Gates at a Glance
-
-| Score | Gate | What It Means |
-|-------|------|--------------|
-| >= 95 | Submission | Ready for top-5 (all components >= 80) |
-| >= 90 | PR | Ready to merge (minor polish recommended) |
-| >= 80 | Commit | Ready to commit (address major issues before submission) |
-| < 80 | **Blocked** | Must fix critical/major issues |
-| -- | Advisory | Talks: reported only, non-blocking |
-
-Weighted aggregate: Literature 10% + Data 10% + Identification 25% + Code 15% + Paper 25% + Polish 10% + Replication 5%
+### Comandos eliminados (no aplican a SISTAC)
+`/talk`, `/submit [journal]` — Beamer y journals de economía eliminados del sistema.
 
 ---
 
-## I Ask You When
+## Gates de calidad
 
-- **Design forks:** "Option A vs. Option B. Which?"
-- **Identification choice:** "CS DiD vs. Sun-Abraham for this setting?"
-- **Disagreement with referee:** "DISAGREE classification — please review"
-- **After 3 strikes:** "Coder and coder-critic can't agree — your call"
+| Score | Gate | Significado |
+|-------|------|-------------|
+| ≥ 95 | Entrega UNIR | Listo para entregar (todos los componentes ≥ 80) |
+| ≥ 90 | PR | Listo para merge / revisión de tutora |
+| ≥ 80 | Commit | Listo para commit (corregir issues mayores antes de entrega) |
+| < 80 | **Bloqueado** | Corregir issues críticos/mayores antes de continuar |
 
-## I Just Execute When
-
-- Code fix is obvious (bug, pattern)
-- Verification (compilation, tolerance checks)
-- Documentation (logs, commits)
-- Plotting (per established standards)
+**Ponderación:** Literatura 10% + Datos 10% + Estrategia 25% + Código 15% + Documento 25% + Pulido 10% + Replicación 5%
 
 ---
 
-## Exploration Mode
+## Estado del proyecto
 
-For experimental work:
-- Work in `explorations/` folder
-- 60/100 quality threshold (vs. 80/100 for production)
-- No plan needed — just a research value check
-- See `.claude/rules/content-standards.md`
+| Componente | Archivo | Estado |
+|------------|---------|--------|
+| TFE (Cap. 1-4) | `paper/SISTAC_TFE.docx` | ✅ Migrado |
+| TFE (Cap. 5-9) | `paper/SISTAC_TFE.docx` | 🟡 Por redactar |
+| Dataset sintético | `data/raw/` | ⬜ No iniciado |
+| Pipeline RAG (David) | `scripts/python/rag/pipeline.py` | 🟡 Scaffolded |
+| Módulo PII (Mario) | `scripts/python/pii/anonymizer.py` | 🟡 Scaffolded |
+| Métricas H1/H2/H3 | `scripts/python/evaluation/` | ✅ Scaffolded |
+| Experimento C0-C3 | `scripts/python/experiments/orquestador_c0_c3.py` | 🟡 Stub |
 
 ---
 
-## Next Step
+## Cuándo pido confirmación
 
-You provide task → I plan (if needed) → Your approval → Execute → Done.
+- **Decisión de diseño:** "FAISS vs. ChromaDB para el vector store — ¿cuál elegís?"
+- **Desacuerdo con tutora:** "Comentario clasificado DISAGREE — revisá vos"
+- **3 strikes:** "Coder y coder-critic no convergen — necesito tu criterio"
+- **Borrar archivos:** siempre pido confirmación antes de eliminar
+
+## Cuándo ejecuto directamente
+
+- Bug obvio en código Python
+- Verificación (validate-bib, tests pytest)
+- Logs y commits de rutina
+- Formato de tablas según `domain-profile.md`
+
+---
+
+## Archivos clave
+
+| Archivo | Propósito |
+|---------|-----------|
+| `CLAUDE.md` | Contexto del proyecto (hipótesis, stack, estructura) |
+| `MEMORY.md` | Decisiones aprendidas que persisten entre sesiones |
+| `.claude/references/domain-profile.md` | Notación, métricas, umbrales, referencias seminales |
+| `.claude/references/coding-standards-python.md` | Estándares de código Python para SISTAC |
+| `paper/SISTAC_TFE.docx` | Fuente de verdad del TFE |
+| `Bibliography_base.bib` | Base bibliográfica APA 7 (exportar a Mendeley/Zotero) |
+
+---
+
+## Comandos de uso frecuente
+
+```bash
+# Extraer texto de .docx fuente para revisión
+python scripts/python/utils/docx_extractor.py
+
+# Ejecutar experimentos (cuando estén implementados)
+python scripts/python/experiments/orquestador_c0_c3.py
+
+# Instalar dependencias del proyecto
+pip install -r scripts/python/requirements.txt
+
+# Verificar estructura del .docx principal
+python scripts/office/validate.py paper/SISTAC_TFE.docx
+```
+
+---
+
+**Próximo paso:** `/analyze` cuando el corpus sintético esté listo → `/write cap5` → `/review`

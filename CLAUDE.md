@@ -1,61 +1,80 @@
-# CLAUDE.MD -- Empirical Economics Research with Claude Code
+# CLAUDE.MD -- SISTAC: Sistema Inteligente de Selección de Talento y Análisis Curricular
 
-<!-- HOW TO USE: Replace [BRACKETED PLACEHOLDERS] with your project info.
-     Customize Beamer environments for your talk preamble.
-     Keep this file under ~150 lines — Claude loads it every session.
-     See the guide at https://hugosantanna.github.io/clo-author/ for full documentation. -->
+<!-- Keep this file under ~150 lines — Claude loads it every session. -->
 
-**Project:** [YOUR PROJECT NAME]
-**Institution:** [YOUR INSTITUTION]
-**Field:** [YOUR FIELD — Economics by default. Can be adapted to Finance, Accounting, Marketing, etc.]
+**Project:** SISTAC — Sistema Inteligente de Selección de Talento y Análisis Curricular
+**Institution:** UNIR — Universidad Internacional de La Rioja
+**Field:** Inteligencia Artificial, NLP y Ética Algorítmica
 **Branch:** main
+
+---
+
+## Project-Specific Context
+
+**Tipo:** TFE Grupal — Máster en Inteligencia Artificial y Data Science
+**Tutora:** Marta María Arguedas Lafuente
+**Entrega:** 15 julio 2026 | Mínimo: 75 páginas
+**Formato del documento:** Microsoft Word (.docx) — plantilla UNIR
+
+**Equipo y Autoría:**
+- **David I. Madrid Oyanadel** — Lead Engineer H2: Pipeline RAG y motor de scoring semántico (Cap. 5 parcial)
+- **Mario A. Belvisi Lescano** — Lead Analyst H3: Módulo anonimización PII y análisis de equidad algorítmica (Cap. 5 parcial)
+- **Ambos (Joint Ownership):** H1 (marco de validación experimental, Cap. 6) y Capítulos 1-4, 7-9
+
+**Pregunta de Investigación:**
+¿Cuál es el efecto diferencial de cuatro configuraciones C0-C3 — C0: screening manual, C1: LLM puro, C2: LLM+RAG, C3: LLM+RAG+PII anonimización — sobre eficacia (F1, AUC-ROC), eficiencia (tiempo/candidato) y equidad (DIR, SPD), evaluadas contra un Gold Standard de expertos RRHH?
+
+**Hipótesis:**
+- **H1 (Eficiencia — Ambos):** El sistema LLM es significativamente más rápido que el screening manual
+- **H2 (Eficacia — David):** Las configuraciones RAG alcanzan F1 ≥ 0.85 frente al Gold Standard de expertos
+- **H3 (Equidad — Mario):** La anonimización PII reduce significativamente DIR y SPD respecto a C1 y C2
+
+---
+
+## Framework Rule Overrides
+
+- **Formato:** Documento Word (.docx) — NO LaTeX. Fuente de verdad: `paper/SISTAC_TFE.docx`
+- **Language:** Idioma primario **ESPAÑOL**. Términos técnicos en inglés son aceptables.
+- **Bibliografía:** Formato APA 7ª edición. Gestionar con Mendeley o Zotero. Referencia base: `Bibliography_base.bib`
+- **Stack tecnológico:** Lenguaje primario **PYTHON** (no R). `scripts/python/` es el directorio activo.
+- **scikit-learn:** Permitido ÚNICAMENTE para métricas de clasificación (F1, AUC-ROC) — no para inferencia causal.
+- **Tablas:** Diseñadas en Excel → insertadas manualmente en `SISTAC_TFE.docx`. Scripts Python exportan datos como `.csv` para alimentar las tablas.
+- **Figuras:** Diseñadas manualmente (Cap. 1-4 existentes) o generadas por scripts Python como `.png` → insertadas en Word. Desde Cap. 4 en adelante: diseño manual con herramienta gráfica.
+- **INV-5/INV-6:** No aplican (tesis Word, no artículo LaTeX). Usar resumen bilingüe ES+EN.
+- **Quality scoring:** Señal de calidad interna. No es gate de entrega de tesis.
 
 ---
 
 ## Core Principles
 
-- **Plan first** -- enter plan mode before non-trivial tasks; save plans to `quality_reports/plans/`
-- **Verify after** -- compile and confirm output at the end of every task
-- **Single source of truth** -- Paper `main.tex` is authoritative; talks and supplements derive from it
-- **Quality gates** -- weighted aggregate score; nothing ships below 80/100; see `quality.md`
-- **Worker-critic pairs** -- every creator has a paired critic; critics never edit files
-- **Auto-memory** -- corrections and preferences are saved automatically via Claude Code's built-in memory system
-
----
-
-## Getting Started
-
-1. Fill in the `[BRACKETED PLACEHOLDERS]` in this file
-2. Run `/discover interview [topic]` to build your research specification
-3. Or run `/new-project [topic]` for the full orchestrated pipeline
+- **Plan first** -- entrar en plan mode antes de tareas no triviales; guardar planes en `quality_reports/plans/`
+- **Verify after** -- abrir el .docx y confirmar formato al final de cada tarea
+- **Single source of truth** -- `paper/SISTAC_TFE.docx` es autoritativo
+- **Worker-critic pairs** -- cada creador tiene un crítico pareado; los críticos nunca editan archivos
+- **Auto-memory** -- correcciones y preferencias se guardan automáticamente via Claude Code memory
 
 ---
 
 ## Folder Structure
 
 ```
-[YOUR-PROJECT]/
-├── CLAUDE.MD                    # This file
-├── .claude/                     # Rules, skills, agents, hooks
-├── Bibliography_base.bib        # Centralized bibliography
-├── paper/                       # Main LaTeX manuscript (source of truth)
-│   ├── main.tex                 # Primary paper file
-│   ├── sections/                # Section-level .tex files
-│   ├── figures/                 # Generated figures (.pdf, .png)
-│   ├── tables/                  # Generated tables (.tex)
-│   ├── talks/                   # Beamer presentations
-│   ├── quarto/                  # Quarto RevealJS presentations
-│   ├── preambles/               # LaTeX headers / shared preamble
-│   ├── supplementary/           # Online appendix and supplements
-│   └── replication/             # Replication package for deposit
-├── data/                        # Project data
-│   ├── raw/                     # Original untouched data (often gitignored)
-│   └── cleaned/                 # Processed datasets ready for analysis
-├── scripts/                     # Analysis code (R, Python, Julia)
-├── quality_reports/             # Plans, session logs, reviews, scores
-├── explorations/                # Research sandbox (see rules)
-├── templates/                   # Session log, quality report templates
-└── master_supporting_docs/      # Reference papers and data docs
+clo-author/
+├── CLAUDE.MD                    # Este archivo
+├── .claude/                     # Reglas, skills, agentes, hooks
+├── Bibliography_base.bib        # Referencia bibliográfica (exportar a Mendeley/Zotero)
+├── paper/                       # Documentos Word del TFE (fuente de verdad)
+│   ├── SISTAC_TFE.docx          # Documento principal (tesis completa)
+│   ├── SISTAC_TFE_portada.docx  # Portada UNIR (si se entrega por separado)
+│   ├── figures/                 # Figuras (.png, .svg) para insertar en Word
+│   └── tables/                  # Tablas generadas por scripts (.docx, .csv)
+├── data/
+│   ├── raw/                     # CVs sintéticos originales (PrivBayes)
+│   └── cleaned/                 # Datasets procesados
+├── scripts/python/              # Código de análisis (Python primario)
+├── quality_reports/             # Planes, logs, revisiones
+├── explorations/                # Sandbox de investigación y textos extraídos de .docx
+├── master_supporting_docs/      # Documentos .docx fuente y plantilla UNIR
+└── templates/                   # Plantillas de sesión y calidad
 ```
 
 ---
@@ -63,14 +82,17 @@
 ## Commands
 
 ```bash
-# Paper compilation (3-pass, XeLaTeX only)
-cd paper && TEXINPUTS=preambles:$TEXINPUTS xelatex -interaction=nonstopmode main.tex
-BIBINPUTS=..:$BIBINPUTS biber main
-TEXINPUTS=preambles:$TEXINPUTS xelatex -interaction=nonstopmode main.tex
-TEXINPUTS=preambles:$TEXINPUTS xelatex -interaction=nonstopmode main.tex
+# Extraer texto de .docx fuente (para migración de contenido)
+python scripts/python/utils/docx_extractor.py
 
-# Talk compilation
-cd paper/talks && TEXINPUTS=../preambles:$TEXINPUTS xelatex -interaction=nonstopmode talk.tex
+# Ejecutar experimentos y exportar tablas Word
+python scripts/python/experiments/orquestador_c0_c3.py
+
+# Validar el .docx principal
+python scripts/office/validate.py paper/SISTAC_TFE.docx
+
+# Verificar dependencias Python
+pip install -r scripts/python/requirements.txt
 ```
 
 ---
@@ -79,58 +101,43 @@ cd paper/talks && TEXINPUTS=../preambles:$TEXINPUTS xelatex -interaction=nonstop
 
 | Score | Gate | Applies To |
 |-------|------|------------|
-| 80 | Commit | Weighted aggregate (blocking) |
-| 90 | PR | Weighted aggregate (blocking) |
-| 95 | Submission | Aggregate + all components >= 80 |
-| -- | Advisory | Talks (reported, non-blocking) |
-
-See `quality.md` for weighted aggregation formula.
+| 80 | Commit | Ponderado (bloqueante) |
+| 90 | PR | Ponderado (bloqueante) |
+| 95 | Submission | Agregado + todos los componentes >= 80 |
+| -- | Advisory | Presentaciones (informativo, no bloqueante) |
 
 ---
 
 ## Skills Quick Reference
 
-| Command | What It Does |
-|---------|-------------|
-| `/new-project [topic]` | Full pipeline: idea → paper (orchestrated) |
-| `/discover [mode] [topic]` | Discovery: interview, literature, data, ideation |
-| `/strategize [question]` | Identification strategy or pre-analysis plan |
-| `/analyze [dataset]` | End-to-end data analysis |
-| `/write [section]` | Draft paper sections + humanizer pass |
-| `/review [file/--flag]` | Quality reviews (routes by target: paper, code, peer) |
-| `/revise [report]` | R&R cycle: classify + route referee comments |
-| `/talk [mode] [format]` | Create, audit, or compile Beamer presentations |
-| `/submit [mode]` | Journal targeting → package → audit → final gate |
-| `/tools [subcommand]` | Utilities: commit, compile, validate-bib, journal, etc. |
-
----
-
-<!-- CUSTOMIZE: Replace the example entries below with your own
-     Beamer environments for talks. -->
-
-## Beamer Custom Environments (Talks)
-
-| Environment       | Effect        | Use Case       |
-|-------------------|---------------|----------------|
-| `[your-env]`      | [Description] | [When to use]  |
+| Comando | Qué hace |
+|---------|---------|
+| `/discover [mode] [topic]` | Discovery: entrevista, literatura, datos |
+| `/strategize [question]` | Estrategia experimental o plan de pre-análisis |
+| `/analyze [dataset]` | Análisis de datos end-to-end |
+| `/write [section]` | Redactar secciones del TFE (salida en texto para insertar en Word) |
+| `/review [file/--flag]` | Revisiones de calidad del documento |
+| `/revise [report]` | Ciclo de revisión con tutora |
+| `/tools [subcommand]` | Utilidades: commit, validate-bib, journal |
 
 ---
 
 ## Output Organization
 
-<!-- Options: by-script (default) or by-purpose -->
 Output organization: by-script
-
-<!-- by-script:  paper/figures/main_regression/figure1.pdf, paper/tables/main_regression/table1.tex -->
-<!-- by-purpose: paper/figures/estimation/coefplot_main.pdf, paper/tables/robustness/alt_controls.tex -->
 
 ---
 
 ## Current Project State
 
-| Component | File | Status | Description |
-|-----------|------|--------|-------------|
-| Paper | `paper/main.tex` | [draft/submitted/R&R] | [Brief description] |
-| Data | `scripts/R/` | [complete/in-progress] | [Analysis description] |
-| Replication | `paper/replication/` | [not started/ready] | [Deposit status] |
-| Job Market Talk | `paper/talks/job_market_talk.tex` | -- | [Status] |
+| Component | File | Status |
+|-----------|------|--------|
+| Cap. 1-4 | `paper/SISTAC_TFE.docx` | ✅ Escritos (David + Mario) |
+| Cap. 5 — Pipeline RAG + PII | `paper/SISTAC_TFE.docx` | 🔵 En redacción (estructura definida) |
+| Cap. 6 — Validación experimental | `paper/SISTAC_TFE.docx` | 🔵 En redacción (estructura definida) |
+| Cap. 7-9 — Resultados, Discusión, Conclusiones | `paper/SISTAC_TFE.docx` | ⬜ Post-experimento |
+| Dataset sintético | `data/raw/` | ⬜ No iniciado (PrivBayes + LLM) |
+| Pipeline RAG (David, H2) | `scripts/python/rag/` | 🔵 En desarrollo |
+| Módulo PII (Mario, H3) | `scripts/python/pii/` | 🔵 En desarrollo |
+| Métricas H1/H2/H3 | `scripts/python/evaluation/` | ✅ Scaffolded |
+| Orquestador C0-C3 | `scripts/python/experiments/` | ✅ Scaffolded |

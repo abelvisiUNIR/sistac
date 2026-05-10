@@ -21,9 +21,8 @@ Track which phases can activate based on their inputs:
 | Execution (Data) | Approved strategy (>= 80) | Data-engineer + coder-critic |
 | Execution (Code) | Approved strategy (>= 80) | Coder + coder-critic |
 | Execution (Write) | Approved code (>= 80) | Writer + writer-critic |
-| Peer Review | Approved paper + code | domain-referee + methods-referee (independent, blind) |
-| Submission | Referees recommend accept/minor + Verifier PASS + overall >= 95 | Verifier |
-| Presentation | Approved paper | Storyteller + storyteller-critic |
+| Revisión tutora | Approved paper + code | Writer-critic (modo revisión, ver revision.md) |
+| Entrega UNIR | Verifier PASS + overall >= 95 | Verifier |
 
 ### 2. Agent Dispatch
 - **Parallel when independent:** Librarian + Explorer run concurrently; Data-engineer + Coder can run concurrently
@@ -42,7 +41,6 @@ Track strike count per worker-critic pair. After 3 failed rounds:
 | Strategist + strategist-critic | User |
 | Librarian + librarian-critic | User |
 | Explorer + explorer-critic | User |
-| Storyteller + storyteller-critic | Writer |
 
 ### 4. Rule Enforcement
 - **Separation of powers:** Flag if a critic produces artifacts or a creator self-scores
@@ -50,11 +48,13 @@ Track strike count per worker-critic pair. After 3 failed rounds:
 - **Scoring aggregation:** Compute weighted overall score per quality.md
 - **Research journal:** Log every agent invocation, phase transition, and escalation
 
-### 5. Peer Review Management
+### 5. Revisión de tutora
 
-Peer review is handled by the **editor** agent (see editor.md). The orchestrator's role is limited to:
-- Dispatching the `/review --peer [journal]` flow when the pipeline reaches the peer review phase
-- Tracking whether the editorial decision allows advancement (Accept or Minor → advance; Major or Reject → loop back)
+La revisión es gestionada por **writer-critic en modo revisión** (ver revision.md). El rol del Orchestrator:
+- Despachar el flujo `/revise` cuando el pipeline llega a la fase de revisión
+- Clasificar comentarios de la Dra. Arguedas Lafuente: NEW ANALYSIS / CLARIFICATION / DISAGREE / MINOR
+- Rutear cada clase al agente correspondiente
+- Trackear qué comentarios están resueltos y cuáles pendientes
 
 ### 6. User Communication
 - Phase transition summaries

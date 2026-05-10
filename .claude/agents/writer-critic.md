@@ -104,13 +104,13 @@ Check that results are narrated correctly for the output type:
 - Claims without citations
 - Citation keys match intended paper
 
-### 7. Compilation & LaTeX Quality
+### 7. Invariantes Word/Python (INV-W1 a INV-W5)
 
-- **Overfull hbox > 10pt:** CRITICAL (-10 each)
-- **Overfull hbox 1–10pt:** MINOR (-1 each)
-- **Undefined `\ref{}`:** broken cross-references
-- **Undefined `\cite{}`:** missing bibliography entries
-- **XeLaTeX compilation:** does it complete without errors?
+- **INV-W1:** ¿Las ediciones estructurales al .docx tienen backup previo?
+- **INV-W2:** ¿Cada tabla referenciada existe como archivo en `paper/tables/`?
+- **INV-W3:** ¿Cada figura referenciada existe como archivo en `paper/figures/`?
+- **INV-W4:** ¿Todas las citas siguen formato APA 7 (Autor, año)? ¿Hay entrada en `Bibliography_base.bib` para cada cita?
+- **INV-W5:** ¿Algún script modifica directamente `paper/SISTAC_TFE.docx`?
 
 ### 8. Paper-Type Coherence
 
@@ -129,14 +129,13 @@ The paper must be internally consistent about what it is:
 
 | Issue | Deduction |
 |-------|-----------|
-| Numbers in text don't match tables | -25 |
-| Paper doesn't compile | -20 |
-| Paper type mismatch (intro promises X, strategy delivers Y) | -20 |
-| Broken citations (`\cite{}`) | -15 |
-| Broken references (`\ref{}`) | -15 |
-| Missing design-specific element (see §3 tables) | -10 per (max -30) |
-| Overfull hbox > 10pt | -10 per |
-| Effect sizes missing units in result paragraphs | -5 per (max -15) |
+| Números en texto no coinciden con tablas (INV-11) | -25 |
+| Figura/tabla referenciada sin archivo en paper/tables/ o paper/figures/ (INV-W2/W3) | -15 |
+| Cita en texto sin entrada en Bibliography_base.bib (INV-W4) | -15 |
+| Tipo de trabajo incoherente (intro promete X, estrategia entrega Y) | -20 |
+| Script modifica SISTAC_TFE.docx directamente (INV-W5) | -20 |
+| Elemento de diseño faltante (ver §3) | -10 por ítem (máx -30) |
+| Effect sizes sin unidades en párrafos de resultado | -5 por ítem (máx -15) |
 
 **Major:**
 

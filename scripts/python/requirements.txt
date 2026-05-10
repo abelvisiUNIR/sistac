@@ -1,0 +1,47 @@
+# SISTAC — Dependencias Python
+# Instalar con: pip install -r requirements.txt
+# Python >= 3.10 recomendado
+
+# ====== LLM y RAG ======
+openai>=1.30.0
+langchain>=0.2.0
+langchain-openai>=0.1.0
+langchain-community>=0.2.0
+chromadb>=0.5.0
+sentence-transformers>=3.0.0
+tiktoken>=0.7.0
+
+# ====== Detección y Anonimización PII (Mario) ======
+presidio-analyzer>=2.2.354
+presidio-anonymizer>=2.2.354
+spacy>=3.7.0
+# Modelo spaCy español: python -m spacy download es_core_news_lg
+
+# ====== Evaluación y Métricas ======
+# scikit-learn: SOLO para métricas de clasificación (F1, AUC-ROC)
+# NO usar para inferencia causal (ver CLAUDE.md Rule Overrides)
+scikit-learn>=1.5.0
+scipy>=1.13.0          # Mann-Whitney U, bootstrap CI
+
+# ====== Procesamiento de Datos ======
+pandas>=2.2.0
+numpy>=1.26.0
+python-docx>=1.1.0     # Extracción de texto de .docx (utils/docx_extractor.py) Y exportación de tablas de resultados a Word (experiments/orquestador_c0_c3.py)
+
+# ====== Generación de Datos Sintéticos ======
+sdv>=1.14.0            # Synthetic Data Vault (incluye CTGAN, PrivBayes wrapper)
+faker>=25.0.0          # Generación de nombres/datos sintéticos
+
+# ====== Visualización (para figuras del paper) ======
+matplotlib>=3.8.0
+seaborn>=0.13.0
+
+# ====== Calidad de Código ======
+pytest>=8.0.0
+black>=24.0.0
+ruff>=0.4.0
+
+# ====== Utilidades ======
+python-dotenv>=1.0.0   # Variables de entorno (API keys)
+tqdm>=4.66.0           # Barras de progreso
+loguru>=0.7.0          # Logging estructurado

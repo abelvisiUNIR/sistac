@@ -70,3 +70,15 @@ When a mistake is corrected, append a `[LEARN:category]` entry below.
 [LEARN:meta] Dogfooding principles must be enforced: plan-first, spec-then-plan, quality gates, session logs → we follow our own guide.
 
 [LEARN:meta] Template development work (building infrastructure, docs) doesn't create session logs in quality_reports/ → those are for user work (slides, analysis), not meta-work. Keeps template clean for users who fork.
+
+## SISTAC — Decisiones de proyecto
+
+[LEARN:setup] Limpieza .claude/ completada para SISTAC (2026-04-15): eliminados 14 archivos heredados del template de economía/LaTeX (~127 KB, ~1.900 líneas). Archivos eliminados: journal-profiles.md (39.5KB), coding-standards-julia.md, coding-standards-r.md, working-paper-format.md, storyteller.md, storyteller-critic.md, editor.md, domain-referee.md, methods-referee.md, lint-scripts.sh, post-edit-lint.sh, post-merge.sh, skills/submit/SKILL.md, skills/talk/SKILL.md. writer.md reescrito para TFE Word en español con perfil de voz de Mario Agustín Belvisi Lescano (patrón embudo, conectores específicos, voz impersonal, citas APA 7). WORKFLOW_QUICK_REF.md actualizado para SISTAC. domain-profile.md, workflow.md, content-invariants.md, quality.md, agents.md, logging.md, meta-governance.md, revision.md y coding-standards-python.md conservados sin cambios.
+
+[LEARN:stack] Stack activo SISTAC: Python + LangChain + ChromaDB/FAISS + spaCy + Presidio + sentence-transformers + scikit-learn (solo métricas clasificación) + python-docx. NO usar R, Julia, LaTeX. Documento principal: paper/SISTAC_TFE.docx (Word).
+
+[LEARN:doc] Capítulos 1-4 migrados a paper/SISTAC_TFE.docx (2026-04-15). Fuente: Optimizacion_del_Proceso_de_Seleccion_de_Talento_.docx. Capítulos 5-9 tienen secciones stub con [TODO]. Documento generado con python-docx: 351 párrafos, 66.8 KB. Estructura del documento refleja diseño factorial C0-C3 y las tres hipótesis H1/H2/H3.
+
+[LEARN:data] Dataset sintético aún no generado. Pipeline: PrivBayes (smartnoise-sdk) para distribuciones demográficas + LLM (GPT-4o mini en dev, LLaMA 3.1 8B local para experimento final). Target: ≥300 pares CV-JD, split 70/15/15, demografía balanceada (género + rango edad). Referencia metodológica: Bruera et al. (2022) + Saldivar et al. (2025).
+
+[LEARN:setup] content-invariants.md actualizado (2026-04-15): INVs LaTeX/R (INV-1 a INV-6, INV-9, INV-10, INV-12, INV-13, INV-20, INV-21) reemplazados por INV-W1 a INV-W5 para stack Word/Python. INVs de código Python INV-14 a INV-19 conservados sin cambios. rules/agents.md: eliminada fila storyteller+storyteller-critic, par de Peer Review reemplazado por "Revisión de tutora" (writer-critic en modo revisión). rules/workflow.md: eliminadas referencias a /talk, Beamer, R scripts, "Presentation" phase y "Submission" phase de journals; actualizadas tablas de Agent Dispatch, Standalone Skills y Phase Dependencies para SISTAC.
