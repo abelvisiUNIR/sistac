@@ -5,7 +5,7 @@
 **Project:** SISTAC — Sistema Inteligente de Selección de Talento y Análisis Curricular
 **Institution:** UNIR — Universidad Internacional de La Rioja
 **Field:** Inteligencia Artificial, NLP y Ética Algorítmica
-**Branch:** main
+**Branch activa:** `desarrollo` (todo el trabajo nuevo va aquí → PR a `main` al cerrar hitos)
 
 ---
 
