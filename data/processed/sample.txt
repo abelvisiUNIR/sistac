@@ -1,0 +1,6 @@
+{
+    "chunk_id": "cv_1_chunk_1",
+    "cv_id": 1,
+    "text": "Candidato: juan perez. Experiencia...",
+    "source": "cv"
+}
