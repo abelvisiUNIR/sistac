@@ -1,0 +1,17 @@
+Nombre: Felipe Navarro
+Edad: 29
+Género: Masculino
+
+Analista de Datos con experiencia en automatización y análisis estadístico.
+
+Experiencia:
+- Desarrollo de dashboards en Power BI.
+- Automatización de reportes utilizando Python.
+- Consultas SQL sobre bases de datos corporativas.
+- Análisis de indicadores comerciales.
+
+Habilidades:
+Python, SQL, Power BI, Excel avanzado, análisis estadístico.
+
+Certificaciones:
+Curso de Data Analytics.

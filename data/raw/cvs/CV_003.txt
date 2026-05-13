@@ -1,0 +1,16 @@
+Nombre: Andrés Molina
+Edad: 41
+Género: Masculino
+
+Supervisor de operaciones logísticas con experiencia en administración de bodegas.
+
+Experiencia:
+- Coordinación de equipos operativos.
+- Gestión de inventario y despacho.
+- Supervisión de transporte.
+
+Habilidades:
+Logística, liderazgo, gestión operativa.
+
+Certificaciones:
+Curso de logística y transporte.

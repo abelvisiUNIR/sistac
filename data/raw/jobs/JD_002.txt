@@ -1,0 +1,15 @@
+Cargo: Consultor SAP BPC
+
+Empresa requiere profesional con experiencia en SAP BPC y planificación financiera corporativa.
+
+Responsabilidades:
+- Desarrollo de modelos de presupuestación.
+- Soporte a procesos de consolidación financiera.
+- Automatización de reportes financieros.
+- Integración con SAP BW.
+
+Requisitos:
+- Experiencia en SAP BPC Embedded o Standard.
+- Conocimientos en SAP BW.
+- Manejo de Analysis for Office.
+- Experiencia en planificación financiera y consolidación.

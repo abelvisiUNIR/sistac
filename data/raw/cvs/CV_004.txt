@@ -1,0 +1,17 @@
+Nombre: Carlos Méndez
+Edad: 38
+Género: Masculino
+
+Ingeniero Informático con más de 10 años de experiencia en proyectos SAP BPC y SAP BW.
+
+Experiencia:
+- Implementación de modelos de presupuestación financiera.
+- Desarrollo de reportes en Analysis for Office.
+- Integración SAP BW y automatización de procesos financieros.
+- Participación en proyectos de consolidación financiera.
+
+Habilidades:
+SAP BPC, SAP BW, Analysis for Office, planificación financiera, SQL.
+
+Certificaciones:
+SAP Certified Application Associate.

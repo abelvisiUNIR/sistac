@@ -1,0 +1,16 @@
+Nombre: Camila Torres
+Edad: 32
+Género: Femenino
+
+Ingeniera Comercial con experiencia en análisis de información y reportes de gestión.
+
+Experiencia:
+- Elaboración de reportes comerciales.
+- Uso de Excel y herramientas BI básicas.
+- Seguimiento de indicadores de ventas.
+
+Habilidades:
+Excel, Power BI básico, gestión comercial.
+
+Certificaciones:
+Diplomado en Business Intelligence.
