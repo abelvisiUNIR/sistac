@@ -1,0 +1,6 @@
+cv_id,job_id,expected_label,expected_score
+CV_001,JD_001,APTO,90
+CV_002,JD_001,APTO,70
+CV_003,JD_001,NO_APTO,30
+CV_004,JD_002,APTO,92
+CV_005,JD_002,NO_APTO,25
