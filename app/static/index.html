@@ -5,445 +5,442 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>SISTAC — Screening Inteligente de CVs</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
   <style>
     .score-ring {
-      background: conic-gradient(var(--color) calc(var(--pct) * 1%), #e5e7eb calc(var(--pct) * 1%));
+      background: conic-gradient(var(--c) calc(var(--p) * 1%), #e5e7eb calc(var(--p) * 1%));
     }
-    .tab-active { @apply border-b-2 border-blue-600 text-blue-600 font-semibold; }
-    .decision-apto    { @apply bg-emerald-50 border border-emerald-200 text-emerald-800; }
-    .decision-no_apto { @apply bg-red-50 border border-red-200 text-red-800; }
-    .dimension-bar    { transition: width 0.6s ease; }
-    .fade-in { animation: fadeIn 0.3s ease; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; } }
-    .loading-dot { animation: bounce 1.2s infinite; }
-    .loading-dot:nth-child(2) { animation-delay: 0.2s; }
-    .loading-dot:nth-child(3) { animation-delay: 0.4s; }
-    @keyframes bounce { 0%,80%,100% { transform: translateY(0); } 40% { transform: translateY(-6px); } }
+    .drop-zone { transition: all 0.2s; }
+    .drop-zone.over { border-color: #3b82f6; background: #eff6ff; }
+    .fade-in { animation: fi 0.25s ease; }
+    @keyframes fi { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:none; } }
+    .dot { animation: blink 1.2s infinite; }
+    .dot:nth-child(2) { animation-delay:.2s; }
+    .dot:nth-child(3) { animation-delay:.4s; }
+    @keyframes blink { 0%,80%,100%{transform:scale(1);opacity:.4} 40%{transform:scale(1.3);opacity:1} }
+    .bar { transition: width .7s cubic-bezier(.4,0,.2,1); }
+    input[type=file] { display:none; }
   </style>
 </head>
-<body class="bg-gray-50 min-h-screen font-sans">
+<body class="bg-slate-50 min-h-screen" style="font-family:'Inter',system-ui,sans-serif">
 
 <!-- Header -->
-<header class="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-50">
-  <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
-    <div class="flex items-center gap-3">
-      <div class="w-9 h-9 bg-blue-600 rounded-lg flex items-center justify-center">
-        <i data-lucide="brain-circuit" class="w-5 h-5 text-white"></i>
-      </div>
-      <div>
-        <h1 class="text-lg font-bold text-gray-900 leading-tight">SISTAC</h1>
-        <p class="text-xs text-gray-500">Sistema Inteligente de Selección de Talento</p>
-      </div>
+<header class="bg-white border-b border-slate-200 sticky top-0 z-50">
+  <div class="max-w-5xl mx-auto px-5 h-14 flex items-center justify-between">
+    <div class="flex items-center gap-2.5">
+      <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold text-sm">S</div>
+      <span class="font-semibold text-slate-800">SISTAC</span>
+      <span class="text-slate-300 text-sm hidden sm:block">—</span>
+      <span class="text-slate-500 text-sm hidden sm:block">Selección Inteligente de Talento</span>
     </div>
-    <div class="flex items-center gap-4">
-      <span id="health-badge" class="text-xs px-2 py-1 rounded-full bg-gray-100 text-gray-500">verificando...</span>
-      <span class="text-xs text-gray-400">TFE UNIR 2026</span>
+    <div class="flex items-center gap-3">
+      <span id="hbadge" class="text-xs px-2.5 py-1 rounded-full bg-slate-100 text-slate-400">•  conectando</span>
     </div>
   </div>
 </header>
 
 <!-- Tabs -->
-<div class="bg-white border-b border-gray-200">
-  <div class="max-w-6xl mx-auto px-6">
-    <nav class="flex gap-8">
-      <button onclick="setTab('evaluar')" id="tab-evaluar"
-        class="py-4 text-sm border-b-2 border-blue-600 text-blue-600 font-semibold transition-all">
-        Evaluar candidato
-      </button>
-      <button onclick="setTab('cargos')" id="tab-cargos"
-        class="py-4 text-sm border-b-2 border-transparent text-gray-500 hover:text-gray-700 transition-all">
-        Gestionar cargos
-      </button>
-      <button onclick="setTab('resultados')" id="tab-resultados"
-        class="py-4 text-sm border-b-2 border-transparent text-gray-500 hover:text-gray-700 transition-all">
-        Historial
-      </button>
-    </nav>
+<div class="bg-white border-b border-slate-200">
+  <div class="max-w-5xl mx-auto px-5 flex gap-0">
+    <button id="tb-evaluar"  onclick="tab('evaluar')"   class="tab-btn active-tab">Evaluar candidato</button>
+    <button id="tb-cargos"   onclick="tab('cargos')"    class="tab-btn">Gestionar cargos</button>
+    <button id="tb-historial" onclick="tab('historial')" class="tab-btn">Historial</button>
   </div>
 </div>
+<style>
+  .tab-btn { padding:.9rem 1.1rem; font-size:.875rem; border-bottom:2px solid transparent; color:#64748b; transition:all .15s; }
+  .tab-btn:hover { color:#1e293b; }
+  .active-tab { border-bottom-color:#2563eb !important; color:#2563eb !important; font-weight:600; }
+</style>
 
-<main class="max-w-6xl mx-auto px-6 py-8">
+<main class="max-w-5xl mx-auto px-5 py-7">
 
-  <!-- ── TAB: Evaluar candidato ─────────────────────────────────────────── -->
-  <div id="panel-evaluar" class="fade-in">
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+  <!-- ═══ TAB EVALUAR ═══════════════════════════════════════════════════════ -->
+  <div id="p-evaluar" class="fade-in">
+    <div class="grid lg:grid-cols-2 gap-7">
 
-      <!-- Formulario izquierdo -->
-      <div class="space-y-6">
+      <!-- Formulario -->
+      <div class="space-y-5">
         <div>
-          <h2 class="text-xl font-bold text-gray-900">Evaluar candidato</h2>
-          <p class="text-sm text-gray-500 mt-1">Pegá el CV del candidato y seleccioná el cargo para obtener el análisis.</p>
+          <h2 class="text-lg font-bold text-slate-900">Evaluar candidato</h2>
+          <p class="text-sm text-slate-500 mt-0.5">Subí el CV del candidato en PDF, DOCX o imagen.</p>
         </div>
 
         <!-- Cargo -->
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Cargo</label>
-          <select id="sel-cargo" class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none">
-            <option value="">Cargando cargos...</option>
+          <label class="label">Cargo a evaluar</label>
+          <select id="sel-cargo" class="field">
+            <option value="">Cargando cargos…</option>
           </select>
+          <p class="text-xs text-slate-400 mt-1">¿No aparece el cargo? Crealo primero en "Gestionar cargos".</p>
         </div>
 
-        <!-- Nombre candidato -->
+        <!-- Nombre -->
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Nombre del candidato <span class="text-gray-400">(opcional)</span></label>
-          <input id="inp-nombre" type="text" placeholder="Ej: María González"
-            class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
+          <label class="label">Nombre del candidato <span class="text-slate-400 font-normal">(opcional)</span></label>
+          <input id="inp-nombre" type="text" placeholder="Ej: María González" class="field" />
         </div>
 
-        <!-- CV texto -->
+        <!-- Upload CV -->
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Currículum Vitae</label>
-          <div class="border-2 border-dashed border-gray-300 rounded-lg overflow-hidden hover:border-blue-400 transition-colors">
-            <textarea id="inp-cv" rows="12" placeholder="Pegá aquí el texto del CV del candidato...
-
-Ej:
-María González — Analista de Datos
-Email: maria@ejemplo.com | Tel: +598 99 123 456
-Montevideo, Uruguay
-
-EXPERIENCIA:
-- Data Analyst | ANTEL (2021–Actualidad)
-  Análisis de datos con Python, SQL y Power BI..."
-              class="w-full px-4 py-3 text-sm resize-none outline-none bg-transparent"></textarea>
+          <label class="label">Currículum Vitae</label>
+          <div id="dz-cv" onclick="document.getElementById('file-cv').click()"
+            class="drop-zone border-2 border-dashed border-slate-300 rounded-xl p-8 text-center cursor-pointer hover:border-blue-400 hover:bg-blue-50/40">
+            <input type="file" id="file-cv" accept=".pdf,.docx,.doc,.txt,.png,.jpg,.jpeg,.webp"
+              onchange="onFileCV(this)" />
+            <div id="dz-cv-inner">
+              <div class="w-12 h-12 bg-slate-100 rounded-xl flex items-center justify-center mx-auto mb-3">
+                <svg class="w-6 h-6 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414A1 1 0 0119 9.414V19a2 2 0 01-2 2z"/>
+                </svg>
+              </div>
+              <p class="text-sm font-medium text-slate-600">Hacé click o arrastrá el archivo aquí</p>
+              <p class="text-xs text-slate-400 mt-1">PDF · DOCX · JPG · PNG  (máx. 10 MB)</p>
+            </div>
           </div>
-          <p class="text-xs text-gray-400 mt-1">También podés arrastrar un archivo .txt sobre el área de texto.</p>
+          <div id="cv-preview" class="hidden mt-2 flex items-center gap-2 bg-blue-50 border border-blue-200 rounded-lg px-3 py-2.5">
+            <svg class="w-4 h-4 text-blue-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <span id="cv-filename" class="text-sm text-blue-700 truncate flex-1"></span>
+            <button onclick="clearCV()" class="text-blue-400 hover:text-blue-600 shrink-0">✕</button>
+          </div>
         </div>
 
-        <!-- Config RAG -->
+        <!-- Config -->
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">Configuración del pipeline</label>
+          <label class="label">Pipeline</label>
           <div class="grid grid-cols-3 gap-2">
-            <label class="cursor-pointer">
-              <input type="radio" name="config" value="c1" class="sr-only peer" />
-              <div class="border border-gray-200 rounded-lg p-3 text-center peer-checked:border-blue-500 peer-checked:bg-blue-50 transition-all">
-                <p class="text-xs font-semibold text-gray-700">C1</p>
-                <p class="text-xs text-gray-500 mt-0.5">LLM puro</p>
-              </div>
-            </label>
-            <label class="cursor-pointer">
-              <input type="radio" name="config" value="c2" class="sr-only peer" checked />
-              <div class="border border-blue-500 bg-blue-50 rounded-lg p-3 text-center peer-checked:border-blue-500 peer-checked:bg-blue-50 transition-all">
-                <p class="text-xs font-semibold text-blue-700">C2 ✓</p>
-                <p class="text-xs text-blue-500 mt-0.5">LLM + RAG</p>
-              </div>
-            </label>
-            <label class="cursor-pointer">
-              <input type="radio" name="config" value="c3" class="sr-only peer" />
-              <div class="border border-gray-200 rounded-lg p-3 text-center peer-checked:border-blue-500 peer-checked:bg-blue-50 transition-all">
-                <p class="text-xs font-semibold text-gray-700">C3</p>
-                <p class="text-xs text-gray-500 mt-0.5">RAG + PII</p>
-              </div>
-            </label>
+            <label class="cursor-pointer"><input type="radio" name="cfg" value="c1" class="sr-only peer"/>
+              <div class="border rounded-lg p-2.5 text-center peer-checked:border-blue-500 peer-checked:bg-blue-50 border-slate-200 transition-all">
+                <p class="text-xs font-semibold text-slate-700">C1</p><p class="text-xs text-slate-400">LLM puro</p>
+              </div></label>
+            <label class="cursor-pointer"><input type="radio" name="cfg" value="c2" checked class="sr-only peer"/>
+              <div class="border rounded-lg p-2.5 text-center peer-checked:border-blue-500 peer-checked:bg-blue-50 border-blue-500 bg-blue-50 transition-all">
+                <p class="text-xs font-semibold text-blue-700">C2 ✓</p><p class="text-xs text-blue-500">LLM + RAG</p>
+              </div></label>
+            <label class="cursor-pointer"><input type="radio" name="cfg" value="c3" class="sr-only peer"/>
+              <div class="border rounded-lg p-2.5 text-center peer-checked:border-blue-500 peer-checked:bg-blue-50 border-slate-200 transition-all">
+                <p class="text-xs font-semibold text-slate-700">C3</p><p class="text-xs text-slate-400">RAG + PII</p>
+              </div></label>
           </div>
         </div>
 
-        <button onclick="evaluar()" id="btn-evaluar"
-          class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors flex items-center justify-center gap-2">
-          <i data-lucide="play-circle" class="w-5 h-5"></i>
+        <button id="btn-eval" onclick="evaluar()"
+          class="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300 text-white font-semibold py-3 rounded-xl transition-colors flex items-center justify-center gap-2 text-sm">
           Evaluar candidato
         </button>
       </div>
 
-      <!-- Resultado derecho -->
-      <div id="panel-resultado" class="hidden fade-in">
-        <!-- Cargando -->
-        <div id="loading" class="hidden flex flex-col items-center justify-center h-64 gap-4">
-          <div class="flex gap-2">
-            <div class="w-2.5 h-2.5 bg-blue-500 rounded-full loading-dot"></div>
-            <div class="w-2.5 h-2.5 bg-blue-500 rounded-full loading-dot"></div>
-            <div class="w-2.5 h-2.5 bg-blue-500 rounded-full loading-dot"></div>
+      <!-- Panel resultado -->
+      <div>
+        <!-- Placeholder -->
+        <div id="ph-eval" class="h-full flex flex-col items-center justify-center text-center py-16">
+          <div class="w-14 h-14 bg-blue-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <svg class="w-7 h-7 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+            </svg>
           </div>
-          <p class="text-sm text-gray-500">Analizando CV con el pipeline SISTAC...</p>
+          <p class="text-sm font-medium text-slate-600">El análisis aparecerá aquí</p>
+          <p class="text-xs text-slate-400 mt-1">Subí un CV y seleccioná el cargo</p>
         </div>
 
-        <!-- Resultado real -->
-        <div id="resultado-content" class="hidden space-y-5">
-          <!-- Score y decisión -->
-          <div class="bg-white rounded-xl border border-gray-200 p-6">
-            <div class="flex items-start gap-6">
-              <!-- Score ring -->
-              <div class="relative flex-shrink-0">
-                <div id="score-ring"
-                  class="w-24 h-24 rounded-full score-ring flex items-center justify-center"
-                  style="--pct: 0; --color: #3b82f6;">
-                  <div class="w-20 h-20 bg-white rounded-full flex flex-col items-center justify-center">
-                    <span id="score-num" class="text-2xl font-bold text-gray-900">—</span>
-                    <span class="text-xs text-gray-400">/100</span>
+        <!-- Loading -->
+        <div id="ld-eval" class="hidden h-full flex flex-col items-center justify-center gap-4 py-16">
+          <div class="flex gap-2">
+            <div class="dot w-2.5 h-2.5 bg-blue-500 rounded-full"></div>
+            <div class="dot w-2.5 h-2.5 bg-blue-500 rounded-full"></div>
+            <div class="dot w-2.5 h-2.5 bg-blue-500 rounded-full"></div>
+          </div>
+          <div class="text-center">
+            <p class="text-sm font-medium text-slate-600">Analizando CV…</p>
+            <p class="text-xs text-slate-400 mt-0.5" id="ld-step">Extrayendo texto del archivo</p>
+          </div>
+        </div>
+
+        <!-- Resultado -->
+        <div id="res-eval" class="hidden fade-in space-y-4">
+
+          <!-- Score card -->
+          <div class="bg-white rounded-2xl border border-slate-200 p-5">
+            <div class="flex items-center gap-5">
+              <!-- Ring -->
+              <div class="relative shrink-0">
+                <div id="ring" class="w-20 h-20 rounded-full score-ring flex items-center justify-center"
+                  style="--p:0;--c:#3b82f6">
+                  <div class="w-16 h-16 bg-white rounded-full flex flex-col items-center justify-center">
+                    <span id="r-score" class="text-xl font-bold">—</span>
+                    <span class="text-xs text-slate-400">/100</span>
                   </div>
                 </div>
               </div>
-
               <div class="flex-1 min-w-0">
-                <div id="decision-badge" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-semibold mb-2">
-                  <i data-lucide="circle" class="w-3 h-3"></i>
-                  <span id="decision-text">—</span>
-                </div>
-                <h3 id="candidato-header" class="text-base font-bold text-gray-900 truncate"></h3>
-                <p id="cargo-header" class="text-sm text-gray-500"></p>
-                <div class="flex gap-4 mt-2 text-xs text-gray-400">
-                  <span id="meta-config"></span>
-                  <span id="meta-tiempo"></span>
-                  <span id="meta-chunks"></span>
+                <div id="r-badge" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold mb-1.5"></div>
+                <p id="r-nombre" class="font-semibold text-slate-900 truncate text-sm"></p>
+                <p id="r-cargo"  class="text-xs text-slate-500"></p>
+                <p id="r-archivo" class="text-xs text-slate-400 mt-0.5 truncate"></p>
+                <div class="flex gap-3 mt-1.5 text-xs text-slate-400">
+                  <span id="r-config"></span><span id="r-tiempo"></span><span id="r-chunks"></span>
                 </div>
               </div>
             </div>
           </div>
 
           <!-- Dimensiones -->
-          <div class="bg-white rounded-xl border border-gray-200 p-5">
-            <h4 class="text-sm font-semibold text-gray-700 mb-4">Evaluación por dimensiones</h4>
-            <div class="space-y-3" id="dimensiones-container"></div>
+          <div class="bg-white rounded-2xl border border-slate-200 p-5">
+            <p class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">Evaluación por dimensión</p>
+            <div id="dims" class="space-y-3"></div>
           </div>
 
           <!-- Justificación -->
-          <div class="bg-white rounded-xl border border-gray-200 p-5">
-            <h4 class="text-sm font-semibold text-gray-700 mb-2">Justificación del análisis</h4>
-            <p id="justificacion-text" class="text-sm text-gray-600 leading-relaxed"></p>
+          <div class="bg-white rounded-2xl border border-slate-200 p-5">
+            <p class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">Justificación del análisis</p>
+            <p id="r-just" class="text-sm text-slate-600 leading-relaxed"></p>
           </div>
+
         </div>
       </div>
-
-      <!-- Placeholder derecho cuando no hay resultado -->
-      <div id="panel-placeholder" class="flex flex-col items-center justify-center h-80 text-center">
-        <div class="w-16 h-16 bg-blue-50 rounded-2xl flex items-center justify-center mb-4">
-          <i data-lucide="file-search" class="w-8 h-8 text-blue-400"></i>
-        </div>
-        <h3 class="text-base font-semibold text-gray-700">Listo para analizar</h3>
-        <p class="text-sm text-gray-400 mt-1 max-w-xs">Pegá un CV, seleccioná el cargo y presioná Evaluar para ver el resultado.</p>
-      </div>
-
     </div>
   </div>
 
-  <!-- ── TAB: Gestionar cargos ──────────────────────────────────────────── -->
-  <div id="panel-cargos" class="hidden fade-in">
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+  <!-- ═══ TAB CARGOS ════════════════════════════════════════════════════════ -->
+  <div id="p-cargos" class="hidden fade-in">
+    <div class="grid lg:grid-cols-2 gap-7">
 
-      <!-- Formulario nuevo cargo -->
+      <!-- Formulario -->
       <div class="space-y-5">
         <div>
-          <h2 class="text-xl font-bold text-gray-900">Nuevo cargo</h2>
-          <p class="text-sm text-gray-500 mt-1">Cargá la descripción del puesto. El sistema la indexará para mejorar el análisis de CVs.</p>
+          <h2 class="text-lg font-bold text-slate-900">Nuevo cargo</h2>
+          <p class="text-sm text-slate-500 mt-0.5">Subí el documento con la descripción del puesto.</p>
         </div>
+
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Nombre del cargo</label>
-          <input id="cargo-nombre" type="text" placeholder="Ej: Analista de Datos Senior"
-            class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
+          <label class="label">Nombre del cargo</label>
+          <input id="c-nombre" type="text" placeholder="Ej: Analista de Datos Senior" class="field" />
         </div>
+
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Descripción del cargo (JD)</label>
-          <textarea id="cargo-descripcion" rows="12"
-            placeholder="Pegá aquí la descripción completa del cargo...
-
-Ej:
-CARGO: Analista de Datos Senior
-EMPRESA: Matriz Uruguay
-
-Buscamos un/a Analista de Datos para integrarse al equipo de BI.
-
-RESPONSABILIDADES:
-- Diseñar y mantener dashboards en Power BI
-- Desarrollar scripts de análisis en Python
-- Consultar bases de datos con SQL avanzado
-
-REQUISITOS:
-- Licenciatura en Sistemas, Estadística o afín
-- Mínimo 3 años de experiencia
-- Python, SQL, Power BI (avanzados)"
-            class="w-full border border-gray-300 rounded-lg px-3 py-3 text-sm resize-none focus:ring-2 focus:ring-blue-500 outline-none"></textarea>
+          <label class="label">Descripción del cargo</label>
+          <div id="dz-jd" onclick="document.getElementById('file-jd').click()"
+            class="drop-zone border-2 border-dashed border-slate-300 rounded-xl p-8 text-center cursor-pointer hover:border-blue-400 hover:bg-blue-50/40">
+            <input type="file" id="file-jd" accept=".pdf,.docx,.txt" onchange="onFileJD(this)" />
+            <div id="dz-jd-inner">
+              <div class="w-12 h-12 bg-slate-100 rounded-xl flex items-center justify-center mx-auto mb-3">
+                <svg class="w-6 h-6 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                    d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+                </svg>
+              </div>
+              <p class="text-sm font-medium text-slate-600">Subí la descripción del cargo</p>
+              <p class="text-xs text-slate-400 mt-1">PDF · DOCX · TXT</p>
+            </div>
+          </div>
+          <div id="jd-preview" class="hidden mt-2 flex items-center gap-2 bg-blue-50 border border-blue-200 rounded-lg px-3 py-2.5">
+            <svg class="w-4 h-4 text-blue-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <span id="jd-filename" class="text-sm text-blue-700 truncate flex-1"></span>
+            <button onclick="clearJD()" class="text-blue-400 hover:text-blue-600 shrink-0">✕</button>
+          </div>
         </div>
-        <button onclick="crearCargo()" id="btn-cargo"
-          class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors flex items-center justify-center gap-2">
-          <i data-lucide="plus-circle" class="w-5 h-5"></i>
+
+        <button id="btn-cargo" onclick="crearCargo()"
+          class="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300 text-white font-semibold py-3 rounded-xl transition-colors flex items-center justify-center gap-2 text-sm">
           Crear cargo
         </button>
       </div>
 
-      <!-- Lista de cargos activos -->
+      <!-- Lista cargos -->
       <div>
-        <h3 class="text-base font-semibold text-gray-900 mb-4">Cargos activos</h3>
+        <div class="flex items-center justify-between mb-4">
+          <p class="text-sm font-semibold text-slate-800">Cargos activos</p>
+          <span id="c-count" class="text-xs text-slate-400"></span>
+        </div>
         <div id="lista-cargos" class="space-y-3"></div>
         <div id="sin-cargos" class="hidden text-center py-12">
-          <i data-lucide="briefcase" class="w-10 h-10 text-gray-300 mx-auto mb-3"></i>
-          <p class="text-sm text-gray-400">No hay cargos cargados aún.</p>
+          <p class="text-sm text-slate-400">No hay cargos cargados aún.</p>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- ── TAB: Historial ─────────────────────────────────────────────────── -->
-  <div id="panel-resultados" class="hidden fade-in">
-    <div class="flex items-center justify-between mb-6">
+  <!-- ═══ TAB HISTORIAL ════════════════════════════════════════════════════ -->
+  <div id="p-historial" class="hidden fade-in">
+    <div class="flex items-center justify-between mb-5">
       <div>
-        <h2 class="text-xl font-bold text-gray-900">Historial de evaluaciones</h2>
-        <p class="text-sm text-gray-500 mt-1">Todas las evaluaciones de esta sesión.</p>
+        <h2 class="text-lg font-bold text-slate-900">Historial</h2>
+        <p class="text-sm text-slate-500" id="hist-count"></p>
       </div>
-      <button onclick="cargarResultados()"
-        class="text-sm text-blue-600 hover:text-blue-700 flex items-center gap-1.5">
-        <i data-lucide="refresh-cw" class="w-4 h-4"></i>
-        Actualizar
-      </button>
+      <button onclick="cargarHistorial()" class="text-sm text-blue-600 hover:text-blue-700">↻ Actualizar</button>
     </div>
-    <div id="tabla-resultados" class="space-y-3"></div>
-    <div id="sin-resultados" class="hidden text-center py-16">
-      <i data-lucide="inbox" class="w-10 h-10 text-gray-300 mx-auto mb-3"></i>
-      <p class="text-sm text-gray-400">No hay evaluaciones aún.</p>
-    </div>
+    <div id="t-hist" class="space-y-2.5"></div>
+    <div id="sin-hist" class="hidden text-center py-14 text-sm text-slate-400">No hay evaluaciones aún.</div>
   </div>
 
 </main>
 
-<!-- Toast notifications -->
-<div id="toast" class="hidden fixed bottom-6 right-6 px-4 py-3 rounded-lg shadow-lg text-sm font-medium z-50 max-w-sm"></div>
+<!-- Styles helpers -->
+<style>
+  .label { display:block; font-size:.8125rem; font-weight:500; color:#374151; margin-bottom:.3rem; }
+  .field { width:100%; border:1px solid #d1d5db; border-radius:.625rem; padding:.625rem .75rem;
+           font-size:.875rem; outline:none; transition:box-shadow .15s, border-color .15s; }
+  .field:focus { border-color:#3b82f6; box-shadow:0 0 0 3px rgba(59,130,246,.15); }
+</style>
+
+<!-- Toast -->
+<div id="toast" class="hidden fixed bottom-5 right-5 px-4 py-3 rounded-xl shadow-xl text-sm font-medium z-50 max-w-xs"></div>
 
 <script>
-const API = '';  // mismo origen
-
-// ── Estado ────────────────────────────────────────────────────────────────
+const API = '';
 let cargos = {};
+let cvFile = null, jdFile = null;
 
 // ── Init ──────────────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
-  lucide.createIcons();
   checkHealth();
   cargarCargos();
   setInterval(checkHealth, 30000);
-
-  // Drag & drop en el textarea del CV
-  const ta = document.getElementById('inp-cv');
-  ta.addEventListener('dragover', e => { e.preventDefault(); ta.classList.add('border-blue-400','bg-blue-50'); });
-  ta.addEventListener('dragleave', () => ta.classList.remove('border-blue-400','bg-blue-50'));
-  ta.addEventListener('drop', async e => {
-    e.preventDefault();
-    ta.classList.remove('border-blue-400','bg-blue-50');
-    const file = e.dataTransfer.files[0];
-    if (file) ta.value = await file.text();
-  });
+  setupDragDrop('dz-cv', f => { cvFile = f; showFilePreview('cv-preview','cv-filename','dz-cv',f); });
+  setupDragDrop('dz-jd', f => { jdFile = f; showFilePreview('jd-preview','jd-filename','dz-jd',f); });
 });
 
-// ── Navegación ────────────────────────────────────────────────────────────
-function setTab(tab) {
-  ['evaluar','cargos','resultados'].forEach(t => {
-    document.getElementById(`panel-${t}`).classList.add('hidden');
-    document.getElementById(`tab-${t}`).className =
-      'py-4 text-sm border-b-2 border-transparent text-gray-500 hover:text-gray-700 transition-all';
+// ── Tabs ──────────────────────────────────────────────────────────────────
+function tab(t) {
+  ['evaluar','cargos','historial'].forEach(x => {
+    document.getElementById(`p-${x}`).classList.add('hidden');
+    document.getElementById(`tb-${x}`).classList.remove('active-tab');
   });
-  document.getElementById(`panel-${tab}`).classList.remove('hidden');
-  document.getElementById(`tab-${tab}`).className =
-    'py-4 text-sm border-b-2 border-blue-600 text-blue-600 font-semibold transition-all';
-  if (tab === 'resultados') cargarResultados();
-  if (tab === 'cargos') renderCargos();
+  document.getElementById(`p-${t}`).classList.remove('hidden');
+  document.getElementById(`tb-${t}`).classList.add('active-tab');
+  if (t === 'historial') cargarHistorial();
+  if (t === 'cargos') renderCargos();
 }
 
-// ── Health check ──────────────────────────────────────────────────────────
+// ── Health ────────────────────────────────────────────────────────────────
 async function checkHealth() {
   try {
-    const r = await fetch(`${API}/health`);
-    const d = await r.json();
-    const badge = document.getElementById('health-badge');
-    badge.className = 'text-xs px-2 py-1 rounded-full bg-emerald-100 text-emerald-700';
-    badge.textContent = `✓ Online · ${d.cargos} cargo${d.cargos !== 1 ? 's' : ''}`;
+    const d = await fetch(`${API}/health`).then(r => r.json());
+    const b = document.getElementById('hbadge');
+    b.className = 'text-xs px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-700';
+    b.textContent = `● Online · ${d.cargos} cargo${d.cargos!==1?'s':''}`;
   } catch {
-    const badge = document.getElementById('health-badge');
-    badge.className = 'text-xs px-2 py-1 rounded-full bg-red-100 text-red-600';
-    badge.textContent = '✗ Sin conexión';
+    const b = document.getElementById('hbadge');
+    b.className = 'text-xs px-2.5 py-1 rounded-full bg-red-100 text-red-600';
+    b.textContent = '● Sin conexión';
   }
+}
+
+// ── Drag & drop ───────────────────────────────────────────────────────────
+function setupDragDrop(dzId, onFile) {
+  const dz = document.getElementById(dzId);
+  dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('over'); });
+  dz.addEventListener('dragleave', () => dz.classList.remove('over'));
+  dz.addEventListener('drop', e => {
+    e.preventDefault(); dz.classList.remove('over');
+    const f = e.dataTransfer.files[0];
+    if (f) onFile(f);
+  });
+}
+
+function onFileCV(input) { if (input.files[0]) { cvFile = input.files[0]; showFilePreview('cv-preview','cv-filename','dz-cv',cvFile); } }
+function onFileJD(input) { if (input.files[0]) { jdFile = input.files[0]; showFilePreview('jd-preview','jd-filename','dz-jd',jdFile); } }
+
+function showFilePreview(previewId, nameId, dzId, file) {
+  document.getElementById(previewId).classList.remove('hidden');
+  document.getElementById(nameId).textContent = `${file.name}  (${(file.size/1024).toFixed(0)} KB)`;
+  document.getElementById(dzId).style.display = 'none';
+}
+
+function clearCV() {
+  cvFile = null;
+  document.getElementById('cv-preview').classList.add('hidden');
+  document.getElementById('dz-cv').style.display = '';
+  document.getElementById('file-cv').value = '';
+}
+function clearJD() {
+  jdFile = null;
+  document.getElementById('jd-preview').classList.add('hidden');
+  document.getElementById('dz-jd').style.display = '';
+  document.getElementById('file-jd').value = '';
 }
 
 // ── Cargos ────────────────────────────────────────────────────────────────
 async function cargarCargos() {
   try {
-    const r = await fetch(`${API}/api/cargos`);
-    const d = await r.json();
+    const d = await fetch(`${API}/api/cargos`).then(r => r.json());
     cargos = {};
     d.cargos.forEach(c => cargos[c.id] = c);
-    actualizarSelectCargo();
+    const sel = document.getElementById('sel-cargo');
+    const ids = Object.keys(cargos);
+    sel.innerHTML = ids.length
+      ? ids.map(id => `<option value="${id}">${cargos[id].nombre}</option>`).join('')
+      : '<option value="">— Creá un cargo primero —</option>';
     renderCargos();
     checkHealth();
-  } catch { }
-}
-
-function actualizarSelectCargo() {
-  const sel = document.getElementById('sel-cargo');
-  const ids = Object.keys(cargos);
-  if (ids.length === 0) {
-    sel.innerHTML = '<option value="">— Sin cargos cargados —</option>';
-    return;
-  }
-  sel.innerHTML = ids.map(id =>
-    `<option value="${id}">${cargos[id].nombre}</option>`
-  ).join('');
+  } catch {}
 }
 
 function renderCargos() {
   const cont = document.getElementById('lista-cargos');
-  const sinCargos = document.getElementById('sin-cargos');
   const ids = Object.keys(cargos);
-  if (ids.length === 0) {
+  document.getElementById('c-count').textContent = `${ids.length} cargo${ids.length!==1?'s':''}`;
+  if (!ids.length) {
     cont.innerHTML = '';
-    sinCargos.classList.remove('hidden');
+    document.getElementById('sin-cargos').classList.remove('hidden');
     return;
   }
-  sinCargos.classList.add('hidden');
+  document.getElementById('sin-cargos').classList.add('hidden');
   cont.innerHTML = ids.map(id => {
     const c = cargos[id];
-    return `
-      <div class="bg-white border border-gray-200 rounded-xl p-4 flex items-start justify-between gap-4">
-        <div class="min-w-0">
-          <div class="flex items-center gap-2">
-            <span class="text-sm font-semibold text-gray-900 truncate">${c.nombre}</span>
-            <span class="text-xs text-gray-400 shrink-0">${c.id}</span>
-          </div>
-          <p class="text-xs text-gray-500 mt-0.5 line-clamp-2">${c.descripcion.substring(0,120)}...</p>
-          <div class="flex gap-3 mt-2 text-xs text-gray-400">
-            <span>${c.candidatos} candidato${c.candidatos !== 1 ? 's' : ''}</span>
-            <span>${new Date(c.fecha).toLocaleDateString('es-UY')}</span>
-          </div>
+    return `<div class="bg-white border border-slate-200 rounded-xl p-4 flex items-start justify-between gap-3">
+      <div class="min-w-0">
+        <div class="flex items-center gap-2 flex-wrap">
+          <span class="text-sm font-semibold text-slate-900">${c.nombre}</span>
+          <span class="text-xs text-slate-400">${c.id}</span>
         </div>
-        <button onclick="eliminarCargo('${id}')" class="text-gray-300 hover:text-red-500 transition-colors shrink-0">
-          <i data-lucide="trash-2" class="w-4 h-4"></i>
-        </button>
+        <p class="text-xs text-slate-400 mt-0.5">${c.archivo || 'Sin archivo'}</p>
+        <div class="flex gap-3 mt-1.5 text-xs text-slate-400">
+          <span>${c.candidatos} candidato${c.candidatos!==1?'s':''}</span>
+          <span>${new Date(c.fecha).toLocaleDateString('es-UY')}</span>
+        </div>
       </div>
-    `;
+      <button onclick="eliminarCargo('${id}')" class="text-slate-300 hover:text-red-400 transition-colors text-lg leading-none">×</button>
+    </div>`;
   }).join('');
-  lucide.createIcons();
 }
 
 async function crearCargo() {
-  const nombre = document.getElementById('cargo-nombre').value.trim();
-  const desc   = document.getElementById('cargo-descripcion').value.trim();
-  if (!nombre || !desc) { toast('Completá el nombre y la descripción del cargo.', 'error'); return; }
+  const nombre = document.getElementById('c-nombre').value.trim();
+  if (!nombre) { toast('Escribí el nombre del cargo.', 'err'); return; }
+  if (!jdFile)  { toast('Subí el documento con la descripción del cargo.', 'err'); return; }
 
   const btn = document.getElementById('btn-cargo');
-  btn.disabled = true;
-  btn.innerHTML = '<span class="flex items-center gap-2"><i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i>Creando...</span>';
-  lucide.createIcons();
+  btn.disabled = true; btn.textContent = 'Procesando…';
 
   try {
     const fd = new FormData();
     fd.append('nombre', nombre);
-    fd.append('descripcion', desc);
+    fd.append('archivo', jdFile);
     fd.append('config', 'c2');
-    const r = await fetch(`${API}/api/cargo`, { method: 'POST', body: fd });
-    if (!r.ok) throw new Error(await r.text());
+    const r = await fetch(`${API}/api/cargo`, { method:'POST', body:fd });
+    if (!r.ok) throw new Error((await r.json()).detail || r.statusText);
     const d = await r.json();
-    toast(`Cargo "${nombre}" creado. ID: ${d.cargo_id}`, 'success');
-    document.getElementById('cargo-nombre').value = '';
-    document.getElementById('cargo-descripcion').value = '';
+    toast(`Cargo "${nombre}" creado (${d.chars} caracteres extraídos).`, 'ok');
+    document.getElementById('c-nombre').value = '';
+    clearJD();
     await cargarCargos();
-  } catch (e) {
-    toast(`Error: ${e.message}`, 'error');
+    tab('evaluar');
+  } catch(e) {
+    toast(`Error: ${e.message}`, 'err');
   } finally {
-    btn.disabled = false;
-    btn.innerHTML = '<i data-lucide="plus-circle" class="w-5 h-5"></i> Crear cargo';
-    lucide.createIcons();
+    btn.disabled = false; btn.textContent = 'Crear cargo';
   }
 }
 
 async function eliminarCargo(id) {
-  if (!confirm(`¿Eliminar el cargo ${cargos[id]?.nombre}?`)) return;
-  await fetch(`${API}/api/cargo/${id}`, { method: 'DELETE' });
+  if (!confirm(`¿Eliminar "${cargos[id]?.nombre}"?`)) return;
+  await fetch(`${API}/api/cargo/${id}`, { method:'DELETE' });
   await cargarCargos();
   toast('Cargo eliminado.', 'info');
 }
@@ -451,153 +448,128 @@ async function eliminarCargo(id) {
 // ── Evaluación ────────────────────────────────────────────────────────────
 async function evaluar() {
   const cargoId = document.getElementById('sel-cargo').value;
-  const cvTexto = document.getElementById('inp-cv').value.trim();
   const nombre  = document.getElementById('inp-nombre').value.trim() || 'Candidato';
-  const config  = document.querySelector('input[name="config"]:checked')?.value || 'c2';
+  const config  = document.querySelector('input[name="cfg"]:checked')?.value || 'c2';
 
-  if (!cargoId) { toast('Seleccioná un cargo primero.', 'error'); return; }
-  if (cvTexto.length < 50) { toast('El CV parece muy corto. Pegá el texto completo.', 'error'); return; }
+  if (!cargoId) { toast('Seleccioná un cargo.', 'err'); return; }
+  if (!cvFile)  { toast('Subí el CV del candidato.', 'err'); return; }
 
-  // Mostrar loader
-  document.getElementById('panel-placeholder').classList.add('hidden');
-  document.getElementById('panel-resultado').classList.remove('hidden');
-  document.getElementById('loading').classList.remove('hidden');
-  document.getElementById('resultado-content').classList.add('hidden');
+  // UI: mostrar loader
+  document.getElementById('ph-eval').classList.add('hidden');
+  document.getElementById('res-eval').classList.add('hidden');
+  document.getElementById('ld-eval').classList.remove('hidden');
+  document.getElementById('btn-eval').disabled = true;
 
-  const btn = document.getElementById('btn-evaluar');
-  btn.disabled = true;
+  const steps = ['Extrayendo texto del archivo…','Generando embeddings…','Recuperando contexto RAG…','Evaluando con IA…'];
+  let si = 0;
+  const stepTimer = setInterval(() => {
+    document.getElementById('ld-step').textContent = steps[Math.min(si++, steps.length-1)];
+  }, 2000);
 
   try {
     const fd = new FormData();
     fd.append('cargo_id', cargoId);
-    fd.append('cv_texto', cvTexto);
+    fd.append('archivo_cv', cvFile);
     fd.append('candidato_nombre', nombre);
     fd.append('config', config);
 
-    const r = await fetch(`${API}/api/evaluar`, { method: 'POST', body: fd });
-    if (!r.ok) {
-      const err = await r.json();
-      throw new Error(err.detail || r.statusText);
-    }
+    const r = await fetch(`${API}/api/evaluar`, { method:'POST', body:fd });
+    if (!r.ok) throw new Error((await r.json()).detail || r.statusText);
     const d = await r.json();
     renderResultado(d);
-  } catch (e) {
-    toast(`Error al evaluar: ${e.message}`, 'error');
-    document.getElementById('panel-resultado').classList.add('hidden');
-    document.getElementById('panel-placeholder').classList.remove('hidden');
+  } catch(e) {
+    toast(`Error: ${e.message}`, 'err');
+    document.getElementById('ph-eval').classList.remove('hidden');
   } finally {
-    document.getElementById('loading').classList.add('hidden');
-    btn.disabled = false;
+    clearInterval(stepTimer);
+    document.getElementById('ld-eval').classList.add('hidden');
+    document.getElementById('btn-eval').disabled = false;
   }
 }
 
 function renderResultado(d) {
-  const isApto = d.decision === 'APTO';
-  const score  = d.score ?? 0;
-  const color  = isApto ? '#10b981' : '#ef4444';
+  const apto  = d.decision === 'APTO';
+  const score = d.score ?? 0;
+  const color = apto ? '#10b981' : '#ef4444';
 
-  // Score ring
-  document.getElementById('score-ring').style.setProperty('--pct', score);
-  document.getElementById('score-ring').style.setProperty('--color', color);
-  document.getElementById('score-num').textContent = score;
-  document.getElementById('score-num').style.color = color;
+  document.getElementById('ring').style.setProperty('--p', score);
+  document.getElementById('ring').style.setProperty('--c', color);
+  document.getElementById('r-score').textContent = score;
+  document.getElementById('r-score').style.color = color;
 
-  // Decisión badge
-  const badge = document.getElementById('decision-badge');
-  badge.className = `inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-semibold mb-2 ${isApto ? 'decision-apto' : 'decision-no_apto'}`;
-  document.getElementById('decision-text').textContent = isApto ? '✓ APTO' : '✗ NO APTO';
+  const badge = document.getElementById('r-badge');
+  badge.className = `inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold mb-1.5 ${apto ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}`;
+  badge.textContent = apto ? '✓  APTO' : '✗  NO APTO';
 
-  // Headers
-  document.getElementById('candidato-header').textContent = d.candidato_nombre;
-  document.getElementById('cargo-header').textContent = `Cargo: ${d.cargo_nombre}`;
-  document.getElementById('meta-config').textContent = `Config: ${d.config.toUpperCase()}`;
-  document.getElementById('meta-tiempo').textContent = `${d.tiempo_segundos}s`;
-  document.getElementById('meta-chunks').textContent = d.chunks_usados ? `${d.chunks_usados} fragmentos RAG` : 'Sin RAG';
+  document.getElementById('r-nombre').textContent  = d.candidato_nombre;
+  document.getElementById('r-cargo').textContent   = `Cargo: ${d.cargo_nombre}`;
+  document.getElementById('r-archivo').textContent = d.archivo_cv || '';
+  document.getElementById('r-config').textContent  = `Config: ${d.config.toUpperCase()}`;
+  document.getElementById('r-tiempo').textContent  = `${d.tiempo_segundos}s`;
+  document.getElementById('r-chunks').textContent  = d.chunks_usados ? `${d.chunks_usados} fragmentos RAG` : '';
 
-  // Dimensiones
-  const dims = d.dimensiones || {};
-  const dimInfo = [
-    { key: 'competencias_tecnicas', label: 'Competencias técnicas', peso: '40%' },
-    { key: 'experiencia',           label: 'Experiencia relevante',  peso: '30%' },
-    { key: 'formacion',             label: 'Formación académica',    peso: '20%' },
-    { key: 'soft_skills',           label: 'Soft skills',            peso: '10%' },
+  const dimCfg = [
+    { k:'competencias_tecnicas', label:'Competencias técnicas', pct:'40%' },
+    { k:'experiencia',           label:'Experiencia relevante', pct:'30%' },
+    { k:'formacion',             label:'Formación académica',   pct:'20%' },
+    { k:'soft_skills',           label:'Soft skills',           pct:'10%' },
   ];
-  document.getElementById('dimensiones-container').innerHTML = dimInfo.map(dim => {
-    const val = dims[dim.key] ?? 0;
-    const barColor = val >= 70 ? 'bg-emerald-500' : val >= 50 ? 'bg-amber-400' : 'bg-red-400';
-    return `
-      <div>
-        <div class="flex justify-between text-xs mb-1">
-          <span class="text-gray-600 font-medium">${dim.label}</span>
-          <span class="text-gray-400">${dim.peso} · <strong class="text-gray-700">${val}/100</strong></span>
-        </div>
-        <div class="w-full bg-gray-100 rounded-full h-2">
-          <div class="dimension-bar ${barColor} h-2 rounded-full" style="width: ${val}%"></div>
-        </div>
+  const dims = d.dimensiones || {};
+  document.getElementById('dims').innerHTML = dimCfg.map(({ k, label, pct }) => {
+    const v = dims[k] ?? 0;
+    const bc = v >= 70 ? 'bg-emerald-500' : v >= 50 ? 'bg-amber-400' : 'bg-red-400';
+    return `<div>
+      <div class="flex justify-between text-xs mb-1">
+        <span class="text-slate-600 font-medium">${label}</span>
+        <span class="text-slate-400">${pct} · <strong class="text-slate-700">${v}/100</strong></span>
       </div>
-    `;
+      <div class="w-full bg-slate-100 rounded-full h-1.5">
+        <div class="bar ${bc} h-1.5 rounded-full" style="width:${v}%"></div>
+      </div>
+    </div>`;
   }).join('');
 
-  // Justificación
-  document.getElementById('justificacion-text').textContent = d.justificacion || 'Sin justificación disponible.';
-
-  document.getElementById('resultado-content').classList.remove('hidden');
-  lucide.createIcons();
+  document.getElementById('r-just').textContent = d.justificacion || '—';
+  document.getElementById('res-eval').classList.remove('hidden');
 }
 
 // ── Historial ─────────────────────────────────────────────────────────────
-async function cargarResultados() {
+async function cargarHistorial() {
   try {
-    const r = await fetch(`${API}/api/resultados`);
-    const d = await r.json();
-    const cont = document.getElementById('tabla-resultados');
-    const sinRes = document.getElementById('sin-resultados');
-
-    if (d.resultados.length === 0) {
+    const d = await fetch(`${API}/api/resultados`).then(r => r.json());
+    document.getElementById('hist-count').textContent = `${d.total} evaluación${d.total!==1?'es':''}`;
+    const cont = document.getElementById('t-hist');
+    if (!d.resultados.length) {
       cont.innerHTML = '';
-      sinRes.classList.remove('hidden');
+      document.getElementById('sin-hist').classList.remove('hidden');
       return;
     }
-    sinRes.classList.add('hidden');
-    cont.innerHTML = d.resultados.map(res => {
-      const isApto = res.decision === 'APTO';
-      const score  = res.score ?? 0;
-      return `
-        <div class="bg-white border border-gray-200 rounded-xl p-4 flex items-center gap-4">
-          <div class="w-12 h-12 rounded-full flex items-center justify-center shrink-0 font-bold text-sm"
-            style="background: ${isApto ? '#ecfdf5' : '#fef2f2'}; color: ${isApto ? '#059669' : '#dc2626'}">
-            ${score}
+    document.getElementById('sin-hist').classList.add('hidden');
+    cont.innerHTML = d.resultados.map(r => {
+      const apto = r.decision === 'APTO';
+      return `<div class="bg-white border border-slate-200 rounded-xl p-4 flex items-center gap-4">
+        <div class="w-11 h-11 rounded-full flex items-center justify-center text-sm font-bold shrink-0"
+          style="background:${apto?'#ecfdf5':'#fef2f2'};color:${apto?'#059669':'#dc2626'}">${r.score}</div>
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-2 flex-wrap">
+            <span class="font-semibold text-slate-900 text-sm">${r.candidato_nombre}</span>
+            <span class="text-xs px-2 py-0.5 rounded-full font-semibold ${apto?'bg-emerald-100 text-emerald-700':'bg-red-100 text-red-700'}">${apto?'APTO':'NO APTO'}</span>
+            <span class="text-xs text-slate-400">${r.config.toUpperCase()}</span>
           </div>
-          <div class="flex-1 min-w-0">
-            <div class="flex items-center gap-2 flex-wrap">
-              <span class="font-semibold text-gray-900 text-sm">${res.candidato_nombre}</span>
-              <span class="text-xs px-2 py-0.5 rounded-full ${isApto ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'} font-medium">
-                ${isApto ? 'APTO' : 'NO APTO'}
-              </span>
-              <span class="text-xs text-gray-400">${res.config.toUpperCase()}</span>
-            </div>
-            <p class="text-xs text-gray-500 mt-0.5 truncate">${res.cargo_nombre}</p>
-            <p class="text-xs text-gray-400">${new Date(res.fecha).toLocaleString('es-UY')}</p>
-          </div>
-          <div class="text-right shrink-0">
-            <p class="text-xs text-gray-400">${res.tiempo_segundos}s</p>
-            ${res.chunks_usados ? `<p class="text-xs text-blue-500">${res.chunks_usados} chunks</p>` : ''}
-          </div>
+          <p class="text-xs text-slate-500 truncate">${r.cargo_nombre}</p>
+          <p class="text-xs text-slate-400">${r.archivo_cv || ''}  ·  ${new Date(r.fecha).toLocaleString('es-UY')}</p>
         </div>
-      `;
+        <span class="text-xs text-slate-400 shrink-0">${r.tiempo_segundos}s</span>
+      </div>`;
     }).join('');
-  } catch { }
+  } catch {}
 }
 
 // ── Toast ──────────────────────────────────────────────────────────────────
-function toast(msg, type = 'info') {
+function toast(msg, type='info') {
   const el = document.getElementById('toast');
-  const colors = {
-    success: 'bg-emerald-600 text-white',
-    error:   'bg-red-600 text-white',
-    info:    'bg-gray-800 text-white',
-  };
-  el.className = `fixed bottom-6 right-6 px-4 py-3 rounded-lg shadow-lg text-sm font-medium z-50 max-w-sm ${colors[type]}`;
+  const cls = { ok:'bg-emerald-600 text-white', err:'bg-red-600 text-white', info:'bg-slate-800 text-white' };
+  el.className = `fixed bottom-5 right-5 px-4 py-3 rounded-xl shadow-xl text-sm font-medium z-50 max-w-xs ${cls[type]||cls.info}`;
   el.textContent = msg;
   el.classList.remove('hidden');
   setTimeout(() => el.classList.add('hidden'), 4000);
