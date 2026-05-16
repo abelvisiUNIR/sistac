@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SISTAC — Screening Inteligente de CVs</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .score-ring {
+      background: conic-gradient(var(--c) calc(var(--p) * 1%), #e5e7eb calc(var(--p) * 1%));
+    }
+    .drop-zone { transition: all 0.2s; }
+    .drop-zone.over { border-color: #3b82f6; background: #eff6ff; }
+    .fade-in { animation: fi 0.25s ease; }
+    @keyframes fi { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:none; } }
+    .dot { animation: blink 1.2s infinite; }
+    .dot:nth-child(2) { animation-delay:.2s; }
+    .dot:nth-child(3) { animation-delay:.4s; }
+    @keyframes blink { 0%,80%,100%{transform:scale(1);opacity:.4} 40%{transform:scale(1.3);opacity:1} }
+    .bar { transition: width .7s cubic-bezier(.4,0,.2,1); }
+    input[type=file] { display:none; }
+  </style>
+</head>
+<body class="bg-slate-50 min-h-screen" style="font-family:'Inter',system-ui,sans-serif">
+
+<!-- Header -->
+<header class="bg-white border-b border-slate-200 sticky top-0 z-50">
+  <div class="max-w-5xl mx-auto px-5 h-14 flex items-center justify-between">
+    <div class="flex items-center gap-2.5">
+      <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold text-sm">S</div>
+      <span class="font-semibold text-slate-800">SISTAC</span>
+      <span class="text-slate-300 text-sm hidden sm:block">—</span>
+      <span class="text-slate-500 text-sm hidden sm:block">Selección Inteligente de Talento</span>
+    </div>
+    <div class="flex items-center gap-3">
+      <span id="hbadge" class="text-xs px-2.5 py-1 rounded-full bg-slate-100 text-slate-400">•  conectando</span>
+    </div>
+  </div>
+</header>
+
+<!-- Tabs -->
+<div class="bg-white border-b border-slate-200">
+  <div class="max-w-5xl mx-auto px-5 flex gap-0">
+    <button id="tb-evaluar"  onclick="tab('evaluar')"   class="tab-btn active-tab">Evaluar candidato</button>
+    <button id="tb-cargos"   onclick="tab('cargos')"    class="tab-btn">Gestionar cargos</button>
+    <button id="tb-historial" onclick="tab('historial')" class="tab-btn">Historial</button>
+  </div>
+</div>
+<style>
+  .tab-btn { padding:.9rem 1.1rem; font-size:.875rem; border-bottom:2px solid transparent; color:#64748b; transition:all .15s; }
+  .tab-btn:hover { color:#1e293b; }
+  .active-tab { border-bottom-color:#2563eb !important; color:#2563eb !important; font-weight:600; }
+</style>
+
+<main class="max-w-5xl mx-auto px-5 py-7">
+
+  <!-- ═══ TAB EVALUAR ═══════════════════════════════════════════════════════ -->
+  <div id="p-evaluar" class="fade-in">
+    <div class="grid lg:grid-cols-2 gap-7">
+
+      <!-- Formulario -->
+      <div class="space-y-5">
+        <div>
+          <h2 class="text-lg font-bold text-slate-900">Evaluar candidato</h2>
+          <p class="text-sm text-slate-500 mt-0.5">Subí el CV del candidato en PDF, DOCX o imagen.</p>
+        </div>
+
+        <!-- Cargo -->
+        <div>
+          <label class="label">Cargo a evaluar</label>
+          <select id="sel-cargo" class="field">
+            <option value="">Cargando cargos…</option>
+          </select>
+          <p class="text-xs text-slate-400 mt-1">¿No aparece el cargo? Crealo primero en "Gestionar cargos".</p>
+        </div>
+
+        <!-- Nombre -->
+        <div>
+          <label class="label">Nombre del candidato <span class="text-slate-400 font-normal">(opcional)</span></label>
+          <input id="inp-nombre" type="text" placeholder="Ej: María González" class="field" />
+        </div>
+
+        <!-- Upload CV -->
+        <div>
+          <label class="label">Currículum Vitae</label>
+          <div id="dz-cv" onclick="document.getElementById('file-cv').click()"
+            class="drop-zone border-2 border-dashed border-slate-300 rounded-xl p-8 text-center cursor-pointer hover:border-blue-400 hover:bg-blue-50/40">
+            <input type="file" id="file-cv" accept=".pdf,.docx,.doc,.txt,.png,.jpg,.jpeg,.webp"
+              onchange="onFileCV(this)" />
+            <div id="dz-cv-inner">
+              <div class="w-12 h-12 bg-slate-100 rounded-xl flex items-center justify-center mx-auto mb-3">
+                <svg class="w-6 h-6 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414A1 1 0 0119 9.414V19a2 2 0 01-2 2z"/>
+                </svg>
+              </div>
+              <p class="text-sm font-medium text-slate-600">Hacé click o arrastrá el archivo aquí</p>
+              <p class="text-xs text-slate-400 mt-1">PDF · DOCX · JPG · PNG  (máx. 10 MB)</p>
+            </div>
+          </div>
+          <div id="cv-preview" class="hidden mt-2 flex items-center gap-2 bg-blue-50 border border-blue-200 rounded-lg px-3 py-2.5">
+            <svg class="w-4 h-4 text-blue-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <span id="cv-filename" class="text-sm text-blue-700 truncate flex-1"></span>
+            <button onclick="clearCV()" class="text-blue-400 hover:text-blue-600 shrink-0">✕</button>
+          </div>
+        </div>
+
+        <!-- Config -->
+        <div>
+          <label class="label">Pipeline</label>
+          <div class="grid grid-cols-3 gap-2">
+            <label class="cursor-pointer"><input type="radio" name="cfg" value="c1" class="sr-only peer"/>
+              <div class="border rounded-lg p-2.5 text-center peer-checked:border-blue-500 peer-checked:bg-blue-50 border-slate-200 transition-all">
+                <p class="text-xs font-semibold text-slate-700">C1</p><p class="text-xs text-slate-400">LLM puro</p>
+              </div></label>
+            <label class="cursor-pointer"><input type="radio" name="cfg" value="c2" checked class="sr-only peer"/>
+              <div class="border rounded-lg p-2.5 text-center peer-checked:border-blue-500 peer-checked:bg-blue-50 border-blue-500 bg-blue-50 transition-all">
+                <p class="text-xs font-semibold text-blue-700">C2 ✓</p><p class="text-xs text-blue-500">LLM + RAG</p>
+              </div></label>
+            <label class="cursor-pointer"><input type="radio" name="cfg" value="c3" class="sr-only peer"/>
+              <div class="border rounded-lg p-2.5 text-center peer-checked:border-blue-500 peer-checked:bg-blue-50 border-slate-200 transition-all">
+                <p class="text-xs font-semibold text-slate-700">C3</p><p class="text-xs text-slate-400">RAG + PII</p>
+              </div></label>
+          </div>
+        </div>
+
+        <button id="btn-eval" onclick="evaluar()"
+          class="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300 text-white font-semibold py-3 rounded-xl transition-colors flex items-center justify-center gap-2 text-sm">
+          Evaluar candidato
+        </button>
+      </div>
+
+      <!-- Panel resultado -->
+      <div>
+        <!-- Placeholder -->
+        <div id="ph-eval" class="h-full flex flex-col items-center justify-center text-center py-16">
+          <div class="w-14 h-14 bg-blue-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <svg class="w-7 h-7 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+            </svg>
+          </div>
+          <p class="text-sm font-medium text-slate-600">El análisis aparecerá aquí</p>
+          <p class="text-xs text-slate-400 mt-1">Subí un CV y seleccioná el cargo</p>
+        </div>
+
+        <!-- Loading -->
+        <div id="ld-eval" class="hidden h-full flex flex-col items-center justify-center gap-4 py-16">
+          <div class="flex gap-2">
+            <div class="dot w-2.5 h-2.5 bg-blue-500 rounded-full"></div>
+            <div class="dot w-2.5 h-2.5 bg-blue-500 rounded-full"></div>
+            <div class="dot w-2.5 h-2.5 bg-blue-500 rounded-full"></div>
+          </div>
+          <div class="text-center">
+            <p class="text-sm font-medium text-slate-600">Analizando CV…</p>
+            <p class="text-xs text-slate-400 mt-0.5" id="ld-step">Extrayendo texto del archivo</p>
+          </div>
+        </div>
+
+        <!-- Resultado -->
+        <div id="res-eval" class="hidden fade-in space-y-4">
+
+          <!-- Score card -->
+          <div class="bg-white rounded-2xl border border-slate-200 p-5">
+            <div class="flex items-center gap-5">
+              <!-- Ring -->
+              <div class="relative shrink-0">
+                <div id="ring" class="w-20 h-20 rounded-full score-ring flex items-center justify-center"
+                  style="--p:0;--c:#3b82f6">
+                  <div class="w-16 h-16 bg-white rounded-full flex flex-col items-center justify-center">
+                    <span id="r-score" class="text-xl font-bold">—</span>
+                    <span class="text-xs text-slate-400">/100</span>
+                  </div>
+                </div>
+              </div>
+              <div class="flex-1 min-w-0">
+                <div id="r-badge" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold mb-1.5"></div>
+                <p id="r-nombre" class="font-semibold text-slate-900 truncate text-sm"></p>
+                <p id="r-cargo"  class="text-xs text-slate-500"></p>
+                <p id="r-archivo" class="text-xs text-slate-400 mt-0.5 truncate"></p>
+                <div class="flex gap-3 mt-1.5 text-xs text-slate-400">
+                  <span id="r-config"></span><span id="r-tiempo"></span><span id="r-chunks"></span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Dimensiones -->
+          <div class="bg-white rounded-2xl border border-slate-200 p-5">
+            <p class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">Evaluación por dimensión</p>
+            <div id="dims" class="space-y-3"></div>
+          </div>
+
+          <!-- Justificación -->
+          <div class="bg-white rounded-2xl border border-slate-200 p-5">
+            <p class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">Justificación del análisis</p>
+            <p id="r-just" class="text-sm text-slate-600 leading-relaxed"></p>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ TAB CARGOS ════════════════════════════════════════════════════════ -->
+  <div id="p-cargos" class="hidden fade-in">
+    <div class="grid lg:grid-cols-2 gap-7">
+
+      <!-- Formulario -->
+      <div class="space-y-5">
+        <div>
+          <h2 class="text-lg font-bold text-slate-900">Nuevo cargo</h2>
+          <p class="text-sm text-slate-500 mt-0.5">Subí el documento con la descripción del puesto.</p>
+        </div>
+
+        <div>
+          <label class="label">Nombre del cargo</label>
+          <input id="c-nombre" type="text" placeholder="Ej: Analista de Datos Senior" class="field" />
+        </div>
+
+        <div>
+          <label class="label">Descripción del cargo</label>
+          <div id="dz-jd" onclick="document.getElementById('file-jd').click()"
+            class="drop-zone border-2 border-dashed border-slate-300 rounded-xl p-8 text-center cursor-pointer hover:border-blue-400 hover:bg-blue-50/40">
+            <input type="file" id="file-jd" accept=".pdf,.docx,.txt" onchange="onFileJD(this)" />
+            <div id="dz-jd-inner">
+              <div class="w-12 h-12 bg-slate-100 rounded-xl flex items-center justify-center mx-auto mb-3">
+                <svg class="w-6 h-6 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                    d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+                </svg>
+              </div>
+              <p class="text-sm font-medium text-slate-600">Subí la descripción del cargo</p>
+              <p class="text-xs text-slate-400 mt-1">PDF · DOCX · TXT</p>
+            </div>
+          </div>
+          <div id="jd-preview" class="hidden mt-2 flex items-center gap-2 bg-blue-50 border border-blue-200 rounded-lg px-3 py-2.5">
+            <svg class="w-4 h-4 text-blue-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <span id="jd-filename" class="text-sm text-blue-700 truncate flex-1"></span>
+            <button onclick="clearJD()" class="text-blue-400 hover:text-blue-600 shrink-0">✕</button>
+          </div>
+        </div>
+
+        <button id="btn-cargo" onclick="crearCargo()"
+          class="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300 text-white font-semibold py-3 rounded-xl transition-colors flex items-center justify-center gap-2 text-sm">
+          Crear cargo
+        </button>
+      </div>
+
+      <!-- Lista cargos -->
+      <div>
+        <div class="flex items-center justify-between mb-4">
+          <p class="text-sm font-semibold text-slate-800">Cargos activos</p>
+          <span id="c-count" class="text-xs text-slate-400"></span>
+        </div>
+        <div id="lista-cargos" class="space-y-3"></div>
+        <div id="sin-cargos" class="hidden text-center py-12">
+          <p class="text-sm text-slate-400">No hay cargos cargados aún.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ TAB HISTORIAL ════════════════════════════════════════════════════ -->
+  <div id="p-historial" class="hidden fade-in">
+    <div class="flex items-center justify-between mb-5">
+      <div>
+        <h2 class="text-lg font-bold text-slate-900">Historial</h2>
+        <p class="text-sm text-slate-500" id="hist-count"></p>
+      </div>
+      <button onclick="cargarHistorial()" class="text-sm text-blue-600 hover:text-blue-700">↻ Actualizar</button>
+    </div>
+    <div id="t-hist" class="space-y-2.5"></div>
+    <div id="sin-hist" class="hidden text-center py-14 text-sm text-slate-400">No hay evaluaciones aún.</div>
+  </div>
+
+</main>
+
+<!-- Styles helpers -->
+<style>
+  .label { display:block; font-size:.8125rem; font-weight:500; color:#374151; margin-bottom:.3rem; }
+  .field { width:100%; border:1px solid #d1d5db; border-radius:.625rem; padding:.625rem .75rem;
+           font-size:.875rem; outline:none; transition:box-shadow .15s, border-color .15s; }
+  .field:focus { border-color:#3b82f6; box-shadow:0 0 0 3px rgba(59,130,246,.15); }
+</style>
+
+<!-- Toast -->
+<div id="toast" class="hidden fixed bottom-5 right-5 px-4 py-3 rounded-xl shadow-xl text-sm font-medium z-50 max-w-xs"></div>
+
+<script>
+const API = '';
+let cargos = {};
+let cvFile = null, jdFile = null;
+
+// ── Init ──────────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  checkHealth();
+  cargarCargos();
+  setInterval(checkHealth, 30000);
+  setupDragDrop('dz-cv', f => { cvFile = f; showFilePreview('cv-preview','cv-filename','dz-cv',f); });
+  setupDragDrop('dz-jd', f => { jdFile = f; showFilePreview('jd-preview','jd-filename','dz-jd',f); });
+});
+
+// ── Tabs ──────────────────────────────────────────────────────────────────
+function tab(t) {
+  ['evaluar','cargos','historial'].forEach(x => {
+    document.getElementById(`p-${x}`).classList.add('hidden');
+    document.getElementById(`tb-${x}`).classList.remove('active-tab');
+  });
+  document.getElementById(`p-${t}`).classList.remove('hidden');
+  document.getElementById(`tb-${t}`).classList.add('active-tab');
+  if (t === 'historial') cargarHistorial();
+  if (t === 'cargos') renderCargos();
+}
+
+// ── Health ────────────────────────────────────────────────────────────────
+async function checkHealth() {
+  try {
+    const d = await fetch(`${API}/health`).then(r => r.json());
+    const b = document.getElementById('hbadge');
+    b.className = 'text-xs px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-700';
+    b.textContent = `● Online · ${d.cargos} cargo${d.cargos!==1?'s':''}`;
+  } catch {
+    const b = document.getElementById('hbadge');
+    b.className = 'text-xs px-2.5 py-1 rounded-full bg-red-100 text-red-600';
+    b.textContent = '● Sin conexión';
+  }
+}
+
+// ── Drag & drop ───────────────────────────────────────────────────────────
+function setupDragDrop(dzId, onFile) {
+  const dz = document.getElementById(dzId);
+  dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('over'); });
+  dz.addEventListener('dragleave', () => dz.classList.remove('over'));
+  dz.addEventListener('drop', e => {
+    e.preventDefault(); dz.classList.remove('over');
+    const f = e.dataTransfer.files[0];
+    if (f) onFile(f);
+  });
+}
+
+function onFileCV(input) { if (input.files[0]) { cvFile = input.files[0]; showFilePreview('cv-preview','cv-filename','dz-cv',cvFile); } }
+function onFileJD(input) { if (input.files[0]) { jdFile = input.files[0]; showFilePreview('jd-preview','jd-filename','dz-jd',jdFile); } }
+
+function showFilePreview(previewId, nameId, dzId, file) {
+  document.getElementById(previewId).classList.remove('hidden');
+  document.getElementById(nameId).textContent = `${file.name}  (${(file.size/1024).toFixed(0)} KB)`;
+  document.getElementById(dzId).style.display = 'none';
+}
+
+function clearCV() {
+  cvFile = null;
+  document.getElementById('cv-preview').classList.add('hidden');
+  document.getElementById('dz-cv').style.display = '';
+  document.getElementById('file-cv').value = '';
+}
+function clearJD() {
+  jdFile = null;
+  document.getElementById('jd-preview').classList.add('hidden');
+  document.getElementById('dz-jd').style.display = '';
+  document.getElementById('file-jd').value = '';
+}
+
+// ── Cargos ────────────────────────────────────────────────────────────────
+async function cargarCargos() {
+  try {
+    const d = await fetch(`${API}/api/cargos`).then(r => r.json());
+    cargos = {};
+    d.cargos.forEach(c => cargos[c.id] = c);
+    const sel = document.getElementById('sel-cargo');
+    const ids = Object.keys(cargos);
+    sel.innerHTML = ids.length
+      ? ids.map(id => `<option value="${id}">${cargos[id].nombre}</option>`).join('')
+      : '<option value="">— Creá un cargo primero —</option>';
+    renderCargos();
+    checkHealth();
+  } catch {}
+}
+
+function renderCargos() {
+  const cont = document.getElementById('lista-cargos');
+  const ids = Object.keys(cargos);
+  document.getElementById('c-count').textContent = `${ids.length} cargo${ids.length!==1?'s':''}`;
+  if (!ids.length) {
+    cont.innerHTML = '';
+    document.getElementById('sin-cargos').classList.remove('hidden');
+    return;
+  }
+  document.getElementById('sin-cargos').classList.add('hidden');
+  cont.innerHTML = ids.map(id => {
+    const c = cargos[id];
+    return `<div class="bg-white border border-slate-200 rounded-xl p-4 flex items-start justify-between gap-3">
+      <div class="min-w-0">
+        <div class="flex items-center gap-2 flex-wrap">
+          <span class="text-sm font-semibold text-slate-900">${c.nombre}</span>
+          <span class="text-xs text-slate-400">${c.id}</span>
+        </div>
+        <p class="text-xs text-slate-400 mt-0.5">${c.archivo || 'Sin archivo'}</p>
+        <div class="flex gap-3 mt-1.5 text-xs text-slate-400">
+          <span>${c.candidatos} candidato${c.candidatos!==1?'s':''}</span>
+          <span>${new Date(c.fecha).toLocaleDateString('es-UY')}</span>
+        </div>
+      </div>
+      <button onclick="eliminarCargo('${id}')" class="text-slate-300 hover:text-red-400 transition-colors text-lg leading-none">×</button>
+    </div>`;
+  }).join('');
+}
+
+async function crearCargo() {
+  const nombre = document.getElementById('c-nombre').value.trim();
+  if (!nombre) { toast('Escribí el nombre del cargo.', 'err'); return; }
+  if (!jdFile)  { toast('Subí el documento con la descripción del cargo.', 'err'); return; }
+
+  const btn = document.getElementById('btn-cargo');
+  btn.disabled = true; btn.textContent = 'Procesando…';
+
+  try {
+    const fd = new FormData();
+    fd.append('nombre', nombre);
+    fd.append('archivo', jdFile);
+    fd.append('config', 'c2');
+    const r = await fetch(`${API}/api/cargo`, { method:'POST', body:fd });
+    if (!r.ok) throw new Error((await r.json()).detail || r.statusText);
+    const d = await r.json();
+    toast(`Cargo "${nombre}" creado (${d.chars} caracteres extraídos).`, 'ok');
+    document.getElementById('c-nombre').value = '';
+    clearJD();
+    await cargarCargos();
+    tab('evaluar');
+  } catch(e) {
+    toast(`Error: ${e.message}`, 'err');
+  } finally {
+    btn.disabled = false; btn.textContent = 'Crear cargo';
+  }
+}
+
+async function eliminarCargo(id) {
+  if (!confirm(`¿Eliminar "${cargos[id]?.nombre}"?`)) return;
+  await fetch(`${API}/api/cargo/${id}`, { method:'DELETE' });
+  await cargarCargos();
+  toast('Cargo eliminado.', 'info');
+}
+
+// ── Evaluación ────────────────────────────────────────────────────────────
+async function evaluar() {
+  const cargoId = document.getElementById('sel-cargo').value;
+  const nombre  = document.getElementById('inp-nombre').value.trim() || 'Candidato';
+  const config  = document.querySelector('input[name="cfg"]:checked')?.value || 'c2';
+
+  if (!cargoId) { toast('Seleccioná un cargo.', 'err'); return; }
+  if (!cvFile)  { toast('Subí el CV del candidato.', 'err'); return; }
+
+  // UI: mostrar loader
+  document.getElementById('ph-eval').classList.add('hidden');
+  document.getElementById('res-eval').classList.add('hidden');
+  document.getElementById('ld-eval').classList.remove('hidden');
+  document.getElementById('btn-eval').disabled = true;
+
+  const steps = ['Extrayendo texto del archivo…','Generando embeddings…','Recuperando contexto RAG…','Evaluando con IA…'];
+  let si = 0;
+  const stepTimer = setInterval(() => {
+    document.getElementById('ld-step').textContent = steps[Math.min(si++, steps.length-1)];
+  }, 2000);
+
+  try {
+    const fd = new FormData();
+    fd.append('cargo_id', cargoId);
+    fd.append('archivo_cv', cvFile);
+    fd.append('candidato_nombre', nombre);
+    fd.append('config', config);
+
+    const r = await fetch(`${API}/api/evaluar`, { method:'POST', body:fd });
+    if (!r.ok) throw new Error((await r.json()).detail || r.statusText);
+    const d = await r.json();
+    renderResultado(d);
+  } catch(e) {
+    toast(`Error: ${e.message}`, 'err');
+    document.getElementById('ph-eval').classList.remove('hidden');
+  } finally {
+    clearInterval(stepTimer);
+    document.getElementById('ld-eval').classList.add('hidden');
+    document.getElementById('btn-eval').disabled = false;
+  }
+}
+
+function renderResultado(d) {
+  const apto  = d.decision === 'APTO';
+  const score = d.score ?? 0;
+  const color = apto ? '#10b981' : '#ef4444';
+
+  document.getElementById('ring').style.setProperty('--p', score);
+  document.getElementById('ring').style.setProperty('--c', color);
+  document.getElementById('r-score').textContent = score;
+  document.getElementById('r-score').style.color = color;
+
+  const badge = document.getElementById('r-badge');
+  badge.className = `inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold mb-1.5 ${apto ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}`;
+  badge.textContent = apto ? '✓  APTO' : '✗  NO APTO';
+
+  document.getElementById('r-nombre').textContent  = d.candidato_nombre;
+  document.getElementById('r-cargo').textContent   = `Cargo: ${d.cargo_nombre}`;
+  document.getElementById('r-archivo').textContent = d.archivo_cv || '';
+  document.getElementById('r-config').textContent  = `Config: ${d.config.toUpperCase()}`;
+  document.getElementById('r-tiempo').textContent  = `${d.tiempo_segundos}s`;
+  document.getElementById('r-chunks').textContent  = d.chunks_usados ? `${d.chunks_usados} fragmentos RAG` : '';
+
+  const dimCfg = [
+    { k:'competencias_tecnicas', label:'Competencias técnicas', pct:'40%' },
+    { k:'experiencia',           label:'Experiencia relevante', pct:'30%' },
+    { k:'formacion',             label:'Formación académica',   pct:'20%' },
+    { k:'soft_skills',           label:'Soft skills',           pct:'10%' },
+  ];
+  const dims = d.dimensiones || {};
+  document.getElementById('dims').innerHTML = dimCfg.map(({ k, label, pct }) => {
+    const v = dims[k] ?? 0;
+    const bc = v >= 70 ? 'bg-emerald-500' : v >= 50 ? 'bg-amber-400' : 'bg-red-400';
+    return `<div>
+      <div class="flex justify-between text-xs mb-1">
+        <span class="text-slate-600 font-medium">${label}</span>
+        <span class="text-slate-400">${pct} · <strong class="text-slate-700">${v}/100</strong></span>
+      </div>
+      <div class="w-full bg-slate-100 rounded-full h-1.5">
+        <div class="bar ${bc} h-1.5 rounded-full" style="width:${v}%"></div>
+      </div>
+    </div>`;
+  }).join('');
+
+  document.getElementById('r-just').textContent = d.justificacion || '—';
+  document.getElementById('res-eval').classList.remove('hidden');
+}
+
+// ── Historial ─────────────────────────────────────────────────────────────
+async function cargarHistorial() {
+  try {
+    const d = await fetch(`${API}/api/resultados`).then(r => r.json());
+    document.getElementById('hist-count').textContent = `${d.total} evaluación${d.total!==1?'es':''}`;
+    const cont = document.getElementById('t-hist');
+    if (!d.resultados.length) {
+      cont.innerHTML = '';
+      document.getElementById('sin-hist').classList.remove('hidden');
+      return;
+    }
+    document.getElementById('sin-hist').classList.add('hidden');
+    cont.innerHTML = d.resultados.map(r => {
+      const apto = r.decision === 'APTO';
+      return `<div class="bg-white border border-slate-200 rounded-xl p-4 flex items-center gap-4">
+        <div class="w-11 h-11 rounded-full flex items-center justify-center text-sm font-bold shrink-0"
+          style="background:${apto?'#ecfdf5':'#fef2f2'};color:${apto?'#059669':'#dc2626'}">${r.score}</div>
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-2 flex-wrap">
+            <span class="font-semibold text-slate-900 text-sm">${r.candidato_nombre}</span>
+            <span class="text-xs px-2 py-0.5 rounded-full font-semibold ${apto?'bg-emerald-100 text-emerald-700':'bg-red-100 text-red-700'}">${apto?'APTO':'NO APTO'}</span>
+            <span class="text-xs text-slate-400">${r.config.toUpperCase()}</span>
+          </div>
+          <p class="text-xs text-slate-500 truncate">${r.cargo_nombre}</p>
+          <p class="text-xs text-slate-400">${r.archivo_cv || ''}  ·  ${new Date(r.fecha).toLocaleString('es-UY')}</p>
+        </div>
+        <span class="text-xs text-slate-400 shrink-0">${r.tiempo_segundos}s</span>
+      </div>`;
+    }).join('');
+  } catch {}
+}
+
+// ── Toast ──────────────────────────────────────────────────────────────────
+function toast(msg, type='info') {
+  const el = document.getElementById('toast');
+  const cls = { ok:'bg-emerald-600 text-white', err:'bg-red-600 text-white', info:'bg-slate-800 text-white' };
+  el.className = `fixed bottom-5 right-5 px-4 py-3 rounded-xl shadow-xl text-sm font-medium z-50 max-w-xs ${cls[type]||cls.info}`;
+  el.textContent = msg;
+  el.classList.remove('hidden');
+  setTimeout(() => el.classList.add('hidden'), 4000);
+}
+</script>
+</body>
+</html>
