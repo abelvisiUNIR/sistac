@@ -1,0 +1,256 @@
+# ============================================================================
+# SISTAC — Azure DevOps CI Pipeline
+# ============================================================================
+# Pipeline de integración continua para el TFE.
+#
+# Stages:
+#   1. validate   — chequeos rápidos (imports, tests PII)
+#   2. generate   — genera el corpus sintético (seed=42)
+#   3. experiment — corre C1 (LLM puro, sin Azure Search) en una muestra
+#   4. report     — sube los artefactos (tablas, logs)
+#
+# Para C2/C3 (con Azure Search): descomentar el stage 'index_and_run_c2'
+# y configurar las variables AZURE_SEARCH_ENDPOINT y AZURE_SEARCH_KEY
+# en Azure DevOps → Pipelines → Library → Variable Groups.
+#
+# Trigger: push a 'desarrollo' o PR a 'main'
+# ============================================================================
+
+trigger:
+  branches:
+    include:
+      - desarrollo
+      - main
+  paths:
+    include:
+      - scripts/python/**
+      - azure-pipelines.yml
+
+pr:
+  branches:
+    include:
+      - main
+
+pool:
+  vmImage: ubuntu-latest
+
+variables:
+  PYTHON_VERSION: "3.11"
+  SCRIPTS_DIR: "scripts/python"
+  # Las API keys vienen de Azure DevOps Library (Variable Group)
+  # Configurar en: Pipelines → Library → + Variable group → "sistac-secrets"
+  # Variables requeridas:
+  #   ANTHROPIC_API_KEY    (secret)
+  #   AZURE_SEARCH_ENDPOINT
+  #   AZURE_SEARCH_KEY     (secret)
+  #   AZURE_SEARCH_INDEX   (= sistac-cvs)
+
+# ── Stage 1: Validación rápida ────────────────────────────────────────────────
+stages:
+  - stage: validate
+    displayName: "Validar imports y tests PII"
+    jobs:
+      - job: lint_and_test
+        displayName: "Lint + pytest PII"
+        steps:
+          - task: UsePythonVersion@0
+            inputs:
+              versionSpec: $(PYTHON_VERSION)
+            displayName: "Setup Python $(PYTHON_VERSION)"
+
+          - script: |
+              python -m pip install --upgrade pip
+              pip install -r $(SCRIPTS_DIR)/requirements.txt
+            displayName: "Instalar dependencias"
+
+          - script: |
+              python -m spacy download es_core_news_lg
+            displayName: "Descargar modelo spaCy español"
+
+          - script: |
+              cd $(SCRIPTS_DIR)
+              python -c "from config import SCORE_THRESHOLD; assert SCORE_THRESHOLD == 70, f'SCORE_THRESHOLD debe ser 70, es {SCORE_THRESHOLD}'; print('OK: SCORE_THRESHOLD=70')"
+              python -c "from rag.pipeline import SistacRAGPipeline; print('OK: SistacRAGPipeline importa')"
+              python -c "from scoring.scorer import score_candidate; print('OK: score_candidate importa')"
+              python -c "from pii.anonymizer import SistacAnonymizer; print('OK: SistacAnonymizer importa')"
+            displayName: "Verificar imports críticos"
+            env:
+              ANTHROPIC_API_KEY: "test_key"  # solo para validar imports
+              AZURE_SEARCH_ENDPOINT: "https://test.search.windows.net"
+              AZURE_SEARCH_KEY: "test_key"
+
+          - script: |
+              cd $(SCRIPTS_DIR)
+              python -m pytest pii/test_anonymization.py -v --tb=short
+            displayName: "Tests PII (10 tests)"
+
+          - task: PublishTestResults@2
+            condition: always()
+            inputs:
+              testResultsFormat: JUnit
+              testResultsFiles: "$(SCRIPTS_DIR)/test-results.xml"
+              failTaskOnFailedTests: false
+            displayName: "Publicar resultados de tests"
+            continueOnError: true
+
+# ── Stage 2: Generar corpus ───────────────────────────────────────────────────
+  - stage: generate_corpus
+    displayName: "Generar corpus sintético (300 CVs)"
+    dependsOn: validate
+    condition: succeeded()
+    jobs:
+      - job: generate
+        displayName: "synthetic_corpus_generator.py"
+        steps:
+          - task: UsePythonVersion@0
+            inputs:
+              versionSpec: $(PYTHON_VERSION)
+
+          - script: |
+              pip install -r $(SCRIPTS_DIR)/requirements.txt
+            displayName: "Instalar dependencias"
+
+          - script: |
+              python -X utf8 $(SCRIPTS_DIR)/data/synthetic_corpus_generator.py
+            displayName: "Generar 300 CVs sintéticos (seed=42)"
+
+          - script: |
+              python -c "
+              import csv
+              from pathlib import Path
+              gt = list(csv.DictReader(open('data/raw/gold_standard/ground_truth.csv', encoding='utf-8')))
+              print(f'CVs: {len(gt)}')
+              labels = {}
+              for r in gt: labels[r['expected_label']] = labels.get(r['expected_label'], 0) + 1
+              print(f'Labels: {labels}')
+              assert len(gt) == 300, f'Se esperaban 300 filas, hay {len(gt)}'
+              assert labels.get('APTO') == 150, 'Se esperaban 150 APTO'
+              print('OK: corpus válido')
+              "
+            displayName: "Verificar corpus generado"
+
+          - task: PublishPipelineArtifact@1
+            inputs:
+              targetPath: "data/raw/gold_standard"
+              artifact: "gold_standard"
+              publishLocation: pipeline
+            displayName: "Publicar gold_standard como artefacto"
+
+# ── Stage 3: Experimento C1 (LLM puro, sin Azure Search) ────────────────────
+  - stage: experiment_c1
+    displayName: "Experimento C1 — LLM puro (muestra 10 CVs)"
+    dependsOn: generate_corpus
+    condition: succeeded()
+    jobs:
+      - job: run_c1
+        displayName: "Demo C1 — score_candidate() en 10 pares CV-JD"
+        timeoutInMinutes: 30
+        steps:
+          - task: UsePythonVersion@0
+            inputs:
+              versionSpec: $(PYTHON_VERSION)
+
+          - script: |
+              pip install -r $(SCRIPTS_DIR)/requirements.txt
+            displayName: "Instalar dependencias"
+
+          - script: |
+              python -X utf8 $(SCRIPTS_DIR)/data/synthetic_corpus_generator.py
+            displayName: "Regenerar corpus"
+
+          # Script inline: score 10 CVs con C1 y muestra resultados
+          - script: |
+              python -X utf8 -c "
+              import sys, csv, json, os
+              from pathlib import Path
+              sys.path.insert(0, '$(SCRIPTS_DIR)')
+              os.environ.setdefault('LLM_PROVIDER', 'anthropic')
+
+              from scoring.scorer import score_candidate
+
+              cv_dir = Path('data/raw/cvs')
+              jd_dir = Path('data/raw/job_descriptions')
+              gt_path = Path('data/raw/gold_standard/ground_truth.csv')
+
+              # Leer gold standard
+              with open(gt_path, encoding='utf-8') as f:
+                  gt_rows = list(csv.DictReader(f))
+
+              # Tomar muestra: primeros 10 pares únicos CV-JD_001
+              sample = [r for r in gt_rows if r['jd_id'] == 'JD_001'][:10]
+
+              jd_text = (jd_dir / 'JD_001.txt').read_text(encoding='utf-8')
+
+              results = []
+              for row in sample:
+                  cv_path = cv_dir / f\"{row['cv_id']}.txt\"
+                  if not cv_path.exists():
+                      continue
+                  cv_text = cv_path.read_text(encoding='utf-8')
+                  result = score_candidate(cv_text=cv_text, jd_text=jd_text)
+                  results.append({
+                      'cv_id': row['cv_id'],
+                      'expected': row['expected_label'],
+                      'predicted': result['decision'],
+                      'score': result['score'],
+                      'match': result['decision'] == row['expected_label'],
+                  })
+                  print(f\"  {row['cv_id']} | expected={row['expected_label']} | predicted={result['decision']} | score={result['score']}\")
+
+              accuracy = sum(r['match'] for r in results) / len(results)
+              print(f'\nAccuracy muestra (n=10): {accuracy:.0%}')
+
+              # Guardar resultado
+              Path('paper/tables').mkdir(parents=True, exist_ok=True)
+              with open('paper/tables/demo_c1_sample.json', 'w') as f:
+                  json.dump({'results': results, 'accuracy': accuracy}, f, indent=2)
+              print('Guardado: paper/tables/demo_c1_sample.json')
+              "
+            displayName: "Correr C1 en muestra de 10 CVs"
+            env:
+              ANTHROPIC_API_KEY: $(ANTHROPIC_API_KEY)
+
+          - task: PublishPipelineArtifact@1
+            inputs:
+              targetPath: "paper/tables/demo_c1_sample.json"
+              artifact: "c1_demo_results"
+              publishLocation: pipeline
+            displayName: "Publicar resultados C1"
+            condition: always()
+
+# ── Stage 4: C2/C3 con Azure Search (descomentar cuando el índice esté listo) ─
+# Para activar este stage:
+#   1. Crear el índice: py -3 scripts/python/rag/create_index.py
+#   2. Indexar el corpus: py -3 scripts/python/rag/index_corpus.py
+#   3. Configurar en Azure DevOps Library:
+#      - AZURE_SEARCH_ENDPOINT
+#      - AZURE_SEARCH_KEY (secret)
+#      - AZURE_SEARCH_INDEX = sistac-cvs
+#   4. Descomentar este stage
+
+# - stage: experiment_c2_c3
+#   displayName: "Experimento C2/C3 — RAG + PII (ACTIVAR cuando índice esté listo)"
+#   dependsOn: generate_corpus
+#   condition: succeeded()
+#   jobs:
+#     - job: run_c2_c3
+#       displayName: "Orquestador C0→C3"
+#       timeoutInMinutes: 120
+#       steps:
+#         - task: UsePythonVersion@0
+#           inputs:
+#             versionSpec: $(PYTHON_VERSION)
+#         - script: pip install -r $(SCRIPTS_DIR)/requirements.txt
+#         - script: python -m spacy download es_core_news_lg
+#         - script: python -X utf8 $(SCRIPTS_DIR)/data/synthetic_corpus_generator.py
+#         - script: |
+#             python -X utf8 $(SCRIPTS_DIR)/experiments/orquestador_c0_c3.py
+#           env:
+#             ANTHROPIC_API_KEY: $(ANTHROPIC_API_KEY)
+#             AZURE_SEARCH_ENDPOINT: $(AZURE_SEARCH_ENDPOINT)
+#             AZURE_SEARCH_KEY: $(AZURE_SEARCH_KEY)
+#             AZURE_SEARCH_INDEX: $(AZURE_SEARCH_INDEX)
+#         - task: PublishPipelineArtifact@1
+#           inputs:
+#             targetPath: paper/tables
+#             artifact: resultados_h1_h2_h3
