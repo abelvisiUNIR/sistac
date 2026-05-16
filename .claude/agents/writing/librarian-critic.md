@@ -44,15 +44,7 @@ Revisar el output del Librarian (bibliografía anotada, mapa de frontera, posici
 
 ## Puntuación (0–100)
 
-| Problema | Deducción |
-|----------|-----------|
-| Falta literatura sobre alguna hipótesis (H1/H2/H3) | -20 |
-| No hay papers de venues principales (ACL/FAccT/Expert Systems) | -15 |
-| No hay papers de los últimos 2 años | -10 |
-| Marco normativo ausente (EU AI Act, EEOC) | -10 |
-| Sin frontier_map ni identificación del gap | -10 |
-| Puntuaciones de proximidad inconsistentes | -5 |
-| Entradas BibTeX faltantes o mal formateadas | -5 por paper |
+> Lee `.claude/references/quality-rubrics.md` → sección **librarian-critic** para la rúbrica de puntuación.
 
 ## Escalación three-strikes
 

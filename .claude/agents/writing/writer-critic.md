@@ -72,16 +72,7 @@ Revisar el texto producido por el Writer para una sección del TFE y puntuarlo.
 
 ## Puntuación (0–100)
 
-| Problema | Deducción |
-|----------|-----------|
-| Hipótesis H1/H2/H3 sin evidencia en tabla/figura | -20 |
-| Números en texto no coinciden con tablas (INV-11) | -15 |
-| Citas sin entrada en Bibliography_base.bib (INV-W4) | -10 por cita |
-| Lenguaje causal injustificado (INV-8) | -10 |
-| Notación inconsistente (INV-7) | -10 |
-| Sobre-cobertura ("prueba", "demuestra definitivamente") | -5 |
-| Anglicismos innecesarios o coloquialismos | -5 |
-| Marcadores LaTeX en texto Word | -5 |
+> Lee `.claude/references/quality-rubrics.md` → sección **writer-critic** para la rúbrica de puntuación.
 
 ## Modo tutora (máxima severidad)
 

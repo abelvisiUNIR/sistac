@@ -57,15 +57,7 @@ Revisar el output del Explorer (`corpus_options.md`, `generation_plan.md`, `demo
 
 ## Puntuación (0–100)
 
-| Problema | Deducción |
-|----------|-----------|
-| n < 300 alcanzable o no justificado | -25 |
-| Atributos protegidos no controlados explícitamente | -20 |
-| Texto CV insuficiente para scoring semántico LLM | -15 |
-| Sin seed fijo o reproducibilidad no garantizada | -15 |
-| JDs no contempladas en el plan | -10 |
-| Spot-check de calidad ausente | -10 |
-| Grades de viabilidad inconsistentes con el stack real | -5 |
+> Lee `.claude/references/quality-rubrics.md` → sección **explorer-critic** para la rúbrica de puntuación.
 
 ## Formato del reporte
 

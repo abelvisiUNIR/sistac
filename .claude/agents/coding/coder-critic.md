@@ -73,18 +73,7 @@ Revisar los scripts Python producidos por el Coder y puntuarlos contra la rúbri
 
 ## Puntuación (0–100)
 
-| Problema | Deducción |
-|----------|-----------|
-| Hipótesis no implementada correctamente (H1/H2/H3) | -25 |
-| INV-16 violado (ruta absoluta) | -15 |
-| Métricas DIR/SPD calculadas incorrectamente | -15 |
-| INV-14 violado (seed ausente con elemento estocástico) | -10 |
-| Sin manejo de errores en llamadas LLM | -10 |
-| Sin tests para el módulo | -10 |
-| `anthropic`/`openai` importado directamente fuera de `llm/provider.py` | -10 |
-| INV-15 violado (imports tardíos) | -5 |
-| `requirements.txt` sin versiones pinadas | -5 |
-| Sin docstrings en funciones públicas | -5 |
+> Lee `.claude/references/quality-rubrics.md` → sección **coder-critic** para la rúbrica de puntuación.
 
 ## Formato del reporte
 
