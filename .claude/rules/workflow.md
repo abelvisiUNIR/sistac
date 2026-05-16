@@ -95,15 +95,13 @@ The Orchestrator selects agents based on what the task requires:
 
 | Task Involves | Agents Dispatched |
 |--------------|-------------------|
-| Literature/references | librarian + librarian-critic |
-| Data sourcing | explorer + explorer-critic |
-| Data engineering | data-engineer + coder-critic |
-| Identification strategy | strategist + strategist-critic |
-| Python scripts | coder + coder-critic |
-| TFE manuscript (Word/español) | writer + writer-critic |
+| Literatura / referencias | librarian + librarian-critic |
+| Corpus sintético / datos | explorer + explorer-critic |
+| Scripts Python (PII, RAG, scoring, experiments) | coder + coder-critic |
+| Documento TFE (Word/español) | writer + writer-critic |
 | Revisión de tutora | writer-critic (modo revisión) |
-| Replication package | verifier (submission mode) |
-| Validation only | verifier (standard mode) |
+| Verificación pre-entrega | verifier (submission mode) |
+| Verificación entre fases | verifier (standard mode) |
 
 ### Parallel Dispatch
 
@@ -157,7 +155,7 @@ When user says "just do it" / "handle it":
 |-------|----------|---------------|
 | Discovery | Research idea | Always — librarian is persistent |
 | Strategy | Literature review OR data assessment | Yes — nueva evidencia puede triggear re-estrategia |
-| Execution (Code) | Approved strategy (strategist-critic >= 80) | Yes — strategy revision triggers re-coding |
+| Execution (Code) | Plan de análisis aprobado por usuario | Yes — revisión del plan triggerea re-codificación |
 | Execution (Write) | Approved code (coder-critic >= 80) | Yes — new results trigger rewriting |
 | Review (tutora) | Approved paper (writer-critic >= 80) + approved code | Yes — major revisions loop back |
 | Entrega UNIR | Verifier PASS + overall >= 95 | No — terminal |

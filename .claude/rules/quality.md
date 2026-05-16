@@ -14,7 +14,7 @@ The overall project score that gates submission (>= 95) is a weighted aggregate:
 |-----------|--------|-------------|
 | Literatura (revisión) | 10% | librarian-critic |
 | Datos (corpus sintético) | 10% | explorer-critic |
-| Diseño experimental | 25% | strategist-critic |
+| Diseño experimental | 25% | coder-critic (plan de análisis) |
 | Código Python | 15% | coder-critic |
 | Documento TFE (Word) | 25% | writer-critic |
 | Pulido del manuscrito | 10% | writer-critic (segunda pasada) |

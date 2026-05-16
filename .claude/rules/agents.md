@@ -11,10 +11,8 @@
 | Worker (Creator) | Critic (Reviewer) | What's Reviewed |
 |-----------------|-------------------|-----------------|
 | librarian | librarian-critic | Literature coverage, gaps, recency |
-| explorer | explorer-critic | Data feasibility, quality, identification fit |
-| data-engineer | coder-critic | Data pipeline quality, reproducibility, transformation correctness |
-| strategist | strategist-critic | Identification validity, assumptions, robustness |
-| coder | coder-critic | Code quality, reproducibility, code-strategy alignment |
+| explorer | explorer-critic | Corpus feasibility, demographic balance, reproducibility |
+| coder | coder-critic | Code quality, reproducibility, test coverage |
 | writer | writer-critic | Manuscript polish (Word/español), APA 7 compliance, hedging |
 
 ### Revisión de tutora (Special Case)
@@ -23,7 +21,7 @@ La revisión de la Dra. Arguedas Lafuente usa una estructura diferente — el Or
 despacha al writer-critic en modo "tutora":
 
 1. Orchestrator asigna el capítulo al writer-critic con los comentarios de la tutora
-2. Writer-critic clasifica cada comentario (NEW ANALYSIS / CLARIFICATION / DISAGREE / MINOR)
+2. Writer-critic clasifica cada comentario (NUEVO ANÁLISIS / ACLARACIÓN / DESACUERDO / MENOR)
 3. Orchestrator rutea según clasificación — ver `rules/revision.md`
 
 ### Enforcement
@@ -61,9 +59,7 @@ A creator cannot evaluate the quality of its own work. The score always comes fr
 | Agent | Creates | Scored By |
 |-------|---------|-----------|
 | librarian | Annotated bibliography | librarian-critic |
-| explorer | Data assessment | explorer-critic |
-| data-engineer | Data pipeline and cleaned datasets | coder-critic |
-| strategist | Strategy memo | strategist-critic |
+| explorer | Corpus assessment and generation plan | explorer-critic |
 | coder | Python scripts | coder-critic |
 | writer | TFE manuscript (Word/español) | writer-critic |
 
@@ -94,16 +90,14 @@ Round 3: Critic reviews → Worker fixes
 
 | Pair | Escalation Target | What Happens |
 |------|-------------------|--------------|
-| coder + coder-critic | strategist-critic | Re-evaluates whether the strategy memo is implementable |
-| data-engineer + coder-critic | strategist-critic | Re-evaluates whether the data specification is tractable |
-| writer + writer-critic | Orchestrator | Structural rewrite, not just polish |
-| strategist + strategist-critic | User | Fundamental design question — needs human judgment |
-| librarian + librarian-critic | User | Scope disagreement — user decides breadth vs depth |
-| explorer + explorer-critic | User | Data feasibility deadlock — user decides resource trade-offs |
+| coder + coder-critic | User | Decisión de diseño técnico — necesita criterio humano |
+| writer + writer-critic | Orchestrator | Reescritura estructural, no solo pulido |
+| librarian + librarian-critic | User | Desacuerdo de alcance — usuario decide profundidad vs. amplitud |
+| explorer + explorer-critic | User | Deadlock de viabilidad — usuario decide trade-offs de recursos |
 
 ### Rules
 
 - **Max 3 rounds per pair per invocation** — no infinite loops
 - **Escalation is logged** in the research journal with strike count
-- **User escalation requires a clear question** — not "they disagree," but "strategist-critic requires X, which contradicts Y. Which takes priority?"
+- **User escalation requires a clear question** — not "they disagree," but "coder-critic requires X, which contradicts Y. Which takes priority?"
 - **Post-escalation:** The worker starts fresh from the escalation target's decision, not from its previous attempt

@@ -1,129 +1,109 @@
 ---
 name: write
-description: Draft academic paper sections using paragraph-level argument moves. Cleanup pass strips AI patterns after drafting. Replaces /draft-paper and /humanizer.
-argument-hint: "[section or mode: intro | strategy | results | conclusion | abstract | full | humanize] [file path (optional)]"
+description: Redactar secciones del TFE SISTAC en español académico. Output texto plano listo para insertar en paper/SISTAC_TFE.docx. Despacha Writer para redacción y writer-critic para revisión. Usar para redactar o revisar cualquier capítulo o sección del TFE.
+argument-hint: "[sección] cap1 | cap2 | cap3 | cap4 | cap5-rag | cap5-pii | cap6 | cap7 | cap8 | cap9 | resumen | abstract"
 allowed-tools: Read,Grep,Glob,Write,Edit,Task
 ---
 
 # Write
 
-Draft paper sections or apply cleanup pass by dispatching the **Writer** agent.
+Redactar secciones del TFE SISTAC en español académico. Output texto plano para insertar en `paper/SISTAC_TFE.docx`.
 
-**Input:** `$ARGUMENTS` — section name or mode, optionally followed by file path.
-
----
-
-## Modes
-
-### `/write [section]` — Draft Paper Section
-Draft a specific section: `intro`, `strategy`, `results`, `conclusion`, `abstract`, or `full`.
-
-**Agent:** Writer
-**Output:** LaTeX section file in paper/sections/
-
-Workflow:
-
-#### 1. Context Gathering
-
-Before drafting, read all available context:
-1. Read existing paper draft in `paper/` (if it exists)
-2. Read `master_supporting_docs/` for notes, outlines, research specs
-3. Read most recent `quality_reports/research_spec_*.md` or `quality_reports/lit_review_*.md`
-4. Read `.claude/references/domain-profile.md` for field conventions
-5. Check `Bibliography_base.bib` for available citations
-6. Scan `paper/tables/` and `paper/figures/` for generated output
-7. Read `quality_reports/results_summary.md` if it exists (from Coder)
-
-#### 2. Paper Type Detection
-
-Before routing, identify the paper type from the strategy memo or existing draft:
-- **Reduced-form** — DiD, IV, RDD, event study
-- **Structural** — Model estimation, counterfactual simulations
-- **Theory + empirics** — Propositions tested with data
-- **Descriptive / measurement** — New data, new measure, stylized facts
-
-This determines which section templates the Writer uses.
-
-#### 3. Section Routing
-
-Based on `$ARGUMENTS`:
-- **`full`**: Draft all sections in sequence, pausing between major sections for user feedback
-- **`intro`**: Draft introduction (most common request)
-- **`strategy`**: Draft empirical strategy (reduced-form), model + estimation (structural), or model + tests (theory+empirics)
-- **`results`**: Draft results — narration style depends on paper type and output type (regression tables, event study figures, counterfactual simulations, etc.)
-- **`conclusion`**: Draft conclusion with type-appropriate ending (policy implications, counterfactual implications, or research agenda)
-- **`abstract`**: Draft abstract (must have other sections first)
-- **`data`**: Draft data section — expanded for descriptive/measurement papers
-- **`model`**: Draft model section (structural or theory+empirics papers only)
-- **No argument**: Ask user which section to draft
-
-#### 4. Dispatch Writer
-
-Dispatch Writer with paper type and argument-move templates for the target section. The writer drafts using paragraph types (motivation, result statement, mechanism, etc.), applies design-specific moves, then runs the cleanup pass. Save to `paper/sections/[section].tex`.
-
-#### 5. Quality Self-Check
-
-Before presenting the draft:
-- [ ] Paper type identified and correct template used
-- [ ] Every paragraph has an identifiable purpose (argument move type)
-- [ ] Findings lead sentences — not buried after setup
-- [ ] Design-specific elements present (see writer.md for checklists per design)
-- [ ] Every displayed equation is numbered (`\label{eq:...}`)
-- [ ] All `\cite{}` keys exist in `Bibliography_base.bib`
-- [ ] Introduction contribution paragraph names specific papers
-- [ ] Effect sizes stated with units
-- [ ] No banned hedging phrases
-- [ ] Notation consistent throughout
-- [ ] All tables/figures referenced actually exist in `paper/tables/` or `paper/figures/`
-- [ ] Results narrated correctly for output type (tables, event study figures, counterfactuals)
-
-#### 6. Present to User
-
-Present each section for feedback. Flag items that need attention:
-- **TBD items:** Where empirical results are needed but not yet available
-- **VERIFY items:** Citations that need user confirmation
-- **PLACEHOLDER items:** Effect sizes awaiting final estimates
-
-### `/write humanize [file]` — Cleanup Pass Only
-Strip AI writing patterns from existing text without rewriting content.
-
-**Agent:** Writer (cleanup mode)
-**Output:** Edited file with AI patterns removed
-
-Strips 24 patterns across 4 categories:
-- Structural: forced narrative arcs, artificial progression
-- Lexical: "delve, leverage, nuanced, robust"
-- Rhetorical: rule-of-three, negative parallelisms, em dash overuse
-- Formatting: excessive bullet points, promotional language
+**Input:** `$ARGUMENTS` — sección objetivo o capítulo.
 
 ---
 
-## Section Standards
+## Workflow estándar
 
-**All paper types share the same backbone. Moves diverge by type — see writer.md for full templates.**
+1. **Leer contexto:**
+   - `CLAUDE.md` — hipótesis, equipo, estado del proyecto
+   - `.claude/references/domain-profile.md` — notación, métricas, referencias seminales
+   - `paper/SISTAC_TFE.docx` (extracto relevante) — mantener consistencia con lo escrito
+   - Resultados disponibles en `results/` — para secciones de resultados/discusión
 
-| Section | Length | Reduced-Form | Structural | Theory+Empirics | Descriptive |
-|---------|--------|-------------|-----------|----------------|-------------|
-| Introduction | 1000-1500 | ...preview → result → contribution | ...model preview → counterfactual → contribution | ...theory preview → test result → contribution | ...data innovation → key fact → contribution |
-| Data | 800-1200 | Treatment, outcome, controls | Moments that identify parameters | Standard | 1200-1800 (core contribution) |
-| Strategy/Model | 800-1500 | Design-specific (DiD/IV/RDD/ES) | Environment → decisions → equilibrium → estimation | Model → propositions → tests | N/A (merged into Data) |
-| Results | 800-1500 | Main spec → robustness → heterogeneity | Estimates → model fit → counterfactuals → welfare | Prediction-by-prediction evidence | Key facts → decompositions → implications |
-| Conclusion | 500-700 | Policy implications | Counterfactual implications + model limitations | What model gets right/wrong | Research agenda enabled by new data |
-| Abstract | 100-150 | Question, design, finding with magnitude | Question, model, counterfactual finding | Question, prediction, test result | Question, measurement, key fact |
+2. **Despachar Writer** con instrucciones de sección
 
----
+3. **Cleanup pass** — eliminar patrones de IA (frases genéricas, hedging excesivo, listas donde debería haber prosa)
 
-## LaTeX Conventions
+4. **Despachar writer-critic** para revisión
 
-- `\citet{}` for textual citations ("Smith (2024) shows...")
-- `\citep{}` for parenthetical citations ("...is well documented (Smith, 2024)")
-- `booktabs` rules (`\toprule`, `\midrule`, `\bottomrule`) — never `\hline`
-- Notation protocol: `Y_{it}`, `D_{it}`, `\gamma_i`, `\delta_t`, `\varepsilon_{it}`
+5. **Iterar** si score < 80 (máx 3 rondas)
+
+6. **Entregar** texto plano listo para Word
 
 ---
 
-## Principles
-- **This is the user's paper, not Claude's.** Match their voice and style.
-- **Never fabricate results.** Use TBD placeholders.
-- **Citations must be verifiable.** Only cite confirmed papers.
-- **Argument moves first, cleanup second.** Draft with structure, then strip AI patterns.
+## Secciones disponibles
+
+| Argumento | Capítulo | Responsable | Estado |
+|-----------|----------|-------------|--------|
+| `cap1` | Introducción | Ambos | ✅ Escrito |
+| `cap2` | Estado del arte | Ambos | ✅ Escrito |
+| `cap3` | Metodología | Ambos | ✅ Escrito |
+| `cap4` | Diseño del sistema | Ambos | ✅ Escrito |
+| `cap5-rag` | Pipeline RAG y scoring (H2) | David | 🔵 En redacción |
+| `cap5-pii` | Módulo PII y equidad (H3) | Mario | 🔵 En redacción |
+| `cap6` | Validación experimental (H1) | Ambos | 🔵 En redacción |
+| `cap7` | Resultados | Ambos | ⬜ Post-experimento |
+| `cap8` | Discusión | Ambos | ⬜ Post-experimento |
+| `cap9` | Conclusiones | Ambos | ⬜ Post-experimento |
+| `resumen` | Resumen ejecutivo (ES) | Ambos | ⬜ |
+| `abstract` | Abstract (EN) | Ambos | ⬜ |
+
+---
+
+## Convenciones de escritura SISTAC
+
+### Formato de output
+
+- **Texto plano** — sin marcadores LaTeX, sin Markdown de cabeceras
+- **Español académico** — plural institucional ("se observa", "los resultados indican")
+- **Términos técnicos en inglés** permitidos cuando no tienen traducción estándar (RAG, pipeline, embeddings)
+- Listo para copiar-pegar en Word sin reformateo adicional
+
+### Notación obligatoria
+
+| Concepto | Notación |
+|----------|---------|
+| Ratio de impacto dispar | DIR (Disparate Impact Ratio) |
+| Diferencia de paridad estadística | SPD (Statistical Parity Difference) |
+| Tiempo por candidato | $T_{\text{cand}}$ |
+| Configuraciones | C0, C1, C2, C3 |
+| Métricas de eficacia | $F_1$, AUC-ROC |
+
+### Estructura de párrafo tipo
+
+```
+[Afirmación principal]
+[Evidencia — citar tabla/figura]
+[Interpretación en el contexto de H1/H2/H3]
+[Conexión con la sección siguiente o limitación]
+```
+
+### Plantillas por tipo de sección
+
+**Resultados (Cap. 7):**
+- Comenzar con resumen de hallazgo principal
+- Tabla de métricas por configuración
+- Comparación C1 vs C2 vs C3
+- Interpretación de cada hipótesis
+
+**Discusión (Cap. 8):**
+- Contrastar con literatura (citar papers del Bibliography_base.bib)
+- Limitaciones del diseño experimental
+- Implicaciones para RRHH y fairness algorítmica
+
+**Conclusiones (Cap. 9):**
+- Responder explícitamente H1, H2, H3
+- Contribuciones al campo
+- Líneas de trabajo futuro
+
+---
+
+## Reglas del Writer
+
+- Output siempre en **texto plano** para Word
+- Sin auto-puntuación del output
+- Toda cita con entrada en `Bibliography_base.bib`
+- Números en texto = números en tablas (INV-11)
+- Lenguaje causal solo donde el diseño lo justifica (INV-8)

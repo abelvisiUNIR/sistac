@@ -39,6 +39,6 @@ Append to `quality_reports/research_journal.md` whenever an agent completes work
 **Verdict:** [one line — key finding or decision]
 **Report:** [path to full report]
 ```
-**Why it exists:** Agents read this to understand pipeline state — the editor checks what strategist-critic scored, the orchestrator checks which phases passed, the coder-critic checks what the coder built. It's the shared context across agents.
+**Why it exists:** Agents read this to understand pipeline state — the writer-critic checks what sections are approved, the orchestrator checks which phases passed, the coder-critic checks what the coder built. It's the shared context across agents.
 
 Agent outputs (reports, scripts, memos, decisions) are saved to `quality_reports/` by the skills that produce them.

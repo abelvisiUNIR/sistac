@@ -1,40 +1,42 @@
-# Revision Protocol — R&R Cycle
+# Protocolo de Revisión — Comentarios de la Tutora
 
-**When referee reports arrive, `/revise` classifies each comment and routes it to the right agent.**
+**Cuando llegan los comentarios de la Dra. Arguedas Lafuente, `/revise` clasifica cada uno y lo rutea al agente correcto.**
 
-## Comment Classification
+## Clasificación de comentarios
 
-| Classification | What It Means | Routed To |
-|---------------|---------------|-----------|
-| **NEW ANALYSIS** | Requires new estimation or data work | Coder → coder-critic |
-| **CLARIFICATION** | Text revision sufficient | Writer → writer-critic |
-| **DISAGREE** | Diplomatic pushback needed | Flagged for User review |
-| **MINOR** | Typos, formatting | Writer |
+| Clasificación | Qué significa | Ruteado a |
+|--------------|---------------|-----------|
+| **NUEVO ANÁLISIS** | Requiere nuevo experimento, script o métrica | Coder → coder-critic |
+| **ACLARACIÓN** | Revisión de texto suficiente | Writer → writer-critic |
+| **REESCRITURA** | Revisión estructural de sección completa | Writer → writer-critic |
+| **DESACUERDO** | Requiere respuesta diplomática | Flaggeado para revisión del Usuario |
+| **MENOR** | Tipografía, formato, coherencia menor | Writer |
 
-## The R&R Flow
+## El flujo de revisión
 
 ```
-Referee reports arrive (real, not simulated)
+Comentarios de tutora llegan (documento Word, correo, etc.)
         │
         ▼
-   /revise classifies each comment
+   /revise clasifica cada comentario
         │
-        ├── NEW ANALYSIS → Coder → coder-critic → Writer updates
-        ├── CLARIFICATION → Writer → writer-critic
-        ├── DISAGREE → User decides → diplomatic response drafted
-        └── MINOR → Writer
-        │
-        ▼
-   Revised paper → writer-critic → Orchestrator re-checks
+        ├── NUEVO ANÁLISIS → Coder → coder-critic → Writer actualiza la sección
+        ├── ACLARACIÓN    → Writer → writer-critic
+        ├── REESCRITURA   → Writer → writer-critic
+        ├── DESACUERDO    → Usuario decide → respuesta diplomática redactada
+        └── MENOR         → Writer
         │
         ▼
-   Response letter produced
+   Sección revisada → writer-critic → Orchestrator re-verifica
+        │
+        ▼
+   Respuesta a tutora producida en texto (insertar en .docx o enviar por correo)
 ```
 
-## Rules
+## Reglas
 
-- This uses the same agents but in a targeted way — not a full pipeline restart
-- Each comment gets its own routing — a single referee report may trigger multiple agent pairs
-- The response letter maps each referee comment to the specific change made
-- DISAGREE items are always flagged for user review — Claude never autonomously pushes back on referees
-- The Orchestrator tracks which comments are resolved and which are pending
+- Se usan los mismos agentes pero de forma dirigida — no es un reinicio completo del pipeline
+- Cada comentario tiene su propio ruteo — un solo reporte de tutora puede activar múltiples pares de agentes
+- La respuesta mapea cada comentario al cambio específico realizado en el `.docx`
+- Los items DESACUERDO siempre se flaggean para revisión del usuario — Claude nunca responde autónomamente a la tutora
+- El Orchestrator registra qué comentarios están resueltos y cuáles pendientes en `quality_reports/revision_tracker_[fecha].md`
