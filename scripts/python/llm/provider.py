@@ -113,11 +113,12 @@ def get_chat_completion(
 def _anthropic_embed(text: str) -> list[float]:
     """
     Anthropic no tiene API de embeddings propia.
-    Usar sentence-transformers como fallback neutral.
+    Usar sentence-transformers: paraphrase-multilingual-mpnet-base-v2 → 768 dims.
+    Debe coincidir con EMBEDDING_DIMENSIONS = 768 en rag/create_index.py.
     """
     from sentence_transformers import SentenceTransformer
 
-    model = SentenceTransformer("paraphrase-multilingual-MiniLM-L12-v2")
+    model = SentenceTransformer("paraphrase-multilingual-mpnet-base-v2")
     return model.encode(text).tolist()
 
 

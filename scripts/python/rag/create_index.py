@@ -175,17 +175,21 @@ def create_index() -> None:
             ],
         },
         # ── Semantic Ranker ───────────────────────────────────────────────────
-        # Disponible en tier Basic+. En Free tier esta sección se ignora.
+        # Nombres correctos para api-version 2024-07-01:
+        #   prioritizedContentFields (no contentFields)
+        #   prioritizedKeywordsFields (no keywordsFields)
+        # Nota: Semantic Ranker requiere tier Basic+.
+        # En tier Free esta configuración se acepta pero el ranker no se activa.
         "semantic": {
             "defaultConfiguration": "default",
             "configurations": [
                 {
                     "name": "default",
                     "prioritizedFields": {
-                        "contentFields": [
+                        "prioritizedContentFields": [
                             {"fieldName": "chunk_text"}
                         ],
-                        "keywordsFields": [
+                        "prioritizedKeywordsFields": [
                             {"fieldName": "cv_id"},
                             {"fieldName": "jd_id"},
                         ],
