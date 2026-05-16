@@ -54,6 +54,10 @@ AZURE_SEARCH_INDEX    = os.getenv("AZURE_SEARCH_INDEX", "sistac-cvs")
 # ── Configuración LLM ─────────────────────────────────────────────────────────
 ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
 OPENAI_API_KEY    = os.getenv("OPENAI_API_KEY", "")
+GOOGLE_API_KEY    = os.getenv("GOOGLE_API_KEY", "")   # Gemini 2.5 Flash (extracción docs)
+
+# Modelo Gemini para extracción de documentos (PDF nativo, imágenes, OCR)
+GEMINI_DOC_MODEL = "gemini-2.5-flash-preview-05-20"
 
 # Modelos disponibles (seleccionar según fase):
 #   Desarrollo / iteración rápida  → claude-haiku-3-5

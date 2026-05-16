@@ -35,7 +35,8 @@ scipy>=1.13.0                  # Mann-Whitney U, bootstrap CI, Chi-cuadrado
 pandas>=2.2.0
 numpy>=1.26.0
 python-docx>=1.1.0             # Extracción de texto de .docx
-pdfplumber>=0.11.0             # Extracción de texto de PDF (nativo + escaneado)
+pdfplumber>=0.11.0             # Extracción de texto de PDF nativo (gratis)
+google-genai>=1.0.0            # Gemini 2.5 Flash: PDF escaneado + imágenes OCR
 
 # ====== Web Application ======
 fastapi>=0.111.0               # API REST de la aplicación SISTAC
