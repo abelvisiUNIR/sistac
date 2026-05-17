@@ -45,6 +45,7 @@ from config import (
     AZURE_SEARCH_INDEX,
     CHUNK_SIZE,
     CHUNK_OVERLAP,
+    EVAL_SETS,
     check_azure_config,
 )
 from llm.provider import get_embedding
@@ -54,6 +55,34 @@ import requests
 
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
+
+def load_split_ids(split: str) -> set[str]:
+    """
+    Retorna el conjunto de cv_ids del split indicado.
+
+    Args:
+        split: "train" (240 CVs), "test" (60 CVs) o "all" (sin filtro).
+
+    Returns:
+        Set de cv_ids. Si split="all", retorna set vacío (= sin filtro).
+
+    Raises:
+        FileNotFoundError: si el archivo de split no existe.
+    """
+    if split == "all":
+        return set()
+
+    import csv as _csv
+    path = EVAL_SETS / f"{split}_ids.csv"
+    if not path.exists():
+        raise FileNotFoundError(
+            f"No se encontró: {path}\n"
+            "Generá el split primero con:\n"
+            "  py -3 scripts/python/data/split_corpus.py"
+        )
+    with open(path, encoding="utf-8") as f:
+        return {row["cv_id"] for row in _csv.DictReader(f)}
+
 
 def load_corpus() -> tuple[dict[str, str], dict[str, str]]:
     """
@@ -214,6 +243,12 @@ if __name__ == "__main__":
         default=50,
         help="Chunks por batch de upload (default: 50)",
     )
+    parser.add_argument(
+        "--split",
+        choices=["train", "test", "all"],
+        default="all",
+        help="Indexar solo el split indicado: train=240, test=60, all=300 (default: all)",
+    )
     args = parser.parse_args()
 
     print(f"=== SISTAC — Indexación del corpus (config={args.config.upper()}) ===\n")
@@ -235,6 +270,16 @@ if __name__ == "__main__":
     except FileNotFoundError as e:
         print(f"[ERROR] {e}")
         sys.exit(1)
+
+    # Filtrar por split (train=240 / test=60 / all=300)
+    if args.split != "all":
+        try:
+            split_ids = load_split_ids(args.split)
+        except FileNotFoundError as e:
+            print(f"[ERROR] {e}")
+            sys.exit(1)
+        cv_texts = {k: v for k, v in cv_texts.items() if k in split_ids}
+        print(f"  Filtrado por split '{args.split}': {len(cv_texts)} CVs")
 
     # Indexar
     print(f"\nIndexando {'(DRY RUN) ' if args.dry_run else ''}...")
