@@ -392,16 +392,114 @@ LLM_PROVIDER=anthropic         # anthropic | openai
 
 ---
 
-## Instalacion
+## Primeros pasos — configuracion inicial desde cero
+
+Seguir estos pasos en orden la primera vez que se clona el repositorio.
+
+### 1. Requisitos previos
+
+- Python 3.10 o superior
+- Git (con acceso al repo en Azure DevOps)
+- Credenciales de: Anthropic, Google AI Studio, Azure AI Search
+
+Verificar version de Python:
+```bash
+python --version   # debe ser >= 3.10
+```
+
+### 2. Clonar el repositorio
 
 ```bash
-# Dependencias Python
+git clone https://marioagustinbelvisi204@dev.azure.com/marioagustinbelvisi204/sistac/_git/sistac
+cd sistac
+```
+
+### 3. Crear entorno virtual (recomendado)
+
+```bash
+python -m venv .venv
+
+# Windows
+.venv\Scripts\activate
+
+# Mac / Linux
+source .venv/bin/activate
+```
+
+### 4. Instalar dependencias Python
+
+```bash
 pip install -r scripts/python/requirements.txt
+```
 
-# Modelo spaCy en espanol (requerido para modulo PII)
+> La instalacion puede tardar 3-5 minutos por la descarga de `sentence-transformers`
+> y sus modelos de PyTorch.
+
+### 5. Instalar el modelo de spaCy en espanol
+
+Requerido para el modulo de anonimizacion PII (H3):
+
+```bash
 python -m spacy download es_core_news_lg
+```
 
-# Verificar modulo PII
+### 6. Configurar variables de entorno
+
+```bash
+# Copiar la plantilla
+copy .env.example .env        # Windows
+cp .env.example .env          # Mac / Linux
+```
+
+Abrir `.env` y completar los valores:
+
+```
+ANTHROPIC_API_KEY=sk-ant-api03-...     # https://console.anthropic.com
+GOOGLE_API_KEY=AIza...                 # https://aistudio.google.com (gratis)
+AZURE_SEARCH_ENDPOINT=https://...      # Portal Azure → tu servicio de busqueda
+AZURE_SEARCH_KEY=...                   # Portal Azure → Claves de acceso
+AZURE_SEARCH_INDEX=sistac-cvs
+LLM_PROVIDER=anthropic
+```
+
+### 7. Verificar que todo funciona
+
+```bash
+# Test del modulo PII (debe mostrar 10/10 PASSED)
+pytest scripts/python/pii/test_anonymization.py -v
+
+# Verificar configuracion y rutas
+python -c "from scripts.python.config import PROJECT_ROOT, SCORE_THRESHOLD; print('OK — ROOT:', PROJECT_ROOT)"
+```
+
+---
+
+## Levantar la aplicacion web (opcional)
+
+Si queres usar la interfaz web para evaluar CVs manualmente:
+
+```bash
+py -3 -m uvicorn app.main:app --reload --port 8000
+```
+
+Abrir en el navegador: [http://localhost:8000](http://localhost:8000)
+
+La app permite:
+- Subir la descripcion de cargo (DOCX/PDF) → indexa en Azure Search
+- Subir CVs de candidatos (PDF/DOCX/imagen) → devuelve score, decision y justificacion
+- Evaluacion por lotes de hasta 50 CVs con ranking
+
+---
+
+## Instalacion rapida (resumen de comandos)
+
+```bash
+git clone https://marioagustinbelvisi204@dev.azure.com/marioagustinbelvisi204/sistac/_git/sistac
+cd sistac
+python -m venv .venv && .venv\Scripts\activate
+pip install -r scripts/python/requirements.txt
+python -m spacy download es_core_news_lg
+copy .env.example .env        # completar con las API keys
 pytest scripts/python/pii/test_anonymization.py -v
 ```
 
