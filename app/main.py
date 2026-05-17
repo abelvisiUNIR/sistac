@@ -143,6 +143,115 @@ def eliminar_cargo(cargo_id: str):
 
 # ── API: Evaluación ───────────────────────────────────────────────────────────
 
+@app.post("/api/evaluar/batch")
+async def evaluar_batch(
+    cargo_id: str = Form(...),
+    archivos_cv: list[UploadFile] = File(..., description="Múltiples CVs — PDF, DOCX, JPG, PNG"),
+    config: str = Form("c2"),
+):
+    """
+    Evalúa varios CVs a la vez contra un cargo.
+    Retorna lista ordenada por score descendente.
+    """
+    if cargo_id not in _cargos:
+        raise HTTPException(status_code=404, detail="Cargo no encontrado.")
+
+    if len(archivos_cv) > 50:
+        raise HTTPException(status_code=400, detail="Máximo 50 CVs por lote.")
+
+    cargo = _cargos[cargo_id]
+    resultados_batch = []
+
+    for archivo_cv in archivos_cv:
+        ext = Path(archivo_cv.filename).suffix.lower()
+        if ext not in SUPPORTED_EXTENSIONS:
+            resultados_batch.append({
+                "archivo_cv": archivo_cv.filename,
+                "error": f"Formato '{ext}' no soportado.",
+                "score": None,
+                "decision": "ERROR",
+            })
+            continue
+
+        data = await archivo_cv.read()
+        try:
+            cv_text = extract_text(data, archivo_cv.filename)
+        except Exception as exc:
+            resultados_batch.append({
+                "archivo_cv": archivo_cv.filename,
+                "error": f"No se pudo leer el archivo: {exc}",
+                "score": None,
+                "decision": "ERROR",
+            })
+            continue
+
+        if len(cv_text.strip()) < 50:
+            resultados_batch.append({
+                "archivo_cv": archivo_cv.filename,
+                "error": "Documento vacío o ilegible.",
+                "score": None,
+                "decision": "ERROR",
+            })
+            continue
+
+        cv_id = f"CV_{str(uuid.uuid4())[:8].upper()}"
+        try:
+            from rag.pipeline import SistacRAGPipeline
+            pipeline = SistacRAGPipeline(config=config)
+            resultado = pipeline.evaluate(
+                cv_id=cv_id,
+                cv_text=cv_text,
+                jd_id=cargo_id,
+                jd_text=cargo["descripcion"],
+            )
+        except Exception as exc:
+            resultados_batch.append({
+                "archivo_cv": archivo_cv.filename,
+                "error": f"Error en pipeline: {exc}",
+                "score": None,
+                "decision": "ERROR",
+            })
+            continue
+
+        entrada = {
+            "id":              str(uuid.uuid4())[:8],
+            "cv_id":           cv_id,
+            "candidato_nombre": Path(archivo_cv.filename).stem,
+            "archivo_cv":      archivo_cv.filename,
+            "cargo_id":        cargo_id,
+            "cargo_nombre":    cargo["nombre"],
+            "score":           resultado["score"],
+            "decision":        resultado["decision"],
+            "justificacion":   resultado["justification"],
+            "dimensiones":     resultado.get("dimensions", {}),
+            "chunks_usados":   resultado.get("chunks_used", 0),
+            "anonimizado":     resultado.get("anonymized", False),
+            "tiempo_segundos": resultado.get("time_seconds", 0),
+            "config":          config,
+            "fecha":           datetime.now().isoformat(),
+            "error":           None,
+        }
+        _resultados.insert(0, entrada)
+        _cargos[cargo_id]["candidatos"] += 1
+        resultados_batch.append(entrada)
+
+    # Ordenar: APTOs primero, luego por score descendente, errores al final
+    resultados_batch.sort(key=lambda r: (
+        0 if r.get("decision") == "ERROR" else 1,
+        -(r.get("score") or 0),
+    ), reverse=False)
+    resultados_batch.sort(key=lambda r: (r.get("decision") == "ERROR", -(r.get("score") or 0)))
+
+    return {
+        "cargo_nombre": cargo["nombre"],
+        "total":        len(resultados_batch),
+        "aptos":        sum(1 for r in resultados_batch if r.get("decision") == "APTO"),
+        "no_aptos":     sum(1 for r in resultados_batch if r.get("decision") == "NO_APTO"),
+        "errores":      sum(1 for r in resultados_batch if r.get("decision") == "ERROR"),
+        "resultados":   resultados_batch,
+    }
+
+
 @app.post("/api/evaluar")
 async def evaluar_cv(
     cargo_id: str = Form(...),
