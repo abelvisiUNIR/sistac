@@ -124,8 +124,22 @@ def _anthropic_embed(text: str) -> list[float]:
     global _ST_MODEL
     if _ST_MODEL is None:
         from sentence_transformers import SentenceTransformer
+        import os
+
+        # Autenticar con HF si hay token en .env (evita warning de unauthenticated)
+        hf_token = os.getenv("HF_TOKEN")
+        if hf_token:
+            try:
+                from huggingface_hub import login
+                login(token=hf_token, add_to_git_credential=False)
+            except Exception:
+                pass  # si falla el login, continuar igual (modelo ya cacheado)
+
         print("  Cargando modelo de embeddings (una sola vez)...")
-        _ST_MODEL = SentenceTransformer("paraphrase-multilingual-mpnet-base-v2")
+        _ST_MODEL = SentenceTransformer(
+            "paraphrase-multilingual-mpnet-base-v2",
+            token=hf_token or None,
+        )
     return _ST_MODEL.encode(text).tolist()
 
 
