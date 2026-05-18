@@ -243,7 +243,7 @@ def index_corpus(
                     _upload_to_azure(batch_docs)
                     print(f"    Subidos {total_chunks} chunks... ({cv_id} procesado)")
                     batch_docs = []
-                    time.sleep(2)  # pausa entre batches para evitar 429
+                    time.sleep(10)  # pausa entre batches para respetar rate limit del tier gratuito
 
         progress = f"[{cv_count}/{n_cvs}]"
         print(f"  {progress} {cv_id} — {len(chunks) * n_jds} chunks generados")

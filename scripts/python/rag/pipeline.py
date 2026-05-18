@@ -294,8 +294,8 @@ def _upload_to_azure(documents: list[dict], max_retries: int = 6) -> None:
         response = requests.post(url, headers=_azure_headers(), json=payload)
 
         if response.status_code == 429:
-            # Respetar Retry-After si Azure lo devuelve, sino backoff exponencial
-            retry_after = int(response.headers.get("Retry-After", 2 ** (attempt + 1)))
+            # Respetar Retry-After si Azure lo devuelve, sino backoff con mínimo 30s
+            retry_after = int(response.headers.get("Retry-After", 30 * (attempt + 1)))
             print(f"    [429] Rate limit — esperando {retry_after}s (intento {attempt + 1}/{max_retries})")
             time.sleep(retry_after)
             continue
