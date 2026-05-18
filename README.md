@@ -411,8 +411,20 @@ python --version   # debe ser >= 3.10
 
 ```bash
 git clone https://marioagustinbelvisi204@dev.azure.com/marioagustinbelvisi204/sistac/_git/sistac
+```
+
+El repo se descarga en una carpeta llamada `sistac`. Entrar a ella:
+
+```bash
 cd sistac
 ```
+
+> Si ya tenes el repo descargado (carpeta `clo-author` u otro nombre), simplemente
+> entrar a esa carpeta antes de continuar:
+> ```
+> cd clo-author
+> ```
+> Todos los comandos del README se ejecutan desde la raiz del repositorio.
 
 ### 3. Crear entorno virtual (recomendado)
 
