@@ -119,21 +119,33 @@ def load_corpus() -> tuple[dict[str, str], dict[str, str]]:
 def get_indexed_cv_ids() -> set[str]:
     """
     Consulta Azure AI Search y retorna el conjunto de cv_ids ya indexados.
-    Usado por --resume para saltear CVs que ya están en el índice.
+    Pagina de a 1000 documentos usando $select=cv_id para minimizar transferencia.
 
     Returns:
         Set de cv_ids ya presentes en el índice. Set vacío si el índice no existe.
     """
-    url = (
-        f"{AZURE_SEARCH_ENDPOINT}/indexes/{AZURE_SEARCH_INDEX}"
-        f"/docs?api-version=2024-07-01"
-        f"&$select=cv_id&$top=1000&search=*&facets=cv_id,count:1000"
-    )
+    cv_ids: set[str] = set()
+    skip = 0
+    top = 1000
     try:
-        response = requests.get(url, headers=_azure_headers())
-        response.raise_for_status()
-        facets = response.json().get("@search.facets", {}).get("cv_id", [])
-        return {f["value"] for f in facets}
+        while True:
+            url = (
+                f"{AZURE_SEARCH_ENDPOINT}/indexes/{AZURE_SEARCH_INDEX}"
+                f"/docs?api-version=2024-07-01"
+                f"&$select=cv_id&$top={top}&$skip={skip}"
+            )
+            response = requests.get(url, headers=_azure_headers())
+            response.raise_for_status()
+            docs = response.json().get("value", [])
+            if not docs:
+                break
+            for d in docs:
+                if d.get("cv_id"):
+                    cv_ids.add(d["cv_id"])
+            skip += top
+            if len(docs) < top:
+                break
+        return cv_ids
     except Exception as e:
         print(f"  [WARN] No se pudo consultar IDs indexados: {e}")
         return set()
