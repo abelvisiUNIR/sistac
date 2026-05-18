@@ -42,6 +42,7 @@ if str(_SCRIPTS_DIR) not in sys.path:
 from config import (
     CVS_RAW,
     JOB_DESCRIPTIONS,
+    AZURE_SEARCH_ENDPOINT,
     AZURE_SEARCH_INDEX,
     CHUNK_SIZE,
     CHUNK_OVERLAP,
@@ -247,7 +248,6 @@ def index_corpus(
 
 def verify_index_count() -> None:
     """Verifica cuántos documentos hay en el índice."""
-    from config import AZURE_SEARCH_ENDPOINT
     url = (
         f"{AZURE_SEARCH_ENDPOINT}/indexes/{AZURE_SEARCH_INDEX}"
         f"/docs/$count?api-version=2024-07-01"
