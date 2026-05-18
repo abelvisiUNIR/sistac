@@ -115,12 +115,36 @@ def load_corpus() -> tuple[dict[str, str], dict[str, str]]:
     return cv_texts, jd_texts
 
 
+def get_indexed_cv_ids() -> set[str]:
+    """
+    Consulta Azure AI Search y retorna el conjunto de cv_ids ya indexados.
+    Usado por --resume para saltear CVs que ya están en el índice.
+
+    Returns:
+        Set de cv_ids ya presentes en el índice. Set vacío si el índice no existe.
+    """
+    url = (
+        f"{AZURE_SEARCH_ENDPOINT}/indexes/{AZURE_SEARCH_INDEX}"
+        f"/docs?api-version=2024-07-01"
+        f"&$select=cv_id&$top=1000&search=*&facets=cv_id,count:1000"
+    )
+    try:
+        response = requests.get(url, headers=_azure_headers())
+        response.raise_for_status()
+        facets = response.json().get("@search.facets", {}).get("cv_id", [])
+        return {f["value"] for f in facets}
+    except Exception as e:
+        print(f"  [WARN] No se pudo consultar IDs indexados: {e}")
+        return set()
+
+
 def index_corpus(
     cv_texts: dict[str, str],
     jd_texts: dict[str, str],
     config: str = "c2",
     dry_run: bool = False,
     batch_size: int = 50,
+    resume: bool = False,
 ) -> None:
     """
     Indexa los CVs y JDs en Azure AI Search.
@@ -131,6 +155,7 @@ def index_corpus(
         config:     "c2" (texto original) | "c3" (PII anonimizada)
         dry_run:    Si True, calcula stats sin subir nada
         batch_size: Chunks por batch de upload (Azure acepta hasta 1000 docs/batch)
+        resume:     Si True, omite CVs que ya están en el índice (útil tras un 429)
     """
     # C3: cargar anonimizador
     anonymizer = None
@@ -139,7 +164,15 @@ def index_corpus(
         anonymizer = SistacAnonymizer()
         print("  Modo C3: PII será anonimizada antes de indexar")
 
+    # --resume: obtener IDs ya indexados
+    already_indexed: set[str] = set()
+    if resume and not dry_run:
+        print("  Consultando IDs ya indexados en Azure...")
+        already_indexed = get_indexed_cv_ids()
+        print(f"  CVs ya indexados: {len(already_indexed)} — se saltearán")
+
     total_chunks = 0
+    skipped_cvs = 0
     batch_docs = []
     cv_count = 0
 
@@ -151,6 +184,12 @@ def index_corpus(
 
     for cv_id, cv_text in cv_texts.items():
         cv_count += 1
+
+        # --resume: saltar si ya está indexado
+        if cv_id in already_indexed:
+            skipped_cvs += 1
+            print(f"  [{cv_count}/{n_cvs}] {cv_id} — ya indexado, saltando")
+            continue
 
         # C3: anonimizar
         text_to_index = (
@@ -177,7 +216,7 @@ def index_corpus(
                     "id":          chunk_id,
                     "cv_id":       cv_id,
                     "jd_id":       jd_id,
-                    "cv_text":     cv_text[:500],  # truncar para metadata (no es el chunk)
+                    "cv_text":     cv_text[:500],
                     "jd_text":     jd_text[:500],
                     "chunk_text":  chunk,
                     "embedding":   embedding,
@@ -191,7 +230,7 @@ def index_corpus(
                     _upload_to_azure(batch_docs)
                     print(f"    Subidos {total_chunks} chunks... ({cv_id} procesado)")
                     batch_docs = []
-                    time.sleep(0.5)  # rate limit suave
+                    time.sleep(2)  # pausa entre batches para evitar 429
 
         progress = f"[{cv_count}/{n_cvs}]"
         print(f"  {progress} {cv_id} — {len(chunks) * n_jds} chunks generados")
@@ -249,6 +288,11 @@ if __name__ == "__main__":
         default="all",
         help="Indexar solo el split indicado: train=240, test=60, all=300 (default: all)",
     )
+    parser.add_argument(
+        "--resume",
+        action="store_true",
+        help="Saltar CVs ya indexados en Azure (útil para reanudar tras un error 429)",
+    )
     args = parser.parse_args()
 
     print(f"=== SISTAC — Indexación del corpus (config={args.config.upper()}) ===\n")
@@ -290,6 +334,7 @@ if __name__ == "__main__":
         config=args.config,
         dry_run=args.dry_run,
         batch_size=args.batch_size,
+        resume=args.resume,
     )
     t_total = time.perf_counter() - t_start
 

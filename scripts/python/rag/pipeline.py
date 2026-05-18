@@ -274,8 +274,14 @@ def _azure_headers() -> dict:
     }
 
 
-def _upload_to_azure(documents: list[dict]) -> None:
-    """Sube documentos al índice de Azure AI Search."""
+def _upload_to_azure(documents: list[dict], max_retries: int = 6) -> None:
+    """
+    Sube documentos al índice de Azure AI Search con retry exponencial ante 429.
+
+    Args:
+        documents:   Lista de dicts a indexar.
+        max_retries: Intentos máximos ante 429 (default 6 → espera máx ~64 s).
+    """
     url = (
         f"{AZURE_SEARCH_ENDPOINT}/indexes/{AZURE_SEARCH_INDEX}"
         f"/docs/index?api-version=2024-07-01"
@@ -283,7 +289,21 @@ def _upload_to_azure(documents: list[dict]) -> None:
     payload = {
         "value": [{"@search.action": "upload", **doc} for doc in documents]
     }
-    response = requests.post(url, headers=_azure_headers(), json=payload)
+
+    for attempt in range(max_retries):
+        response = requests.post(url, headers=_azure_headers(), json=payload)
+
+        if response.status_code == 429:
+            # Respetar Retry-After si Azure lo devuelve, sino backoff exponencial
+            retry_after = int(response.headers.get("Retry-After", 2 ** (attempt + 1)))
+            print(f"    [429] Rate limit — esperando {retry_after}s (intento {attempt + 1}/{max_retries})")
+            time.sleep(retry_after)
+            continue
+
+        response.raise_for_status()
+        return  # éxito
+
+    # Si llegamos aquí, agotamos los reintentos
     response.raise_for_status()
 
 
