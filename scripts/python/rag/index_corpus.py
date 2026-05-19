@@ -42,11 +42,9 @@ if str(_SCRIPTS_DIR) not in sys.path:
 from config import (
     CVS_RAW,
     JOB_DESCRIPTIONS,
-    AZURE_SEARCH_ENDPOINT,
     AZURE_SEARCH_INDEX,
     CHUNK_SIZE,
     CHUNK_OVERLAP,
-    EVAL_SETS,
     check_azure_config,
 )
 from llm.provider import get_embedding
@@ -56,34 +54,6 @@ import requests
 
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
-
-def load_split_ids(split: str) -> set[str]:
-    """
-    Retorna el conjunto de cv_ids del split indicado.
-
-    Args:
-        split: "train" (240 CVs), "test" (60 CVs) o "all" (sin filtro).
-
-    Returns:
-        Set de cv_ids. Si split="all", retorna set vacío (= sin filtro).
-
-    Raises:
-        FileNotFoundError: si el archivo de split no existe.
-    """
-    if split == "all":
-        return set()
-
-    import csv as _csv
-    path = EVAL_SETS / f"{split}_ids.csv"
-    if not path.exists():
-        raise FileNotFoundError(
-            f"No se encontró: {path}\n"
-            "Generá el split primero con:\n"
-            "  py -3 scripts/python/data/split_corpus.py"
-        )
-    with open(path, encoding="utf-8") as f:
-        return {row["cv_id"] for row in _csv.DictReader(f)}
-
 
 def load_corpus() -> tuple[dict[str, str], dict[str, str]]:
     """
@@ -116,48 +86,12 @@ def load_corpus() -> tuple[dict[str, str], dict[str, str]]:
     return cv_texts, jd_texts
 
 
-def get_indexed_cv_ids() -> set[str]:
-    """
-    Consulta Azure AI Search y retorna el conjunto de cv_ids ya indexados.
-    Pagina de a 1000 documentos usando $select=cv_id para minimizar transferencia.
-
-    Returns:
-        Set de cv_ids ya presentes en el índice. Set vacío si el índice no existe.
-    """
-    cv_ids: set[str] = set()
-    skip = 0
-    top = 1000
-    try:
-        while True:
-            url = (
-                f"{AZURE_SEARCH_ENDPOINT}/indexes/{AZURE_SEARCH_INDEX}"
-                f"/docs?api-version=2024-07-01"
-                f"&$select=cv_id&$top={top}&$skip={skip}"
-            )
-            response = requests.get(url, headers=_azure_headers())
-            response.raise_for_status()
-            docs = response.json().get("value", [])
-            if not docs:
-                break
-            for d in docs:
-                if d.get("cv_id"):
-                    cv_ids.add(d["cv_id"])
-            skip += top
-            if len(docs) < top:
-                break
-        return cv_ids
-    except Exception as e:
-        print(f"  [WARN] No se pudo consultar IDs indexados: {e}")
-        return set()
-
-
 def index_corpus(
     cv_texts: dict[str, str],
     jd_texts: dict[str, str],
     config: str = "c2",
     dry_run: bool = False,
     batch_size: int = 50,
-    resume: bool = False,
 ) -> None:
     """
     Indexa los CVs y JDs en Azure AI Search.
@@ -168,7 +102,6 @@ def index_corpus(
         config:     "c2" (texto original) | "c3" (PII anonimizada)
         dry_run:    Si True, calcula stats sin subir nada
         batch_size: Chunks por batch de upload (Azure acepta hasta 1000 docs/batch)
-        resume:     Si True, omite CVs que ya están en el índice (útil tras un 429)
     """
     # C3: cargar anonimizador
     anonymizer = None
@@ -177,15 +110,7 @@ def index_corpus(
         anonymizer = SistacAnonymizer()
         print("  Modo C3: PII será anonimizada antes de indexar")
 
-    # --resume: obtener IDs ya indexados
-    already_indexed: set[str] = set()
-    if resume and not dry_run:
-        print("  Consultando IDs ya indexados en Azure...")
-        already_indexed = get_indexed_cv_ids()
-        print(f"  CVs ya indexados: {len(already_indexed)} — se saltearán")
-
     total_chunks = 0
-    skipped_cvs = 0
     batch_docs = []
     cv_count = 0
 
@@ -197,12 +122,6 @@ def index_corpus(
 
     for cv_id, cv_text in cv_texts.items():
         cv_count += 1
-
-        # --resume: saltar si ya está indexado
-        if cv_id in already_indexed:
-            skipped_cvs += 1
-            print(f"  [{cv_count}/{n_cvs}] {cv_id} — ya indexado, saltando")
-            continue
 
         # C3: anonimizar
         text_to_index = (
@@ -229,7 +148,7 @@ def index_corpus(
                     "id":          chunk_id,
                     "cv_id":       cv_id,
                     "jd_id":       jd_id,
-                    "cv_text":     cv_text[:500],
+                    "cv_text":     cv_text[:500],  # truncar para metadata (no es el chunk)
                     "jd_text":     jd_text[:500],
                     "chunk_text":  chunk,
                     "embedding":   embedding,
@@ -243,7 +162,7 @@ def index_corpus(
                     _upload_to_azure(batch_docs)
                     print(f"    Subidos {total_chunks} chunks... ({cv_id} procesado)")
                     batch_docs = []
-                    time.sleep(10)  # pausa entre batches para respetar rate limit del tier gratuito
+                    time.sleep(0.5)  # rate limit suave
 
         progress = f"[{cv_count}/{n_cvs}]"
         print(f"  {progress} {cv_id} — {len(chunks) * n_jds} chunks generados")
@@ -260,6 +179,7 @@ def index_corpus(
 
 def verify_index_count() -> None:
     """Verifica cuántos documentos hay en el índice."""
+    from config import AZURE_SEARCH_ENDPOINT
     url = (
         f"{AZURE_SEARCH_ENDPOINT}/indexes/{AZURE_SEARCH_INDEX}"
         f"/docs/$count?api-version=2024-07-01"
@@ -294,17 +214,6 @@ if __name__ == "__main__":
         default=50,
         help="Chunks por batch de upload (default: 50)",
     )
-    parser.add_argument(
-        "--split",
-        choices=["train", "test", "all"],
-        default="all",
-        help="Indexar solo el split indicado: train=240, test=60, all=300 (default: all)",
-    )
-    parser.add_argument(
-        "--resume",
-        action="store_true",
-        help="Saltar CVs ya indexados en Azure (útil para reanudar tras un error 429)",
-    )
     args = parser.parse_args()
 
     print(f"=== SISTAC — Indexación del corpus (config={args.config.upper()}) ===\n")
@@ -327,16 +236,6 @@ if __name__ == "__main__":
         print(f"[ERROR] {e}")
         sys.exit(1)
 
-    # Filtrar por split (train=240 / test=60 / all=300)
-    if args.split != "all":
-        try:
-            split_ids = load_split_ids(args.split)
-        except FileNotFoundError as e:
-            print(f"[ERROR] {e}")
-            sys.exit(1)
-        cv_texts = {k: v for k, v in cv_texts.items() if k in split_ids}
-        print(f"  Filtrado por split '{args.split}': {len(cv_texts)} CVs")
-
     # Indexar
     print(f"\nIndexando {'(DRY RUN) ' if args.dry_run else ''}...")
     t_start = time.perf_counter()
@@ -346,7 +245,6 @@ if __name__ == "__main__":
         config=args.config,
         dry_run=args.dry_run,
         batch_size=args.batch_size,
-        resume=args.resume,
     )
     t_total = time.perf_counter() - t_start
 
