@@ -63,9 +63,9 @@ GEMINI_DOC_MODEL = "gemini-2.5-flash-preview-05-20"
 #   Desarrollo / iteración rápida  → claude-haiku-3-5
 #   Redacción y análisis           → claude-sonnet-4-5 (recomendado)
 #   Experimento final (máx calidad) → claude-opus-4-5
-LLM_MODEL_DEV   = "claude-haiku-3-5-20241022"     # dev: rápido y barato
-LLM_MODEL_PROD  = "claude-sonnet-4-5-20241022"    # producción: equilibrado
-LLM_MODEL_FINAL = "claude-opus-4-5-20240229"      # experimento final: máxima calidad
+LLM_MODEL_DEV   = "claude-haiku-4-5"      # dev: rápido y barato (Claude Haiku 4.5)
+LLM_MODEL_PROD  = "claude-sonnet-4-5"    # producción: equilibrado (Claude Sonnet 4.5)
+LLM_MODEL_FINAL = "claude-opus-4-5"      # experimento final: máxima calidad (Claude Opus 4.5)
 
 # Modelo activo (cambiar según la fase del proyecto)
 LLM_MODEL = LLM_MODEL_PROD

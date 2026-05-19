@@ -21,6 +21,7 @@ from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
+from starlette.concurrency import run_in_threadpool
 
 # INV-16: rutas via PROJECT_ROOT
 _PROJECT_ROOT = Path(__file__).parent.parent
@@ -162,6 +163,11 @@ async def evaluar_batch(
     cargo = _cargos[cargo_id]
     resultados_batch = []
 
+    # Instanciar pipeline UNA SOLA VEZ para todo el batch, en thread pool para
+    # no bloquear el event loop de FastAPI durante la carga del modelo de embeddings
+    from rag.pipeline import SistacRAGPipeline
+    pipeline = await run_in_threadpool(SistacRAGPipeline, config=config)
+
     for archivo_cv in archivos_cv:
         ext = Path(archivo_cv.filename).suffix.lower()
         if ext not in SUPPORTED_EXTENSIONS:
@@ -196,9 +202,8 @@ async def evaluar_batch(
 
         cv_id = f"CV_{str(uuid.uuid4())[:8].upper()}"
         try:
-            from rag.pipeline import SistacRAGPipeline
-            pipeline = SistacRAGPipeline(config=config)
-            resultado = pipeline.evaluate(
+            resultado = await run_in_threadpool(
+                pipeline.evaluate,
                 cv_id=cv_id,
                 cv_text=cv_text,
                 jd_id=cargo_id,
@@ -290,15 +295,21 @@ async def evaluar_cv(
     cv_id = f"CV_{str(uuid.uuid4())[:8].upper()}"
 
     # Evaluar con pipeline SISTAC
-    try:
+    # TODO completo en thread pool — SistacRAGPipeline() + evaluate() son bloqueantes
+    # (carga de SentenceTransformer + requests a Azure), correrlos en el thread pool
+    # evita bloquear el event loop de FastAPI → previene "Failed to Fetch"
+    def _run_pipeline() -> dict:
         from rag.pipeline import SistacRAGPipeline
-        pipeline = SistacRAGPipeline(config=config)
-        resultado = pipeline.evaluate(
+        p = SistacRAGPipeline(config=config)
+        return p.evaluate(
             cv_id=cv_id,
             cv_text=cv_text,
             jd_id=cargo_id,
             jd_text=cargo["descripcion"],
         )
+
+    try:
+        resultado = await run_in_threadpool(_run_pipeline)
     except Exception as exc:
         raise HTTPException(status_code=500, detail=f"Error en pipeline: {exc}")
 
@@ -331,6 +342,61 @@ def listar_resultados(cargo_id: Optional[str] = None, limite: int = 100):
     if cargo_id:
         resultados = [r for r in resultados if r["cargo_id"] == cargo_id]
     return {"resultados": resultados[:limite], "total": len(resultados)}
+
+
+# ── Diagnóstico ───────────────────────────────────────────────────────────────
+
+@app.get("/api/diagnostico")
+def diagnostico():
+    """
+    Verifica el estado de cada componente del sistema.
+    Útil para debuggear antes de evaluar CVs.
+    """
+    import importlib
+    resultado = {}
+
+    # LLM keys
+    from config import ANTHROPIC_API_KEY, OPENAI_API_KEY, AZURE_SEARCH_ENDPOINT, AZURE_SEARCH_KEY, GOOGLE_API_KEY
+    resultado["anthropic_key"] = "OK" if ANTHROPIC_API_KEY else "FALTA (.env → ANTHROPIC_API_KEY)"
+    resultado["openai_key"]    = "OK" if OPENAI_API_KEY    else "FALTA (.env → OPENAI_API_KEY) — opcional"
+    resultado["google_key"]    = "OK" if GOOGLE_API_KEY    else "FALTA (.env → GOOGLE_API_KEY) — para PDF escaneados e imágenes"
+    resultado["azure_endpoint"] = "OK" if AZURE_SEARCH_ENDPOINT else "FALTA (.env → AZURE_SEARCH_ENDPOINT)"
+    resultado["azure_key"]      = "OK" if AZURE_SEARCH_KEY      else "FALTA (.env → AZURE_SEARCH_KEY)"
+
+    # Dependencias Python críticas
+    deps = {
+        "fastapi":              "fastapi",
+        "python-multipart":     "multipart",
+        "pdfplumber":           "pdfplumber",
+        "python-docx":          "docx",
+        "anthropic":            "anthropic",
+        "sentence-transformers":"sentence_transformers",
+        "langchain-text-splitters": "langchain_text_splitters",
+        "requests":             "requests",
+    }
+    dep_status = {}
+    for nombre, modulo in deps.items():
+        try:
+            importlib.import_module(modulo)
+            dep_status[nombre] = "OK"
+        except ImportError:
+            dep_status[nombre] = "NO INSTALADO — pip install " + nombre
+    resultado["dependencias"] = dep_status
+
+    # Estado del pipeline C1 (solo LLM, sin Azure ni embeddings)
+    c1_ok = bool(ANTHROPIC_API_KEY or OPENAI_API_KEY)
+    resultado["c1_listo"] = c1_ok
+    resultado["c2_listo"] = c1_ok and bool(AZURE_SEARCH_ENDPOINT and AZURE_SEARCH_KEY)
+    resultado["c3_listo"] = resultado["c2_listo"]
+
+    resultado["consejo"] = (
+        "Podés evaluar con C1 (solo LLM) sin Azure ni modelos locales. "
+        "Seleccioná C1 en el pipeline si Azure no está configurado."
+        if not resultado["c2_listo"] else
+        "Sistema listo para C1/C2/C3."
+    )
+
+    return resultado
 
 
 # ── Frontend ──────────────────────────────────────────────────────────────────

@@ -1,88 +1,89 @@
-# Project Memory
+# Project Memory — SISTAC
 
 Corrections and learned facts that persist across sessions.
-When a mistake is corrected, append a `[LEARN:category]` entry below.
+Append `[LEARN:category]` entries below. Most recent at bottom.
+**Mantener bajo ~150 líneas.**
 
 ---
 
-<!-- Append new entries below. Most recent at bottom. -->
+## Workflow del proyecto
 
-## Workflow Patterns
+[LEARN:workflow] Plan-first para tareas no triviales (>1 hora o >3 archivos). Spec-then-plan: AskUserQuestion (máx 5 preguntas) → spec en `quality_reports/specs/` con MUST/SHOULD/MAY → aprobación → plan → implementar.
 
-[LEARN:workflow] Requirements specification phase catches ambiguity before planning → reduces rework 30-50%. Use spec-then-plan for complex/ambiguous tasks (>1 hour or >3 files).
+[LEARN:workflow] Antes de compresión: (1) actualizar MEMORY.md, (2) session log al día, (3) plan activo en disco, (4) preguntas abiertas documentadas.
 
-[LEARN:workflow] Spec-then-plan protocol: AskUserQuestion (3-5 questions) → create `quality_reports/specs/YYYY-MM-DD_description.md` with MUST/SHOULD/MAY requirements → declare clarity status (CLEAR/ASSUMED/BLOCKED) → get approval → then draft plan.
+[LEARN:workflow] Capítulo 5 del TFE se inserta via `scripts/python/figures/insert_cap5_docx.py` (script de inserción con restauración desde backup). Siempre restaurar backup antes de correr el script.
 
-[LEARN:workflow] Context survival before compression: (1) Update MEMORY.md with [LEARN] entries, (2) Ensure session log current (last 10 min), (3) Active plan saved to disk, (4) Open questions documented. The pre-compact hook displays checklist.
+---
 
-[LEARN:workflow] Plans, specs, and session logs must live on disk (not just in conversation) to survive compression and session boundaries. Quality reports only at merge time.
+## SISTAC — Stack técnico
 
-## Documentation Standards
+[LEARN:stack] Stack activo: Python + LangChain + Azure AI Search + spaCy + Presidio + sentence-transformers + scikit-learn (solo métricas clasificación) + python-docx. NO R, Julia, LaTeX. Documento principal: `paper/SISTAC_TFE.docx` (Word, fuente de verdad).
 
-[LEARN:documentation] When adding new features, update BOTH README and guide immediately to prevent documentation drift. Stale docs break user trust.
+[LEARN:stack] Extracción de texto en `utils/doc_extractor.py`: pdfplumber para PDF nativo (gratis); Gemini 2.5 Flash para PDF escaneado e imágenes. Necesita `GOOGLE_API_KEY` en .env para imágenes/PDFs escaneados.
 
-[LEARN:documentation] Always document new templates in README's "What's Included" section with purpose description. Template inventory must be complete and accurate.
+[LEARN:stack] Embeddings: `paraphrase-multilingual-mpnet-base-v2` (sentence-transformers, 768 dims, local). Singleton `_ST_MODEL` en `llm/provider.py` — se carga UNA sola vez por proceso. `HF_TOKEN` en .env evita warning de unauthenticated requests y rate limiting de HuggingFace.
 
-[LEARN:documentation] Guide must be generic (framework-oriented) not prescriptive. Provide templates with examples for multiple workflows (LaTeX, R, Python, Jupyter), let users customize. No "thou shalt" rules.
+---
 
-[LEARN:documentation] Date fields in frontmatter and README must reflect latest significant changes. Users check dates to assess currency.
+## SISTAC — LLM y modelos
 
-## Design Philosophy
+[LEARN:llm] Anthropic cambió la convención de nombres en modelos 2025+: usar `claude-haiku-4-5`, `claude-sonnet-4-5`, `claude-opus-4-5` (sin fecha, sin "3-5"). Los nombres estilo `claude-3-5-haiku-20241022` retornan 404. Actualizado en `provider.py` y `config.py`.
 
-[LEARN:design] Framework-oriented > Prescriptive rules. Constitutional governance works as a TEMPLATE with examples users customize to their domain. Same for requirements specs.
+[LEARN:llm] Proveedor activo: Anthropic (LLM_PROVIDER=anthropic en .env). Embeddings: sentence-transformers local (no API externa). `provider.py` detecta automáticamente el proveedor y usa el backend correcto.
 
-[LEARN:design] Quality standard for guide additions: useful + pedagogically strong + drives usage + leaves great impression + improves upon starting fresh + no redundancy + not slow. All 7 criteria must hold.
+---
 
-[LEARN:design] Generic means working for any academic workflow: pure LaTeX (no Quarto), pure R (no LaTeX), Python/Jupyter, any domain (not just econometrics). Test recommendations across use cases.
+## SISTAC — Azure AI Search
 
-## File Organization
+[LEARN:azure] Free tier (50 MB) fue superado: 206/240 CVs indexados = 51.11 MB (45.63 MB vector + 5.48 MB otros). Tier Free no soporta Semantic Search (`queryType: semantic`). Upgrade a Basic tier recomendado (~$73/mes, 2 GB). Usuario confirmó intención de crear Basic tier.
 
-[LEARN:files] Specifications go in `quality_reports/specs/YYYY-MM-DD_description.md`, not scattered in root or other directories. Maintains structure.
+[LEARN:azure] `index_corpus.py` tiene flags `--split {train,test,all}` (default: all) y `--resume` (salta CVs ya indexados via paginación `$select=cv_id&$top=1000&$skip=N`). Ejecutar siempre desde `clo-author/`: `py -3 scripts/python/rag/index_corpus.py --split train`.
 
-[LEARN:files] Templates belong in `templates/` directory with descriptive names. Currently have: session-log.md, quality-report.md, exploration-readme.md, archive-readme.md, requirements-spec.md, constitutional-governance.md.
+[LEARN:azure] Al crear nuevo servicio Basic tier: actualizar `AZURE_SEARCH_ENDPOINT` y `AZURE_SEARCH_KEY` en `.env`, recrear el índice (`rag/create_index.py`) y re-indexar los 240 CVs de train.
 
-## Constitutional Governance
+---
 
-[LEARN:governance] Constitutional articles distinguish immutable principles (non-negotiable for quality/reproducibility) from flexible user preferences. Keep to 3-7 articles max.
+## SISTAC — Web app (`app/`)
 
-[LEARN:governance] Example articles: Primary Artifact (which file is authoritative), Plan-First Threshold (when to plan), Quality Gate (minimum score), Verification Standard (what must pass), File Organization (where files live).
+[LEARN:webapp] El "Failed to Fetch" en la app web se produce cuando código bloqueante (SistacRAGPipeline, SentenceTransformer, requests a Azure) corre directamente en función `async def`. Solución: envolver TODO en `run_in_threadpool()` de Starlette. Implementado en ambos endpoints (`/api/evaluar` y `/api/evaluar/batch`).
 
-[LEARN:governance] Amendment process: Ask user if deviating from article is "amending Article X (permanent)" or "overriding for this task (one-time exception)". Preserves institutional memory.
+[LEARN:webapp] Startup correcto: desde `clo-author/` ejecutar `py -3 -m uvicorn app.main:app --reload --port 8000 --timeout-keep-alive 300`. También disponible `app/run.bat` (doble clic desde el Explorador). NO correr desde `clo-author/app/`.
 
-## Skill Creation
+[LEARN:webapp] Endpoint diagnóstico: `GET /api/diagnostico` reporta estado de API keys, dependencias instaladas y si C1/C2/C3 están listos. Usar antes de evaluar CVs para detectar problemas.
 
-[LEARN:skills] Effective skill descriptions use trigger phrases users actually say: "check citations", "format results", "validate protocol" → Claude knows when to load skill.
+[LEARN:webapp] SistacRAGPipeline se instancia UNA sola vez por request batch (fuera del for loop) y se reutiliza para todos los CVs del lote. Tanto la instanciación como evaluate() van dentro de run_in_threadpool.
 
-[LEARN:skills] Skills need 3 sections minimum: Instructions (step-by-step), Examples (concrete scenarios), Troubleshooting (common errors) → users can debug independently.
+---
 
-[LEARN:skills] Domain-specific examples beat generic ones: citation checker (psychology), protocol validator (biology), regression formatter (economics) → shows adaptability.
+## SISTAC — Estado del documento
 
-## Memory System
+[LEARN:doc] Capítulos 1-4 escritos (David + Mario). Cap. 5 en redacción: 9 secciones H2, 6 figuras insertadas. Cap. 6 en redacción (estructura definida). Caps. 7-9 post-experimento.
 
-[LEARN:memory] Two-tier memory solves template vs working project tension: MEMORY.md (generic patterns, committed), personal-memory.md (machine-specific, gitignored) → cross-machine sync + local privacy.
+[LEARN:doc] Sección 5.2 tiene 6 subsecciones: 5.2.1 Kaggle Resume Dataset (referencia estadística para calibrar generador sintético — CVs en inglés, NO usar directamente), 5.2.2 Gold Standard híbrido (algorítmico threshold=60 + validación experto RRHH Matriz, Cohen's κ≥0.70 en muestra 30-50 CVs), 5.2.3 JDs reales de Matriz Uruguay (5 JDs reales, NO adaptadas de portales), 5.2.4-6 extracción/chunking/split.
 
-[LEARN:memory] Post-merge hooks prompt reflection, don't auto-append → user maintains control while building habit.
+[LEARN:doc] Backups del .docx en `paper/backups/` con fecha en el nombre. Siempre crear backup antes de edición estructural (INV-W1).
 
-## Meta-Governance
+---
 
-[LEARN:meta] Repository dual nature requires explicit governance: what's generic (commit) vs specific (gitignore) → prevents template pollution.
+## SISTAC — VCS y entorno
 
-[LEARN:meta] Dogfooding principles must be enforced: plan-first, spec-then-plan, quality gates, session logs → we follow our own guide.
+[LEARN:vcs] Control de versiones: Azure DevOps. Remote: `https://marioagustinbelvisi204@dev.azure.com/marioagustinbelvisi204/sistac/_git/sistac`. Branch activa: `desarrollo`. Merge a `main` solo al cerrar hitos.
 
-[LEARN:meta] Template development work (building infrastructure, docs) doesn't create session logs in quality_reports/ → those are for user work (slides, analysis), not meta-work. Keeps template clean for users who fork.
+[LEARN:vcs] Usuario corre Python 3.14 (del nombre `cpython-314.pyc` en __pycache__). Algunos paquetes pesados (ragas, sdv) pueden tener incompatibilidades. Reportar si hay errores de importación.
 
-## SISTAC — Decisiones de proyecto
+[LEARN:vcs] `.env` debe tener: `ANTHROPIC_API_KEY`, `AZURE_SEARCH_ENDPOINT`, `AZURE_SEARCH_KEY`, `AZURE_SEARCH_INDEX=sistac-cvs`, `LLM_PROVIDER=anthropic`, `HF_TOKEN` (opcional, evita warnings HuggingFace), `GOOGLE_API_KEY` (opcional, para PDF escaneados e imágenes).
 
-[LEARN:setup] Limpieza .claude/ completada para SISTAC (2026-04-15): eliminados 14 archivos heredados del template de economía/LaTeX (~127 KB, ~1.900 líneas). Archivos eliminados: journal-profiles.md (39.5KB), coding-standards-julia.md, coding-standards-r.md, working-paper-format.md, storyteller.md, storyteller-critic.md, editor.md, domain-referee.md, methods-referee.md, lint-scripts.sh, post-edit-lint.sh, post-merge.sh, skills/submit/SKILL.md, skills/talk/SKILL.md. writer.md reescrito para TFE Word en español con perfil de voz de Mario Agustín Belvisi Lescano (patrón embudo, conectores específicos, voz impersonal, citas APA 7). WORKFLOW_QUICK_REF.md actualizado para SISTAC. domain-profile.md, workflow.md, content-invariants.md, quality.md, agents.md, logging.md, meta-governance.md, revision.md y coding-standards-python.md conservados sin cambios.
+---
 
-[LEARN:stack] Stack activo SISTAC: Python + LangChain + ChromaDB/FAISS + spaCy + Presidio + sentence-transformers + scikit-learn (solo métricas clasificación) + python-docx. NO usar R, Julia, LaTeX. Documento principal: paper/SISTAC_TFE.docx (Word).
+## SISTAC — Módulo PII (H3)
 
-[LEARN:doc] Capítulos 1-4 migrados a paper/SISTAC_TFE.docx (2026-04-15). Fuente: Optimizacion_del_Proceso_de_Seleccion_de_Talento_.docx. Capítulos 5-9 tienen secciones stub con [TODO]. Documento generado con python-docx: 351 párrafos, 66.8 KB. Estructura del documento refleja diseño factorial C0-C3 y las tres hipótesis H1/H2/H3.
+[LEARN:pii] Módulo PII completo: `scripts/python/pii/`. 10/10 tests PASSED (`pytest scripts/python/pii/test_anonymization.py -v`). SistacAnonymizer implementado y funcional.
 
-[LEARN:data] Dataset sintético aún no generado. Pipeline: PrivBayes (smartnoise-sdk) para distribuciones demográficas + LLM (GPT-4o mini en dev, LLaMA 3.1 8B local para experimento final). Target: ≥300 pares CV-JD, split 70/15/15, demografía balanceada (género + rango edad). Referencia metodológica: Bruera et al. (2022) + Saldivar et al. (2025).
+---
 
-[LEARN:setup] content-invariants.md actualizado (2026-04-15): INVs LaTeX/R (INV-1 a INV-6, INV-9, INV-10, INV-12, INV-13, INV-20, INV-21) reemplazados por INV-W1 a INV-W5 para stack Word/Python. INVs de código Python INV-14 a INV-19 conservados sin cambios. rules/agents.md: eliminada fila storyteller+storyteller-critic, par de Peer Review reemplazado por "Revisión de tutora" (writer-critic en modo revisión). rules/workflow.md: eliminadas referencias a /talk, Beamer, R scripts, "Presentation" phase y "Submission" phase de journals; actualizadas tablas de Agent Dispatch, Standalone Skills y Phase Dependencies para SISTAC.
+## SISTAC — Decisiones de infraestructura (Cap. 5)
 
-[LEARN:llm] LLM activo SISTAC: Anthropic Claude API (NO OpenAI). requirements.txt usa anthropic>=0.28.0 + langchain-anthropic>=0.1.15. config.py define tres niveles: LLM_MODEL_DEV="claude-haiku-3-5-20241022", LLM_MODEL_PROD="claude-sonnet-4-5-20241022" (activo), LLM_MODEL_FINAL="claude-opus-4-5-20240229". API key vía .env → ANTHROPIC_API_KEY. Embeddings son locales (sentence-transformers), sin API externa.
+[LEARN:infra] Vector store: Azure AI Search (Semantic Ranker nativo reemplaza cross-encoder). Embeddings: `paraphrase-multilingual-mpnet-base-v2` cuando LLM_PROVIDER=anthropic; `text-embedding-3-small` (OpenAI) cuando LLM_PROVIDER=openai. Score threshold unificado: 70 (calibrado con piloto C2, 5 CVs). Piloto David en `rag/` conservado como referencia.
 
-[LEARN:vcs] Control de versiones: Azure DevOps (NO GitHub). Remote: https://marioagustinbelvisi204@dev.azure.com/marioagustinbelvisi204/sistac/_git/sistac. Autenticación: Personal Access Token (scope: Code Read & Write). Git credential manager guarda el token después del primer push. Dos commits en main: 8e0e327 (scaffold .claude/ + SISTAC_TFE.docx), 420ab86 (stack Anthropic + .env.example).
+[LEARN:infra] RAGAS configurado con Claude Haiku como LLM juez (via LangchainLLMWrapper / ChatAnthropic). Si falla: fallback a métricas proxy (ROUGE-L para faithfulness, coseno para context precision).
