@@ -5,7 +5,11 @@ Todas las rutas son relativas al directorio raíz del proyecto.
 No usar rutas absolutas en ningún script (INV-16).
 
 Variables de entorno requeridas (archivo .env en la raíz del proyecto):
-    ANTHROPIC_API_KEY=sk-ant-...
+    ANTHROPIC_API_KEY=sk-ant-...        # LLM Mario (Claude)
+    OPENAI_API_KEY=sk-...               # LLM David (GPT-4o) + embeddings
+    AZURE_SEARCH_ENDPOINT=https://...   # Vector store
+    AZURE_SEARCH_KEY=...                # API key Azure AI Search
+    AZURE_SEARCH_INDEX=sistac-cvs       # Nombre del índice
 """
 
 import os
@@ -42,16 +46,26 @@ EXPLORATIONS    = PROJECT_ROOT / "explorations"
 BIB_FILE        = PROJECT_ROOT / "Bibliography_base.bib"
 SCRIPTS_DIR     = PROJECT_ROOT / "scripts" / "python"
 
-# ── Configuración LLM: Anthropic Claude ──────────────────────────────────────
+# ── Azure AI Search (vector store oficial del experimento) ───────────────────
+AZURE_SEARCH_ENDPOINT = os.getenv("AZURE_SEARCH_ENDPOINT", "")
+AZURE_SEARCH_KEY      = os.getenv("AZURE_SEARCH_KEY", "")
+AZURE_SEARCH_INDEX    = os.getenv("AZURE_SEARCH_INDEX", "sistac-cvs")
+
+# ── Configuración LLM ─────────────────────────────────────────────────────────
 ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
+OPENAI_API_KEY    = os.getenv("OPENAI_API_KEY", "")
+GOOGLE_API_KEY    = os.getenv("GOOGLE_API_KEY", "")   # Gemini 2.5 Flash (extracción docs)
+
+# Modelo Gemini para extracción de documentos (PDF nativo, imágenes, OCR)
+GEMINI_DOC_MODEL = "gemini-2.5-flash-preview-05-20"
 
 # Modelos disponibles (seleccionar según fase):
 #   Desarrollo / iteración rápida  → claude-haiku-3-5
 #   Redacción y análisis           → claude-sonnet-4-5 (recomendado)
 #   Experimento final (máx calidad) → claude-opus-4-5
-LLM_MODEL_DEV   = "claude-haiku-3-5-20241022"     # dev: rápido y barato
-LLM_MODEL_PROD  = "claude-sonnet-4-5-20241022"    # producción: equilibrado
-LLM_MODEL_FINAL = "claude-opus-4-5-20240229"      # experimento final: máxima calidad
+LLM_MODEL_DEV   = "claude-haiku-4-5"      # dev: rápido y barato (Claude Haiku 4.5)
+LLM_MODEL_PROD  = "claude-sonnet-4-5"    # producción: equilibrado (Claude Sonnet 4.5)
+LLM_MODEL_FINAL = "claude-opus-4-5"      # experimento final: máxima calidad (Claude Opus 4.5)
 
 # Modelo activo (cambiar según la fase del proyecto)
 LLM_MODEL = LLM_MODEL_PROD
@@ -83,8 +97,10 @@ H2_AUC_THRESHOLD       = 0.90   # AUC-ROC ≥ 0.90 (H2)
 H3_DIR_THRESHOLD       = 0.80   # DIR ≥ 0.80 (regla EEOC 4/5) (H3)
 GOLD_STANDARD_KAPPA    = 0.70   # κ ≥ 0.70 inter-evaluador (Gold Standard válido)
 
-# Score de corte para decisión apto/no apto (a calibrar en desarrollo)
-SCORE_THRESHOLD = 60   # candidatos con score ≥ 60 → "apto"
+# Score de corte para decisión apto/no apto
+# Calibrado con el piloto C2 (5 CVs vs Gold Standard): score ≥ 70 → APTO
+# Todos los experimentos C1/C2/C3 usan este umbral para comparabilidad.
+SCORE_THRESHOLD = 70   # candidatos con score ≥ 70 → "apto"
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
 def ensure_dirs() -> None:
@@ -111,11 +127,32 @@ def check_api_key() -> bool:
     return True
 
 
+def check_azure_config() -> bool:
+    """Verificar que Azure AI Search esté configurado."""
+    missing = []
+    if not AZURE_SEARCH_ENDPOINT:
+        missing.append("AZURE_SEARCH_ENDPOINT")
+    if not AZURE_SEARCH_KEY:
+        missing.append("AZURE_SEARCH_KEY")
+    if missing:
+        raise EnvironmentError(
+            f"Variables de Azure no configuradas: {', '.join(missing)}\n"
+            "Agregá al archivo .env:\n"
+            "  AZURE_SEARCH_ENDPOINT=https://tu-servicio.search.windows.net\n"
+            "  AZURE_SEARCH_KEY=tu-api-key\n"
+            "  AZURE_SEARCH_INDEX=sistac-cvs"
+        )
+    return True
+
+
 if __name__ == "__main__":
     ensure_dirs()
     print("Configuracion SISTAC:")
-    print(f"  PROJECT_ROOT : {PROJECT_ROOT}")
-    print(f"  LLM_MODEL    : {LLM_MODEL}")
-    print(f"  EMBEDDING    : {EMBEDDING_MODEL}")
-    print(f"  API_KEY      : {'OK' if ANTHROPIC_API_KEY else 'FALTA (.env)'}")
-    print(f"  RANDOM_SEED  : {RANDOM_SEED}")
+    print(f"  PROJECT_ROOT    : {PROJECT_ROOT}")
+    print(f"  LLM_MODEL       : {LLM_MODEL}")
+    print(f"  EMBEDDING       : {EMBEDDING_MODEL}")
+    print(f"  ANTHROPIC_KEY   : {'OK' if ANTHROPIC_API_KEY else 'FALTA (.env)'}")
+    print(f"  OPENAI_KEY      : {'OK' if OPENAI_API_KEY else 'FALTA (.env)'}")
+    print(f"  AZURE_ENDPOINT  : {'OK' if AZURE_SEARCH_ENDPOINT else 'FALTA (.env)'}")
+    print(f"  SCORE_THRESHOLD : {SCORE_THRESHOLD}")
+    print(f"  RANDOM_SEED     : {RANDOM_SEED}")

@@ -110,15 +110,37 @@ def get_chat_completion(
 # Embeddings
 # ---------------------------------------------------------------------------
 
+# Singleton del modelo sentence-transformers — se carga una sola vez por proceso
+_ST_MODEL = None
+
 def _anthropic_embed(text: str) -> list[float]:
     """
     Anthropic no tiene API de embeddings propia.
-    Usar sentence-transformers como fallback neutral.
-    """
-    from sentence_transformers import SentenceTransformer
+    Usar sentence-transformers: paraphrase-multilingual-mpnet-base-v2 → 768 dims.
+    Debe coincidir con EMBEDDING_DIMENSIONS = 768 en rag/create_index.py.
 
-    model = SentenceTransformer("paraphrase-multilingual-MiniLM-L12-v2")
-    return model.encode(text).tolist()
+    El modelo se carga una sola vez (singleton) para no recargar pesos en cada chunk.
+    """
+    global _ST_MODEL
+    if _ST_MODEL is None:
+        from sentence_transformers import SentenceTransformer
+        import os
+
+        # Autenticar con HF si hay token en .env (evita warning de unauthenticated)
+        hf_token = os.getenv("HF_TOKEN")
+        if hf_token:
+            try:
+                from huggingface_hub import login
+                login(token=hf_token, add_to_git_credential=False)
+            except Exception:
+                pass  # si falla el login, continuar igual (modelo ya cacheado)
+
+        print("  Cargando modelo de embeddings (una sola vez)...")
+        _ST_MODEL = SentenceTransformer(
+            "paraphrase-multilingual-mpnet-base-v2",
+            token=hf_token or None,
+        )
+    return _ST_MODEL.encode(text).tolist()
 
 
 def _openai_embed(text: str) -> list[float]:
