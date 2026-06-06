@@ -746,6 +746,59 @@ async def estado_experimento():
 
 
 
+def _eliminar_archivo_temp(path: str):
+    import os
+    import shutil
+    try:
+        if os.path.exists(path):
+            os.remove(path)
+        parent = os.path.dirname(path)
+        if os.path.exists(parent) and ("tmp" in parent or "temp" in parent):
+            shutil.rmtree(parent, ignore_errors=True)
+    except Exception as e:
+        print(f"[WARN] Error al limpiar archivo temporal: {e}")
+
+
+@app.get("/api/admin/descargar-tablas")
+def descargar_tablas(background_tasks: BackgroundTasks):
+    """
+    Comprime todo el contenido de la carpeta paper/tables/ en un archivo .zip
+    y lo retorna para su descarga.
+    """
+    from config import TABLES_DIR
+    import shutil
+    import tempfile
+    from fastapi.responses import FileResponse
+    
+    if not TABLES_DIR.exists() or not any(TABLES_DIR.iterdir()):
+        raise HTTPException(
+            status_code=404,
+            detail="No hay tablas ni métricas generadas para descargar. Ejecutá el experimento primero."
+        )
+    
+    temp_dir = tempfile.mkdtemp()
+    zip_base = Path(temp_dir) / "tablas_resultados_sistac"
+    
+    try:
+        # Generar ZIP a partir de la carpeta de tablas
+        shutil.make_archive(str(zip_base), "zip", root_dir=str(TABLES_DIR))
+        full_zip_path = Path(f"{zip_base}.zip")
+        
+        if not full_zip_path.exists():
+            raise HTTPException(status_code=500, detail="Error al generar el archivo ZIP de tablas.")
+            
+        # Programar la limpieza del archivo y carpeta temporal
+        background_tasks.add_task(_eliminar_archivo_temp, str(full_zip_path))
+        
+        return FileResponse(
+            path=full_zip_path,
+            filename="tablas_resultados_sistac.zip",
+            media_type="application/zip"
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error al comprimir tablas: {str(e)}")
+
+
 @app.get("/api/admin/metricas")
 async def obtener_metricas():
     """

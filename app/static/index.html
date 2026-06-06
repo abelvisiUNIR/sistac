@@ -448,9 +448,14 @@
         <h2 class="text-xl font-bold text-slate-900">Métricas de Evaluación TFE</h2>
         <p class="text-sm text-slate-500">Resultados experimentales y contrastación de hipótesis (H1, H2, H3).</p>
       </div>
-      <button onclick="cargarMetricas()" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 px-4 rounded-xl text-xs transition-colors shadow-sm flex items-center gap-1.5 self-start">
-        ↻ Recargar Métricas
-      </button>
+      <div class="flex gap-2 self-start flex-wrap">
+        <button id="btn-descargar-tablas" onclick="descargarTablasZip()" class="hidden bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2.5 px-4 rounded-xl text-xs transition-colors shadow-sm flex items-center gap-1.5">
+          📥 Descargar Tablas (ZIP)
+        </button>
+        <button onclick="cargarMetricas()" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 px-4 rounded-xl text-xs transition-colors shadow-sm flex items-center gap-1.5">
+          ↻ Recargar Métricas
+        </button>
+      </div>
     </div>
 
     <!-- Advertencia cuando no hay datos -->
@@ -966,9 +971,42 @@ async function cargarHistorial() {
 }
 
 // ── Métricas ──────────────────────────────────────────────────────────────
+async function descargarTablasZip() {
+  const btn = document.getElementById('btn-descargar-tablas');
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = 'Comprimiendo…';
+  }
+  try {
+    const res = await fetch(`${API}/api/admin/descargar-tablas`);
+    if (!res.ok) {
+      const errData = await res.json();
+      throw new Error(errData.detail || 'Error al descargar las tablas.');
+    }
+    const blob = await res.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.style.display = 'none';
+    a.href = url;
+    a.download = 'tablas_resultados_sistac.zip';
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(url);
+    toast('Tablas descargadas con éxito.', 'ok');
+  } catch(e) {
+    toast(`Error: ${e.message}`, 'err');
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = '📥 Descargar Tablas (ZIP)';
+    }
+  }
+}
+
 async function cargarMetricas() {
   const nodata = document.getElementById('metricas-no-data');
   const content = document.getElementById('metricas-content');
+  const btnDescargar = document.getElementById('btn-descargar-tablas');
   
   try {
     const r = await fetch(`${API}/api/admin/metricas`);
@@ -978,11 +1016,13 @@ async function cargarMetricas() {
     if (d.status === 'no_data') {
       nodata.classList.remove('hidden');
       content.classList.add('hidden');
+      if (btnDescargar) btnDescargar.classList.add('hidden');
       return;
     }
     
     nodata.classList.add('hidden');
     content.classList.remove('hidden');
+    if (btnDescargar) btnDescargar.classList.remove('hidden');
     
     // Render H1
     const tblH1 = document.getElementById('tbl-h1');
