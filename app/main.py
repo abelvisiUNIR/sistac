@@ -613,7 +613,7 @@ async def guardar_decision(
     expected_score = 85 if decision == "APTO" else 30
     escribir_cabecera_gt = not gt_path.exists()
     try:
-        with open(gt_path, mode="a", newline="", encoding="utf-8") as f:
+        with open(gt_path, mode="a", newline="", encoding="utf-8-sig") as f:
             writer = csv.DictWriter(f, fieldnames=["cv_id", "jd_id", "expected_label", "expected_score", "group_gender", "group_age"])
             if escribir_cabecera_gt:
                 writer.writeheader()
@@ -632,7 +632,7 @@ async def guardar_decision(
     c0_path = GOLD_STANDARD_DIR / "c0_times.csv"
     escribir_cabecera_c0 = not c0_path.exists()
     try:
-        with open(c0_path, mode="a", newline="", encoding="utf-8") as f:
+        with open(c0_path, mode="a", newline="", encoding="utf-8-sig") as f:
             writer = csv.DictWriter(f, fieldnames=["cv_id", "jd_id", "time_seconds", "decision", "evaluator_id"])
             if escribir_cabecera_c0:
                 writer.writeheader()
@@ -762,33 +762,56 @@ def _eliminar_archivo_temp(path: str):
 @app.get("/api/admin/descargar-tablas")
 def descargar_tablas(background_tasks: BackgroundTasks):
     """
-    Comprime todo el contenido de la carpeta paper/tables/ en un archivo .zip
-    y lo retorna para su descarga.
+    Genera el reporte Excel, compila los gráficos y tablas en carpetas ordenadas
+    y los descarga en un único archivo ZIP.
     """
     from config import TABLES_DIR
     import shutil
     import tempfile
     from fastapi.responses import FileResponse
     
+    # 1. Intentar generar el reporte Excel actualizado
+    try:
+        from evaluation.export_excel_report import generate_excel_report
+        generate_excel_report()
+    except Exception as e:
+        print(f"[WARN] No se pudo generar el reporte Excel dinámico: {e}")
+        
     if not TABLES_DIR.exists() or not any(TABLES_DIR.iterdir()):
         raise HTTPException(
             status_code=404,
             detail="No hay tablas ni métricas generadas para descargar. Ejecutá el experimento primero."
         )
     
-    temp_dir = tempfile.mkdtemp()
-    zip_base = Path(temp_dir) / "tablas_resultados_sistac"
+    # 2. Crear una estructura temporal limpia para organizar el ZIP
+    temp_workspace = tempfile.mkdtemp()
+    zip_dir = Path(temp_workspace) / "resultados_tfe_sistac"
+    zip_dir.mkdir()
+    
+    # Copiar tablas a /tablas
+    tablas_dest = zip_dir / "tablas"
+    shutil.copytree(str(TABLES_DIR), str(tablas_dest))
+    
+    # Copiar figuras de matplotlib si existen a /graficos
+    figures_source = _PROJECT_ROOT / "paper" / "figures" / "cap5"
+    if figures_source.exists() and any(figures_source.iterdir()):
+        graficos_dest = zip_dir / "graficos"
+        shutil.copytree(str(figures_source), str(graficos_dest))
+        
+    # 3. Crear el archivo ZIP comprimido
+    zip_output_dir = tempfile.mkdtemp()
+    zip_base = Path(zip_output_dir) / "tablas_resultados_sistac"
     
     try:
-        # Generar ZIP a partir de la carpeta de tablas
-        shutil.make_archive(str(zip_base), "zip", root_dir=str(TABLES_DIR))
+        shutil.make_archive(str(zip_base), "zip", root_dir=str(zip_dir))
         full_zip_path = Path(f"{zip_base}.zip")
         
         if not full_zip_path.exists():
-            raise HTTPException(status_code=500, detail="Error al generar el archivo ZIP de tablas.")
+            raise HTTPException(status_code=500, detail="Error al generar el archivo ZIP.")
             
-        # Programar la limpieza del archivo y carpeta temporal
+        # Programar la limpieza de todo el espacio de trabajo temporal
         background_tasks.add_task(_eliminar_archivo_temp, str(full_zip_path))
+        background_tasks.add_task(_eliminar_archivo_temp, str(temp_workspace))
         
         return FileResponse(
             path=full_zip_path,
@@ -796,7 +819,7 @@ def descargar_tablas(background_tasks: BackgroundTasks):
             media_type="application/zip"
         )
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error al comprimir tablas: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error al comprimir tablas y gráficos: {str(e)}")
 
 
 @app.get("/api/admin/metricas")

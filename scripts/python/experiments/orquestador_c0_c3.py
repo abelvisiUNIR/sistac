@@ -300,7 +300,7 @@ def save_csv(data: list[dict], filename: str) -> None:
     path = TABLES_DIR / filename
     if not data:
         return
-    with open(path, "w", newline="", encoding="utf-8") as f:
+    with open(path, "w", newline="", encoding="utf-8-sig") as f:
         writer = csv.DictWriter(f, fieldnames=data[0].keys())
         writer.writeheader()
         writer.writerows(data)
@@ -519,6 +519,12 @@ def main() -> None:
         [{"config": r[0], "dir": r[1], "spd": r[2]} for r in h3_rows],
         "tab_resultados_h3.csv",
     )
+
+    try:
+        from evaluation.export_excel_report import generate_excel_report
+        generate_excel_report()
+    except Exception as e:
+        print(f"  [WARN] No se pudo generar el reporte Excel: {e}")
 
     print("\n" + "=" * 60)
     print("Experimento completado. Outputs en paper/tables/")
