@@ -79,12 +79,15 @@ if MONGO_URI:
 async def startup_event():
     if cargos_col is not None:
         try:
+            from data.seed_mongodb import seed_database
+            await run_in_threadpool(seed_database)
+            
             db_cargos = list(cargos_col.find({}, {"_id": 0}))
             for c in db_cargos:
                 _cargos[c["id"]] = c
             print(f"[INFO] Cargados {len(db_cargos)} cargos desde MongoDB.")
         except Exception as e:
-            print(f"[WARN] No se pudieron cargar cargos desde MongoDB: {e}")
+            print(f"[WARN] No se pudieron cargar o sembrar datos en MongoDB: {e}")
 
 
 
