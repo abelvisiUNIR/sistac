@@ -1,0 +1,21 @@
+Roberto Navarro Ramírez
+roberto.navarro7@hotmail.com | Tel.: +34 615 100 153
+Rambla República del Perú 2117, Palermo, Montevideo
+
+RESUMEN PROFESIONAL:
+Profesional con 9 años de experiencia en ingeniero/a de software senior. Titulado/a en Licenciatura en Ciencias de la Computación con sólida formación técnica y experiencia comprobable en entornos corporativos. Orientado/a a resultados y al trabajo en equipo.
+
+EXPERIENCIA LABORAL (9 años):
+- Ingeniero/a de Software Sr. | GeneXus (2021–Actualidad)
+  Optimización de procesos mediante cloud AWS/GCP.
+- Engineering Manager | Tryolabs (2022–2023)
+  Desarrollo e implementación de soluciones con Python o Java.
+
+FORMACIÓN ACADÉMICA:
+- Licenciatura en Ciencias de la Computación — Universidad de la República (UdelaR) (26)
+
+CERTIFICACIONES:
+- Kubernetes CKAD (2023)
+
+HABILIDADES TÉCNICAS:
+microservicios · Python o Java · liderazgo técnico · cloud AWS/GCP · diseño de sistemas · Kubernetes · CI/CD · arquitectura de software · GCP

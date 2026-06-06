@@ -1,0 +1,21 @@
+Santiago Núñez Ruiz
+santiago.núñez62@gmail.com | Tel.: +34 655 405 871
+Rivera 2516, Apto. 18, Sayago, Montevideo
+
+RESUMEN PROFESIONAL:
+Profesional con 5 años de experiencia en analista de datos. Titulado/a en Licenciatura en Matemática con sólida formación técnica y experiencia comprobable en entornos corporativos. Orientado/a a resultados y al trabajo en equipo.
+
+EXPERIENCIA LABORAL (5 años):
+- Data Analyst | PedidosYa (2023–Actualidad)
+  Desarrollo e implementación de soluciones con Excel avanzado.
+- Analista de Datos Jr. | Pragma Consultores (2018–2022)
+  Optimización de procesos mediante Python.
+
+FORMACIÓN ACADÉMICA:
+- Licenciatura en Matemática — Universidad ORT Uruguay (50)
+
+CERTIFICACIONES:
+- Microsoft Power BI (2020)
+
+HABILIDADES TÉCNICAS:
+pandas · Power BI · machine learning básico · visualización de datos · Python · SQL · Excel avanzado · ETL

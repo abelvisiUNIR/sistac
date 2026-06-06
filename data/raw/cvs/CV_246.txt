@@ -1,0 +1,21 @@
+Tomás Rubio Gómez
+tomás.rubio62@yahoo.com | Tel.: +34 675 801 793
+Calle Durazno 2980, Apto. 13, Pocitos, Montevideo
+
+RESUMEN PROFESIONAL:
+Profesional con 8 años de experiencia en ingeniero/a de software senior. Titulado/a en Ingeniería en Computación con sólida formación técnica y experiencia comprobable en entornos corporativos. Orientado/a a resultados y al trabajo en equipo.
+
+EXPERIENCIA LABORAL (8 años):
+- Desarrollador/a Senior | Globant Uruguay (2023–Actualidad)
+  Coordinación con equipos multidisciplinarios y presentación de resultados.
+- Ingeniero/a de Software Sr. | UPM Uruguay (2019–2022)
+  Responsable de ci/cd y generación de reportes.
+
+FORMACIÓN ACADÉMICA:
+- Ingeniería en Computación — Universidad de la República (UdelaR) (47)
+
+CERTIFICACIONES:
+- AWS Solutions Architect (2021)
+
+HABILIDADES TÉCNICAS:
+arquitectura de software · Kubernetes · Python o Java · CI/CD · cloud AWS/GCP · liderazgo técnico · diseño de sistemas · microservicios

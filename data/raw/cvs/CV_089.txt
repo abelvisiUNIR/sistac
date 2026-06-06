@@ -1,0 +1,23 @@
+Verónica Gutiérrez Sanz
+verónica.gutiérrez82@yahoo.com | Tel.: +34 695 467 619
+Av. 18 de Julio 1496, Apto. 18, Malvín, Montevideo
+
+RESUMEN PROFESIONAL:
+Profesional con 7 años de experiencia en desarrollador/a backend python. Titulado/a en Ingeniería en Software con sólida formación técnica y experiencia comprobable en entornos corporativos. Orientado/a a resultados y al trabajo en equipo.
+
+EXPERIENCIA LABORAL (7 años):
+- Backend Developer | BBVA Uruguay (2023–Actualidad)
+  Responsable de django y generación de reportes.
+- Desarrollador Python | AGESIC (2017–2021)
+  Desarrollo e implementación de soluciones con FastAPI.
+- Ingeniero de Software | Grupo Disco-Devoto (2019–2021)
+  Desarrollo e implementación de soluciones con APIs REST.
+
+FORMACIÓN ACADÉMICA:
+- Ingeniería en Software — Universidad ORT Uruguay (31)
+
+CERTIFICACIONES:
+- AWS Certified Developer (2022)
+
+HABILIDADES TÉCNICAS:
+microservicios · Django · Git · FastAPI · APIs REST · Docker

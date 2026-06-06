@@ -1,0 +1,20 @@
+Ignacio Ortega Iglesias
+ignacio.ortega91@yahoo.com | Tel.: +34 681 109 214
+Bulevar Artigas 1410, Apto. 12, Tres Cruces, Montevideo
+
+RESUMEN PROFESIONAL:
+Profesional con 10 años de experiencia en analista de datos. Titulado/a en Licenciatura en Estadística con sólida formación técnica y experiencia comprobable en entornos corporativos. Orientado/a a resultados y al trabajo en equipo.
+
+EXPERIENCIA LABORAL (10 años):
+- Especialista en Reportería | Santander Uruguay (2020–Actualidad)
+  Optimización de procesos mediante visualización de datos.
+- Data Analyst | Banco República (BROU) (2020–2022)
+  Responsable de power bi y generación de reportes.
+- Analista de Business Intelligence | Tryolabs (2018–2022)
+  Desarrollo e implementación de soluciones con visualización de datos.
+
+FORMACIÓN ACADÉMICA:
+- Licenciatura en Estadística — Instituto Tecnológico Superior (ITS) (35)
+
+HABILIDADES TÉCNICAS:
+Excel avanzado · SQL · Python · Power BI · análisis estadístico · visualización de datos · machine learning · scikit-learn

@@ -1,0 +1,23 @@
+Leonardo Molina Gutiérrez
+leonardo.molina42@hotmail.com | Tel.: +34 663 837 427
+Av. 18 de Julio 1119, Apto. 4, Parque Rodó, Montevideo
+
+RESUMEN PROFESIONAL:
+Profesional con 3 años de experiencia en desarrollador/a backend python. Titulado/a en Ingeniería en Software con sólida formación técnica y experiencia comprobable en entornos corporativos. Orientado/a a resultados y al trabajo en equipo.
+
+EXPERIENCIA LABORAL (3 años):
+- Desarrollador Python | Grupo Disco-Devoto (2021–Actualidad)
+  Desarrollo e implementación de soluciones con microservicios.
+- Desarrollador Python | AGESIC (2022–2023)
+  Desarrollo e implementación de soluciones con Python.
+- Ingeniero de Software | Tryolabs (2017–2018)
+  Optimización de procesos mediante PostgreSQL.
+
+FORMACIÓN ACADÉMICA:
+- Ingeniería en Software — Universidad de la República (UdelaR) (16)
+
+CERTIFICACIONES:
+- Python Institute PCEP (2020)
+
+HABILIDADES TÉCNICAS:
+PostgreSQL · APIs REST · Docker · Python · microservicios · Git · arquitectura de software

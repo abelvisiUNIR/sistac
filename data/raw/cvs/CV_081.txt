@@ -1,0 +1,18 @@
+Claudia Castro González
+claudia.castro43@ort.edu.uy | Tel.: +34 635 925 233
+Calle Colonia 1526, Apto. 11, Pocitos, Montevideo
+
+RESUMEN PROFESIONAL:
+Profesional con 3 años de experiencia en desarrollador/a backend python. Titulado/a en Ingeniería en Software con sólida formación técnica y experiencia comprobable en entornos corporativos. Orientado/a a resultados y al trabajo en equipo.
+
+EXPERIENCIA LABORAL (3 años):
+- Desarrollador Full Stack | Tryolabs (2021–Actualidad)
+  Desarrollo e implementación de soluciones con Git.
+- Backend Developer | Pragma Consultores (2021–2022)
+  Responsable de docker y generación de reportes.
+
+FORMACIÓN ACADÉMICA:
+- Ingeniería en Software — Universidad Católica del Uruguay (UCU) (41)
+
+HABILIDADES TÉCNICAS:
+FastAPI · APIs REST · Python · Docker · microservicios · Git · GraphQL · Flask

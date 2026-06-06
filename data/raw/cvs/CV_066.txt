@@ -1,0 +1,18 @@
+Federico Núñez Romero
+federico.núñez76@ort.edu.uy | Tel.: +34 633 798 886
+Punta Gorda 910, Apto. 15, Villa Española, Montevideo
+
+RESUMEN PROFESIONAL:
+Profesional con 6 años de experiencia en desarrollador/a backend python. Titulado/a en Licenciatura en Sistemas con sólida formación técnica y experiencia comprobable en entornos corporativos. Orientado/a a resultados y al trabajo en equipo.
+
+EXPERIENCIA LABORAL (6 años):
+- Backend Developer | PedidosYa (2020–Actualidad)
+  Coordinación con equipos multidisciplinarios y presentación de resultados.
+- Programador Senior | Conaprole (2022–2023)
+  Responsable de postgresql y generación de reportes.
+
+FORMACIÓN ACADÉMICA:
+- Licenciatura en Sistemas — Universidad Católica del Uruguay (UCU) (43)
+
+HABILIDADES TÉCNICAS:
+Docker · APIs REST · Git · Python · PostgreSQL · FastAPI · Django · microservicios

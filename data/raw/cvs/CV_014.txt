@@ -1,0 +1,20 @@
+Alejandro Rubio Moreno
+alejandro.rubio2@yahoo.com | Tel.: +34 672 208 543
+Calle Colonia 3403, Apto. 15, Villa Española, Montevideo
+
+RESUMEN PROFESIONAL:
+Profesional con 4 años de experiencia en analista de datos. Titulado/a en Licenciatura en Estadística con sólida formación técnica y experiencia comprobable en entornos corporativos. Orientado/a a resultados y al trabajo en equipo.
+
+EXPERIENCIA LABORAL (4 años):
+- Especialista en Reportería | Mercado Libre Uruguay (2022–Actualidad)
+  Coordinación con equipos multidisciplinarios y presentación de resultados.
+- Analista de Business Intelligence | Tata Consultancy Services Uruguay (2020–2022)
+  Desarrollo e implementación de soluciones con BigQuery.
+- Data Analyst | El Observador (2019–2020)
+  Desarrollo e implementación de soluciones con numpy.
+
+FORMACIÓN ACADÉMICA:
+- Licenciatura en Estadística — Universidad de la República (UdelaR) (36)
+
+HABILIDADES TÉCNICAS:
+Power BI · visualización de datos · análisis estadístico · machine learning básico · pandas · SQL · Excel avanzado · numpy · BigQuery

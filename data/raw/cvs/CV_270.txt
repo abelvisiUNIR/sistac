@@ -1,0 +1,20 @@
+Gonzalo Garrido Ramírez
+gonzalo.garrido76@yahoo.com | Tel.: +34 640 690 121
+Av. 18 de Julio 873, Apto. 19, Pocitos, Montevideo
+
+RESUMEN PROFESIONAL:
+Profesional con 12 años de experiencia en ingeniero/a de software senior. Titulado/a en Ingeniería en Computación con sólida formación técnica y experiencia comprobable en entornos corporativos. Orientado/a a resultados y al trabajo en equipo.
+
+EXPERIENCIA LABORAL (12 años):
+- Engineering Manager | Cutcsa (2020–Actualidad)
+  Optimización de procesos mediante CI/CD.
+- Ingeniero/a de Software Sr. | PedidosYa (2017–2021)
+  Responsable de microservicios y generación de reportes.
+- Desarrollador/a Senior | Ministerio de Economía y Finanzas (2020–2022)
+  Optimización de procesos mediante microservicios.
+
+FORMACIÓN ACADÉMICA:
+- Ingeniería en Computación — Universidad de Montevideo (UM) (45)
+
+HABILIDADES TÉCNICAS:
+cloud AWS/GCP · diseño de sistemas · Python o Java · arquitectura de software · CI/CD · microservicios · Kubernetes · DDD

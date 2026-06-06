@@ -1,0 +1,20 @@
+Matías Hernández Delgado
+matías.hernández73@yahoo.com | Tel.: +34 680 623 215
+Ellauri 1267, Parque Rodó, Montevideo
+
+RESUMEN PROFESIONAL:
+Profesional con 8 años de experiencia en desarrollador/a backend python. Titulado/a en Ingeniería en Software con sólida formación técnica y experiencia comprobable en entornos corporativos. Orientado/a a resultados y al trabajo en equipo.
+
+EXPERIENCIA LABORAL (8 años):
+- Backend Developer | Tryolabs (2020–Actualidad)
+  Desarrollo e implementación de soluciones con Git.
+- Ingeniero de Software | GeneXus (2020–2021)
+  Desarrollo e implementación de soluciones con GCP.
+- Ingeniero de Software | AGESIC (2016–2019)
+  Responsable de docker y generación de reportes.
+
+FORMACIÓN ACADÉMICA:
+- Ingeniería en Software — Universidad Católica del Uruguay (UCU) (28)
+
+HABILIDADES TÉCNICAS:
+Python · APIs REST · Git · PostgreSQL · Django · Docker · microservicios · FastAPI · GCP

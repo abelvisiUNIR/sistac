@@ -1,0 +1,21 @@
+Valentina Sanz Cortés
+valentina.sanz44@outlook.com | Tel.: +34 670 879 306
+Punta Gorda 1429, Buceo, Montevideo
+
+RESUMEN PROFESIONAL:
+Profesional con 11 años de experiencia en ingeniero/a de software senior. Titulado/a en Ingeniería en Sistemas con sólida formación técnica y experiencia comprobable en entornos corporativos. Orientado/a a resultados y al trabajo en equipo.
+
+EXPERIENCIA LABORAL (11 años):
+- Arquitecto/a de Software | Overactive (2022–Actualidad)
+  Responsable de diseño de sistemas y generación de reportes.
+- Engineering Manager | ANCAP (2020–2022)
+  Optimización de procesos mediante arquitectura de software.
+
+FORMACIÓN ACADÉMICA:
+- Ingeniería en Sistemas — Universidad Tecnológica (UTEC) (30)
+
+CERTIFICACIONES:
+- Kubernetes CKAD (2019)
+
+HABILIDADES TÉCNICAS:
+CI/CD · diseño de sistemas · liderazgo técnico · cloud AWS/GCP · Kubernetes · microservicios · arquitectura de software · Python o Java · DDD

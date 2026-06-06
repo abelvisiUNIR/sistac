@@ -1,0 +1,18 @@
+Paola Suárez Moreno
+paola.suárez56@gmail.com | Tel.: +34 611 200 364
+Av. Gral. Flores 2891, Apto. 18, Tres Cruces, Montevideo
+
+RESUMEN PROFESIONAL:
+Profesional con 6 años de experiencia en desarrollador/a backend python. Titulado/a en Tecnólogo en Informática con sólida formación técnica y experiencia comprobable en entornos corporativos. Orientado/a a resultados y al trabajo en equipo.
+
+EXPERIENCIA LABORAL (6 años):
+- Desarrollador Python | Mercado Libre Uruguay (2020–Actualidad)
+  Optimización de procesos mediante PostgreSQL.
+- Programador Senior | Conaprole (2020–2022)
+  Responsable de django y generación de reportes.
+
+FORMACIÓN ACADÉMICA:
+- Tecnólogo en Informática — Universidad de la República (UdelaR) (30)
+
+HABILIDADES TÉCNICAS:
+Git · PostgreSQL · APIs REST · Docker · Django · microservicios · Python · Flask

@@ -1,0 +1,21 @@
+Damián Sánchez Ortega
+damián.sánchez13@ort.edu.uy | Tel.: +34 668 115 839
+Av. Italia 2479, Apto. 5, Punta Carretas, Montevideo
+
+RESUMEN PROFESIONAL:
+Profesional con 9 años de experiencia en analista de datos. Titulado/a en Ingeniería en Sistemas con sólida formación técnica y experiencia comprobable en entornos corporativos. Orientado/a a resultados y al trabajo en equipo.
+
+EXPERIENCIA LABORAL (9 años):
+- Especialista en Reportería | Santander Uruguay (2023–Actualidad)
+  Responsable de machine learning básico y generación de reportes.
+- Data Engineer Jr. | GeneXus (2021–2022)
+  Coordinación con equipos multidisciplinarios y presentación de resultados.
+
+FORMACIÓN ACADÉMICA:
+- Ingeniería en Sistemas — Universidad de la República (UdelaR) (34)
+
+CERTIFICACIONES:
+- Google Data Analytics (2024)
+
+HABILIDADES TÉCNICAS:
+visualización de datos · análisis estadístico · machine learning básico · pandas · Python · SQL · Power BI · redes neuronales · BigQuery

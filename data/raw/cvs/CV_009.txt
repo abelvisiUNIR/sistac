@@ -1,0 +1,23 @@
+Patricia Moreno Domínguez
+patricia.moreno9@outlook.com | Tel.: +34 654 756 621
+Rivera 2996, Pocitos, Montevideo
+
+RESUMEN PROFESIONAL:
+Profesional con 3 años de experiencia en analista de datos. Titulado/a en Ingeniería en Sistemas con sólida formación técnica y experiencia comprobable en entornos corporativos. Orientado/a a resultados y al trabajo en equipo.
+
+EXPERIENCIA LABORAL (3 años):
+- Data Engineer Jr. | Globant Uruguay (2022–Actualidad)
+  Coordinación con equipos multidisciplinarios y presentación de resultados.
+- Especialista en Reportería | Overactive (2020–2021)
+  Coordinación con equipos multidisciplinarios y presentación de resultados.
+- Data Engineer Jr. | UPM Uruguay (2019–2020)
+  Desarrollo e implementación de soluciones con machine learning.
+
+FORMACIÓN ACADÉMICA:
+- Ingeniería en Sistemas — Universidad Tecnológica (UTEC) (46)
+
+CERTIFICACIONES:
+- IBM Data Science (2024)
+
+HABILIDADES TÉCNICAS:
+Power BI · análisis estadístico · machine learning básico · Python · Excel avanzado · visualización de datos · SQL · scikit-learn · machine learning

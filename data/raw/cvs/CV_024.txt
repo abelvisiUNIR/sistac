@@ -1,0 +1,21 @@
+Germán Muñoz Fernández
+germán.muñoz51@outlook.com | Tel.: +34 634 225 968
+Jackson 2662, Buceo, Montevideo
+
+RESUMEN PROFESIONAL:
+Profesional con 2 años de experiencia en analista de datos. Titulado/a en Licenciatura en Estadística con sólida formación técnica y experiencia comprobable en entornos corporativos. Orientado/a a resultados y al trabajo en equipo.
+
+EXPERIENCIA LABORAL (2 años):
+- Data Engineer Jr. | ANCAP (2023–Actualidad)
+  Desarrollo e implementación de soluciones con visualización de datos.
+- Analista de Business Intelligence | Ministerio de Economía y Finanzas (2022–2023)
+  Desarrollo e implementación de soluciones con machine learning básico.
+
+FORMACIÓN ACADÉMICA:
+- Licenciatura en Estadística — Universidad Católica del Uruguay (UCU) (50)
+
+CERTIFICACIONES:
+- Google Data Analytics (2019)
+
+HABILIDADES TÉCNICAS:
+visualización de datos · SQL · Excel avanzado · análisis estadístico · machine learning básico · Python · machine learning · R · Tableau

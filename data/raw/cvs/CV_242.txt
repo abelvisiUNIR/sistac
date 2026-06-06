@@ -1,0 +1,18 @@
+Rodrigo Domínguez Sánchez
+rodrigo.domínguez76@hotmail.com | Tel.: +34 659 595 760
+Av. Uruguay 2576, Malvín, Montevideo
+
+RESUMEN PROFESIONAL:
+Profesional con 6 años de experiencia en ingeniero/a de software senior. Titulado/a en Licenciatura en Ciencias de la Computación con sólida formación técnica y experiencia comprobable en entornos corporativos. Orientado/a a resultados y al trabajo en equipo.
+
+EXPERIENCIA LABORAL (6 años):
+- Desarrollador/a Senior | Banco República (BROU) (2023–Actualidad)
+  Responsable de liderazgo técnico y generación de reportes.
+- Tech Lead | Infocorp (2019–2021)
+  Coordinación con equipos multidisciplinarios y presentación de resultados.
+
+FORMACIÓN ACADÉMICA:
+- Licenciatura en Ciencias de la Computación — Universidad Tecnológica (UTEC) (38)
+
+HABILIDADES TÉCNICAS:
+microservicios · Kubernetes · CI/CD · liderazgo técnico · Python o Java · cloud AWS/GCP · arquitectura de software · DDD

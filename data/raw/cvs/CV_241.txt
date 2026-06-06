@@ -1,0 +1,23 @@
+Mónica González Álvarez
+mónica.gonzález93@ort.edu.uy | Tel.: +34 623 794 904
+Jackson 1404, Cordón, Montevideo
+
+RESUMEN PROFESIONAL:
+Profesional con 7 años de experiencia en ingeniero/a de software senior. Titulado/a en Ingeniería en Computación con sólida formación técnica y experiencia comprobable en entornos corporativos. Orientado/a a resultados y al trabajo en equipo.
+
+EXPERIENCIA LABORAL (7 años):
+- Desarrollador/a Senior | Santander Uruguay (2020–Actualidad)
+  Optimización de procesos mediante liderazgo técnico.
+- Ingeniero/a de Software Sr. | Cutcsa (2018–2021)
+  Responsable de liderazgo técnico y generación de reportes.
+- Tech Lead | El Observador (2021–2022)
+  Desarrollo e implementación de soluciones con Kubernetes.
+
+FORMACIÓN ACADÉMICA:
+- Ingeniería en Computación — Instituto Tecnológico Superior (ITS) (18)
+
+CERTIFICACIONES:
+- Kubernetes CKAD (2020)
+
+HABILIDADES TÉCNICAS:
+microservicios · cloud AWS/GCP · Python o Java · liderazgo técnico · arquitectura de software · Kubernetes · diseño de sistemas

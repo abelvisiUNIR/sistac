@@ -1,0 +1,18 @@
+Roberto González Medina
+roberto.gonzález20@gmail.com | Tel.: +34 689 824 656
+Calle Durazno 1122, Apto. 1, Villa Española, Montevideo
+
+RESUMEN PROFESIONAL:
+Profesional con 7 años de experiencia en ingeniero/a de software senior. Titulado/a en Licenciatura en Ciencias de la Computación con sólida formación técnica y experiencia comprobable en entornos corporativos. Orientado/a a resultados y al trabajo en equipo.
+
+EXPERIENCIA LABORAL (7 años):
+- Arquitecto/a de Software | Pragma Consultores (2023–Actualidad)
+  Responsable de liderazgo técnico y generación de reportes.
+- Ingeniero/a de Software Sr. | AGESIC (2020–2022)
+  Responsable de ci/cd y generación de reportes.
+
+FORMACIÓN ACADÉMICA:
+- Licenciatura en Ciencias de la Computación — Universidad de la República (UdelaR) (31)
+
+HABILIDADES TÉCNICAS:
+Kubernetes · microservicios · diseño de sistemas · liderazgo técnico · cloud AWS/GCP · arquitectura de software · Python o Java · DevOps · DDD · Python

@@ -1,0 +1,20 @@
+Ana Laura López Romero
+ana.lópez83@yahoo.com | Tel.: +34 626 194 967
+Jackson 2158, Palermo, Montevideo
+
+RESUMEN PROFESIONAL:
+Profesional con 3 años de experiencia en desarrollador/a backend python. Titulado/a en Ingeniería en Software con sólida formación técnica y experiencia comprobable en entornos corporativos. Orientado/a a resultados y al trabajo en equipo.
+
+EXPERIENCIA LABORAL (3 años):
+- Programador Senior | Globant Uruguay (2021–Actualidad)
+  Responsable de apis rest y generación de reportes.
+- Desarrollador Full Stack | Infocorp (2021–2022)
+  Desarrollo e implementación de soluciones con AWS.
+- Desarrollador Full Stack | Santander Uruguay (2018–2019)
+  Coordinación con equipos multidisciplinarios y presentación de resultados.
+
+FORMACIÓN ACADÉMICA:
+- Ingeniería en Software — Universidad ORT Uruguay (20)
+
+HABILIDADES TÉCNICAS:
+APIs REST · microservicios · Git · PostgreSQL · Docker · Python · AWS · MySQL

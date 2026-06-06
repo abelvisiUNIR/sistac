@@ -1,0 +1,20 @@
+Lucía Ramos Cortés
+lucía.ramos76@gmail.com | Tel.: +34 696 237 420
+Bulevar Artigas 1777, Malvín, Montevideo
+
+RESUMEN PROFESIONAL:
+Profesional con 8 años de experiencia en desarrollador/a backend python. Titulado/a en Licenciatura en Sistemas con sólida formación técnica y experiencia comprobable en entornos corporativos. Orientado/a a resultados y al trabajo en equipo.
+
+EXPERIENCIA LABORAL (8 años):
+- Programador Senior | Mercado Libre Uruguay (2021–Actualidad)
+  Desarrollo e implementación de soluciones con Python.
+- Desarrollador Full Stack | Baufest Uruguay (2017–2021)
+  Optimización de procesos mediante Python.
+- Ingeniero de Software | Conaprole (2020–2021)
+  Coordinación con equipos multidisciplinarios y presentación de resultados.
+
+FORMACIÓN ACADÉMICA:
+- Licenciatura en Sistemas — Universidad Tecnológica (UTEC) (51)
+
+HABILIDADES TÉCNICAS:
+FastAPI · Docker · PostgreSQL · Git · Django · microservicios · APIs REST · Python · Kubernetes

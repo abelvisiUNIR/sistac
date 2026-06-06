@@ -1,0 +1,23 @@
+Ignacio García Ortega
+ignacio.garcía74@hotmail.com | Tel.: +34 651 719 587
+Punta Gorda 1417, Apto. 15, Punta Carretas, Montevideo
+
+RESUMEN PROFESIONAL:
+Profesional con 7 años de experiencia en analista de datos. Titulado/a en Ingeniería en Computación con sólida formación técnica y experiencia comprobable en entornos corporativos. Orientado/a a resultados y al trabajo en equipo.
+
+EXPERIENCIA LABORAL (7 años):
+- Data Engineer Jr. | PedidosYa (2021–Actualidad)
+  Desarrollo e implementación de soluciones con pandas.
+- Analista de Datos Jr. | Mercado Libre Uruguay (2019–2022)
+  Responsable de excel avanzado y generación de reportes.
+- Analista de Datos Jr. | ANTEL (2018–2019)
+  Responsable de visualización de datos y generación de reportes.
+
+FORMACIÓN ACADÉMICA:
+- Ingeniería en Computación — Universidad de Montevideo (UM) (52)
+
+CERTIFICACIONES:
+- Microsoft Power BI (2021)
+
+HABILIDADES TÉCNICAS:
+SQL · análisis estadístico · visualización de datos · machine learning básico · Python · pandas · Excel avanzado · Power BI · numpy · redes neuronales

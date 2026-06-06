@@ -1,0 +1,21 @@
+Federico Sanz Muñoz
+federico.sanz99@hotmail.com | Tel.: +34 667 415 574
+Av. 18 de Julio 1291, Sayago, Montevideo
+
+RESUMEN PROFESIONAL:
+Profesional con 7 años de experiencia en desarrollador/a backend python. Titulado/a en Ingeniería en Software con sólida formación técnica y experiencia comprobable en entornos corporativos. Orientado/a a resultados y al trabajo en equipo.
+
+EXPERIENCIA LABORAL (7 años):
+- Backend Developer | Ministerio de Economía y Finanzas (2023–Actualidad)
+  Responsable de fastapi y generación de reportes.
+- Desarrollador Full Stack | GeneXus (2021–2023)
+  Responsable de postgresql y generación de reportes.
+
+FORMACIÓN ACADÉMICA:
+- Ingeniería en Software — Universidad Católica del Uruguay (UCU) (48)
+
+CERTIFICACIONES:
+- AWS Certified Developer (2022)
+
+HABILIDADES TÉCNICAS:
+Python · Django · FastAPI · APIs REST · microservicios · Git · PostgreSQL · Docker · CI/CD

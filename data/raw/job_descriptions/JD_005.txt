@@ -1,0 +1,22 @@
+CARGO: Ingeniero/a de Software Senior
+EMPRESA: NovaSys Engineering
+
+NovaSys Engineering busca un/a Ingeniero/a de Software Senior para liderar el diseño e implementación de sistemas distribuidos en proyectos de alto impacto.
+
+RESPONSABILIDADES:
+- Diseñar arquitecturas escalables de microservicios en cloud (AWS o GCP).
+- Liderar técnicamente equipos de 4-6 desarrolladores.
+- Implementar pipelines CI/CD y prácticas de DevOps.
+- Realizar revisiones de arquitectura y code reviews.
+- Colaborar con Product Managers en la definición técnica de funcionalidades.
+
+REQUISITOS:
+- Ingeniería en Sistemas, Computación o afín (Licenciatura mínimo).
+- Mínimo 5 años de experiencia en desarrollo de software.
+- Experiencia con arquitecturas de microservicios y cloud (AWS o GCP).
+- Dominio de Python o Java y herramientas DevOps (Docker, Kubernetes, CI/CD).
+
+SE VALORA:
+- Certificaciones cloud (AWS Solutions Architect, GCP Professional).
+- Experiencia en sistemas de alta disponibilidad.
+- Inglés avanzado.

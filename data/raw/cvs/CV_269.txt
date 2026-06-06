@@ -1,0 +1,23 @@
+Jimena Vázquez Garrido
+jimena.vázquez83@ort.edu.uy | Tel.: +34 655 507 130
+Bulevar Artigas 1536, Apto. 14, Sayago, Montevideo
+
+RESUMEN PROFESIONAL:
+Profesional con 7 años de experiencia en ingeniero/a de software senior. Titulado/a en Ingeniería en Sistemas con sólida formación técnica y experiencia comprobable en entornos corporativos. Orientado/a a resultados y al trabajo en equipo.
+
+EXPERIENCIA LABORAL (7 años):
+- Desarrollador/a Senior | Santander Uruguay (2022–Actualidad)
+  Responsable de microservicios y generación de reportes.
+- Arquitecto/a de Software | Ministerio de Economía y Finanzas (2017–2021)
+  Coordinación con equipos multidisciplinarios y presentación de resultados.
+- Ingeniero/a de Software Sr. | PedidosYa (2021–2022)
+  Coordinación con equipos multidisciplinarios y presentación de resultados.
+
+FORMACIÓN ACADÉMICA:
+- Ingeniería en Sistemas — Instituto Tecnológico Superior (ITS) (42)
+
+CERTIFICACIONES:
+- Kubernetes CKAD (2020)
+
+HABILIDADES TÉCNICAS:
+Python o Java · arquitectura de software · microservicios · cloud AWS/GCP · CI/CD · diseño de sistemas · Kubernetes

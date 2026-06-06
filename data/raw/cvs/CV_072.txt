@@ -1,0 +1,21 @@
+Germán Ramos Hernández
+germán.ramos36@gmail.com | Tel.: +34 693 469 356
+Bulevar Artigas 2323, Apto. 6, Pocitos, Montevideo
+
+RESUMEN PROFESIONAL:
+Profesional con 9 años de experiencia en desarrollador/a backend python. Titulado/a en Tecnólogo en Informática con sólida formación técnica y experiencia comprobable en entornos corporativos. Orientado/a a resultados y al trabajo en equipo.
+
+EXPERIENCIA LABORAL (9 años):
+- Ingeniero de Software | Tata Consultancy Services Uruguay (2022–Actualidad)
+  Optimización de procesos mediante Django.
+- Desarrollador Full Stack | Overactive (2020–2021)
+  Coordinación con equipos multidisciplinarios y presentación de resultados.
+
+FORMACIÓN ACADÉMICA:
+- Tecnólogo en Informática — Universidad de la República (UdelaR) (44)
+
+CERTIFICACIONES:
+- AWS Certified Developer (2022)
+
+HABILIDADES TÉCNICAS:
+Docker · Git · APIs REST · Django · PostgreSQL · FastAPI · Python · microservicios

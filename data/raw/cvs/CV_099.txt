@@ -1,0 +1,16 @@
+Carolina Cortés Romero
+carolina.cortés25@gmail.com | Tel.: +34 660 320 568
+Jackson 1580, Apto. 4, Sayago, Montevideo
+
+RESUMEN PROFESIONAL:
+Profesional con 3 años de trayectoria en el mercado laboral uruguayo. Experiencia en diversas áreas organizacionales. Flexible y adaptable a nuevos entornos.
+
+EXPERIENCIA LABORAL (3 años):
+- Profesor/a de Inglés | Banco República (BROU) (2022–Actualidad)
+  Gestión de tareas administrativas y atención a clientes internos.
+
+FORMACIÓN ACADÉMICA:
+- Licenciatura en Comunicación — Bachillerato (38)
+
+HABILIDADES TÉCNICAS:
+Django · APIs REST · Python · CI/CD · arquitectura de software · Docker

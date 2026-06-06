@@ -1,0 +1,23 @@
+Damián Núñez Molina
+damián.núñez47@ort.edu.uy | Tel.: +34 697 276 881
+Av. Libertador 1098, Punta Carretas, Montevideo
+
+RESUMEN PROFESIONAL:
+Profesional con 3 años de experiencia en desarrollador/a backend python. Titulado/a en Licenciatura en Sistemas con sólida formación técnica y experiencia comprobable en entornos corporativos. Orientado/a a resultados y al trabajo en equipo.
+
+EXPERIENCIA LABORAL (3 años):
+- Backend Developer | Tryolabs (2023–Actualidad)
+  Responsable de docker y generación de reportes.
+- Ingeniero de Software | ANCAP (2021–2023)
+  Responsable de apis rest y generación de reportes.
+- Ingeniero de Software | Ministerio de Economía y Finanzas (2017–2018)
+  Desarrollo e implementación de soluciones con Python.
+
+FORMACIÓN ACADÉMICA:
+- Licenciatura en Sistemas — Universidad Católica del Uruguay (UCU) (39)
+
+CERTIFICACIONES:
+- Python Institute PCEP (2024)
+
+HABILIDADES TÉCNICAS:
+PostgreSQL · Python · APIs REST · microservicios · FastAPI · Docker · Django · GraphQL

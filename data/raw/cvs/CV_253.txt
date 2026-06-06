@@ -1,0 +1,21 @@
+Carolina Gómez Molina
+carolina.gómez79@outlook.com | Tel.: +34 651 158 740
+Jackson 842, Apto. 8, Villa Española, Montevideo
+
+RESUMEN PROFESIONAL:
+Profesional con 9 años de experiencia en ingeniero/a de software senior. Titulado/a en Licenciatura en Ciencias de la Computación con sólida formación técnica y experiencia comprobable en entornos corporativos. Orientado/a a resultados y al trabajo en equipo.
+
+EXPERIENCIA LABORAL (9 años):
+- Arquitecto/a de Software | Mercado Libre Uruguay (2022–Actualidad)
+  Coordinación con equipos multidisciplinarios y presentación de resultados.
+- Desarrollador/a Senior | BBVA Uruguay (2020–2022)
+  Optimización de procesos mediante liderazgo técnico.
+
+FORMACIÓN ACADÉMICA:
+- Licenciatura en Ciencias de la Computación — Instituto Tecnológico Superior (ITS) (24)
+
+CERTIFICACIONES:
+- Kubernetes CKAD (2022)
+
+HABILIDADES TÉCNICAS:
+CI/CD · arquitectura de software · liderazgo técnico · Kubernetes · diseño de sistemas · cloud AWS/GCP · DevOps · Python

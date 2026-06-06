@@ -1,0 +1,23 @@
+Tomás Morales Díaz
+tomás.morales69@hotmail.com | Tel.: +34 619 744 850
+Av. 18 de Julio 3393, Apto. 7, Villa Española, Montevideo
+
+RESUMEN PROFESIONAL:
+Profesional con 10 años de experiencia en ingeniero/a de software senior. Titulado/a en Ingeniería en Computación con sólida formación técnica y experiencia comprobable en entornos corporativos. Orientado/a a resultados y al trabajo en equipo.
+
+EXPERIENCIA LABORAL (10 años):
+- Tech Lead | OCA (2023–Actualidad)
+  Optimización de procesos mediante liderazgo técnico.
+- Ingeniero/a de Software Sr. | Mercado Libre Uruguay (2022–2023)
+  Optimización de procesos mediante diseño de sistemas.
+- Engineering Manager | Hexacta (2018–2019)
+  Responsable de ci/cd y generación de reportes.
+
+FORMACIÓN ACADÉMICA:
+- Ingeniería en Computación — Universidad Tecnológica (UTEC) (24)
+
+CERTIFICACIONES:
+- AWS Solutions Architect (2021)
+
+HABILIDADES TÉCNICAS:
+cloud AWS/GCP · Python o Java · microservicios · liderazgo técnico · diseño de sistemas · Kubernetes · arquitectura de software · CI/CD · Docker

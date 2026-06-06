@@ -1,0 +1,18 @@
+Santiago Marín Domínguez
+santiago.marín69@outlook.com | Tel.: +34 612 614 932
+Av. Uruguay 2563, Apto. 6, Punta Carretas, Montevideo
+
+RESUMEN PROFESIONAL:
+Profesional con 4 años de experiencia en desarrollador/a backend python. Titulado/a en Tecnólogo en Informática con sólida formación técnica y experiencia comprobable en entornos corporativos. Orientado/a a resultados y al trabajo en equipo.
+
+EXPERIENCIA LABORAL (4 años):
+- Ingeniero de Software | Snoop Consulting (2023–Actualidad)
+  Optimización de procesos mediante PostgreSQL.
+- Programador Senior | Baufest Uruguay (2020–2023)
+  Optimización de procesos mediante Django.
+
+FORMACIÓN ACADÉMICA:
+- Tecnólogo en Informática — Universidad de Montevideo (UM) (29)
+
+HABILIDADES TÉCNICAS:
+FastAPI · Django · APIs REST · Docker · microservicios · Git · PostgreSQL · Python · Celery

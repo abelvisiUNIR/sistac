@@ -1,0 +1,21 @@
+Alejandra Marín Marín
+alejandra.marín93@outlook.com | Tel.: +34 631 480 229
+Av. Uruguay 1900, Apto. 4, Sayago, Montevideo
+
+RESUMEN PROFESIONAL:
+Profesional con 3 años de experiencia en desarrollador/a backend python. Titulado/a en Ingeniería en Software con sólida formación técnica y experiencia comprobable en entornos corporativos. Orientado/a a resultados y al trabajo en equipo.
+
+EXPERIENCIA LABORAL (3 años):
+- Desarrollador Python | BBVA Uruguay (2023–Actualidad)
+  Responsable de postgresql y generación de reportes.
+- Desarrollador Full Stack | Hexacta (2022–2023)
+  Optimización de procesos mediante PostgreSQL.
+
+FORMACIÓN ACADÉMICA:
+- Ingeniería en Software — Universidad de la República (UdelaR) (47)
+
+CERTIFICACIONES:
+- Python Institute PCEP (2024)
+
+HABILIDADES TÉCNICAS:
+APIs REST · FastAPI · Docker · Python · microservicios · PostgreSQL · Git · GCP · CI/CD

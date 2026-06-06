@@ -1,0 +1,21 @@
+Camila Romero Moreno
+camila.romero30@yahoo.com | Tel.: +34 682 953 351
+Av. Libertador 3055, Apto. 11, Carrasco, Montevideo
+
+RESUMEN PROFESIONAL:
+Profesional con 10 años de experiencia en desarrollador/a backend python. Titulado/a en Ingeniería en Computación con sólida formación técnica y experiencia comprobable en entornos corporativos. Orientado/a a resultados y al trabajo en equipo.
+
+EXPERIENCIA LABORAL (10 años):
+- Backend Developer | Baufest Uruguay (2023–Actualidad)
+  Coordinación con equipos multidisciplinarios y presentación de resultados.
+- Desarrollador Full Stack | Pragma Consultores (2020–2021)
+  Responsable de microservicios y generación de reportes.
+
+FORMACIÓN ACADÉMICA:
+- Ingeniería en Computación — Instituto Tecnológico Superior (ITS) (24)
+
+CERTIFICACIONES:
+- Python Institute PCEP (2020)
+
+HABILIDADES TÉCNICAS:
+microservicios · PostgreSQL · Django · FastAPI · Git · Python · APIs REST · Docker · CI/CD · arquitectura de software

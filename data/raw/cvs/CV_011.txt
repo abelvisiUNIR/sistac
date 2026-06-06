@@ -1,0 +1,23 @@
+Natalia Álvarez Marín
+natalia.álvarez60@gmail.com | Tel.: +34 681 355 968
+Bulevar Artigas 2669, Palermo, Montevideo
+
+RESUMEN PROFESIONAL:
+Profesional con 10 años de experiencia en analista de datos. Titulado/a en Licenciatura en Estadística con sólida formación técnica y experiencia comprobable en entornos corporativos. Orientado/a a resultados y al trabajo en equipo.
+
+EXPERIENCIA LABORAL (10 años):
+- Especialista en Reportería | PedidosYa (2023–Actualidad)
+  Optimización de procesos mediante análisis estadístico.
+- Data Engineer Jr. | Overactive (2019–2021)
+  Optimización de procesos mediante SQL.
+- Analista de Business Intelligence | Grupo Disco-Devoto (2016–2019)
+  Optimización de procesos mediante análisis estadístico.
+
+FORMACIÓN ACADÉMICA:
+- Licenciatura en Estadística — Instituto Tecnológico Superior (ITS) (37)
+
+CERTIFICACIONES:
+- Microsoft Power BI (2021)
+
+HABILIDADES TÉCNICAS:
+visualización de datos · Excel avanzado · pandas · análisis estadístico · machine learning básico · Power BI · SQL · Python · redes neuronales · estadística

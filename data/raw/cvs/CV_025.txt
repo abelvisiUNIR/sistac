@@ -1,0 +1,20 @@
+Mónica López Castro
+mónica.lópez58@outlook.com | Tel.: +34 675 707 211
+Av. Libertador 2863, Tres Cruces, Montevideo
+
+RESUMEN PROFESIONAL:
+Profesional con 2 años de experiencia en analista de datos. Titulado/a en Licenciatura en Matemática con sólida formación técnica y experiencia comprobable en entornos corporativos. Orientado/a a resultados y al trabajo en equipo.
+
+EXPERIENCIA LABORAL (2 años):
+- Data Engineer Jr. | ANCAP (2022–Actualidad)
+  Coordinación con equipos multidisciplinarios y presentación de resultados.
+- Analista de Business Intelligence | BBVA Uruguay (2020–2021)
+  Desarrollo e implementación de soluciones con pandas.
+- Data Analyst | Infocorp (2020–2021)
+  Optimización de procesos mediante Excel avanzado.
+
+FORMACIÓN ACADÉMICA:
+- Licenciatura en Matemática — Universidad de la República (UdelaR) (21)
+
+HABILIDADES TÉCNICAS:
+análisis estadístico · pandas · visualización de datos · Python · machine learning básico · SQL · Power BI · Excel avanzado · Tableau · estadística

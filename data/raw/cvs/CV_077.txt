@@ -1,0 +1,21 @@
+Florencia Alonso Marín
+florencia.alonso31@yahoo.com | Tel.: +34 672 161 245
+Av. Uruguay 1946, Cerro, Montevideo
+
+RESUMEN PROFESIONAL:
+Profesional con 6 años de experiencia en desarrollador/a backend python. Titulado/a en Tecnólogo en Informática con sólida formación técnica y experiencia comprobable en entornos corporativos. Orientado/a a resultados y al trabajo en equipo.
+
+EXPERIENCIA LABORAL (6 años):
+- Programador Senior | Mercado Libre Uruguay (2021–Actualidad)
+  Responsable de microservicios y generación de reportes.
+- Programador Senior | Tryolabs (2021–2023)
+  Desarrollo e implementación de soluciones con FastAPI.
+
+FORMACIÓN ACADÉMICA:
+- Tecnólogo en Informática — Instituto Tecnológico Superior (ITS) (36)
+
+CERTIFICACIONES:
+- Python Institute PCEP (2021)
+
+HABILIDADES TÉCNICAS:
+APIs REST · Git · FastAPI · PostgreSQL · Python · microservicios · Docker · Django · GraphQL

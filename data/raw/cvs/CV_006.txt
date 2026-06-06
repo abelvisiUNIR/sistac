@@ -1,0 +1,21 @@
+Javier Sanz Fernández
+javier.sanz96@outlook.com | Tel.: +34 617 151 698
+Av. Libertador 2859, Apto. 17, Malvín, Montevideo
+
+RESUMEN PROFESIONAL:
+Profesional con 2 años de experiencia en analista de datos. Titulado/a en Ingeniería en Sistemas con sólida formación técnica y experiencia comprobable en entornos corporativos. Orientado/a a resultados y al trabajo en equipo.
+
+EXPERIENCIA LABORAL (2 años):
+- Data Analyst | Mercado Libre Uruguay (2022–Actualidad)
+  Coordinación con equipos multidisciplinarios y presentación de resultados.
+- Especialista en Reportería | BBVA Uruguay (2021–2022)
+  Responsable de sql y generación de reportes.
+
+FORMACIÓN ACADÉMICA:
+- Ingeniería en Sistemas — Universidad Tecnológica (UTEC) (43)
+
+CERTIFICACIONES:
+- IBM Data Science (2021)
+
+HABILIDADES TÉCNICAS:
+SQL · Excel avanzado · machine learning básico · Python · análisis estadístico · Power BI · pandas · visualización de datos · estadística

@@ -1,0 +1,21 @@
+Ana Laura Sanz Fernández
+ana.sanz45@hotmail.com | Tel.: +34 693 170 899
+Rambla República del Perú 964, Apto. 8, Buceo, Montevideo
+
+RESUMEN PROFESIONAL:
+Profesional con 2 años de experiencia en analista de datos. Titulado/a en Licenciatura en Estadística con sólida formación técnica y experiencia comprobable en entornos corporativos. Orientado/a a resultados y al trabajo en equipo.
+
+EXPERIENCIA LABORAL (2 años):
+- Analista de Business Intelligence | ANTEL (2022–Actualidad)
+  Desarrollo e implementación de soluciones con pandas.
+- Data Engineer Jr. | AGESIC (2020–2021)
+  Responsable de análisis estadístico y generación de reportes.
+
+FORMACIÓN ACADÉMICA:
+- Licenciatura en Estadística — Universidad Tecnológica (UTEC) (23)
+
+CERTIFICACIONES:
+- Microsoft Power BI (2023)
+
+HABILIDADES TÉCNICAS:
+Power BI · SQL · Excel avanzado · pandas · Python · machine learning básico · análisis estadístico · visualización de datos · ETL · numpy

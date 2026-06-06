@@ -1,0 +1,18 @@
+Jorge Domínguez Álvarez
+jorge.domínguez4@outlook.com | Tel.: +34 686 324 130
+Calle Durazno 1950, Palermo, Montevideo
+
+RESUMEN PROFESIONAL:
+Profesional con 11 años de experiencia en desarrollador/a backend python. Titulado/a en Tecnólogo en Informática con sólida formación técnica y experiencia comprobable en entornos corporativos. Orientado/a a resultados y al trabajo en equipo.
+
+EXPERIENCIA LABORAL (11 años):
+- Ingeniero de Software | Tryolabs (2023–Actualidad)
+  Optimización de procesos mediante APIs REST.
+- Desarrollador Python | GeneXus (2020–2023)
+  Responsable de microservicios y generación de reportes.
+
+FORMACIÓN ACADÉMICA:
+- Tecnólogo en Informática — Universidad Católica del Uruguay (UCU) (37)
+
+HABILIDADES TÉCNICAS:
+PostgreSQL · Django · Python · APIs REST · Docker · microservicios · Git · arquitectura de software

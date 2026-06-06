@@ -1,0 +1,23 @@
+Cecilia Ortega Rodríguez
+cecilia.ortega12@outlook.com | Tel.: +34 638 514 808
+Av. Gral. Flores 2054, Apto. 12, Palermo, Montevideo
+
+RESUMEN PROFESIONAL:
+Profesional con 10 años de experiencia en analista de datos. Titulado/a en Licenciatura en Sistemas con sólida formación técnica y experiencia comprobable en entornos corporativos. Orientado/a a resultados y al trabajo en equipo.
+
+EXPERIENCIA LABORAL (10 años):
+- Data Analyst | Itaú Uruguay (2021–Actualidad)
+  Desarrollo e implementación de soluciones con análisis estadístico.
+- Especialista en Reportería | GeneXus (2020–2023)
+  Desarrollo e implementación de soluciones con visualización de datos.
+- Analista de Business Intelligence | El Observador (2019–2022)
+  Responsable de análisis estadístico y generación de reportes.
+
+FORMACIÓN ACADÉMICA:
+- Licenciatura en Sistemas — Instituto Tecnológico Superior (ITS) (53)
+
+CERTIFICACIONES:
+- IBM Data Science (2023)
+
+HABILIDADES TÉCNICAS:
+visualización de datos · pandas · machine learning básico · análisis estadístico · Power BI · SQL · Excel avanzado · Python · Tableau

@@ -1,0 +1,23 @@
+Rodrigo Castro Ortega
+rodrigo.castro44@hotmail.com | Tel.: +34 616 358 982
+Av. Libertador 1267, Apto. 13, Palermo, Montevideo
+
+RESUMEN PROFESIONAL:
+Profesional con 3 años de experiencia en analista de datos. Titulado/a en Ingeniería en Sistemas con sólida formación técnica y experiencia comprobable en entornos corporativos. Orientado/a a resultados y al trabajo en equipo.
+
+EXPERIENCIA LABORAL (3 años):
+- Analista de Business Intelligence | AGESIC (2023–Actualidad)
+  Responsable de pandas y generación de reportes.
+- Data Engineer Jr. | UPM Uruguay (2021–2023)
+  Desarrollo e implementación de soluciones con BigQuery.
+- Data Engineer Jr. | Grupo Disco-Devoto (2019–2020)
+  Desarrollo e implementación de soluciones con Power BI.
+
+FORMACIÓN ACADÉMICA:
+- Ingeniería en Sistemas — Universidad ORT Uruguay (20)
+
+CERTIFICACIONES:
+- Google Data Analytics (2023)
+
+HABILIDADES TÉCNICAS:
+Python · SQL · Excel avanzado · análisis estadístico · Power BI · machine learning básico · pandas · visualización de datos · BigQuery · R

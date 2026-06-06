@@ -1,0 +1,23 @@
+Maximiliano Ramos Castro
+maximiliano.ramos53@outlook.com | Tel.: +34 666 900 760
+Av. Uruguay 854, Malvín, Montevideo
+
+RESUMEN PROFESIONAL:
+Profesional con 5 años de experiencia en ingeniero/a de software senior. Titulado/a en Ingeniería en Sistemas con sólida formación técnica y experiencia comprobable en entornos corporativos. Orientado/a a resultados y al trabajo en equipo.
+
+EXPERIENCIA LABORAL (5 años):
+- Desarrollador/a Senior | BBVA Uruguay (2022–Actualidad)
+  Desarrollo e implementación de soluciones con Docker.
+- Tech Lead | PedidosYa (2020–2023)
+  Coordinación con equipos multidisciplinarios y presentación de resultados.
+- Arquitecto/a de Software | Aeropuertos del Uruguay (2020–2021)
+  Optimización de procesos mediante patrones de diseño.
+
+FORMACIÓN ACADÉMICA:
+- Ingeniería en Sistemas — Universidad Tecnológica (UTEC) (47)
+
+CERTIFICACIONES:
+- AWS Solutions Architect (2024)
+
+HABILIDADES TÉCNICAS:
+arquitectura de software · CI/CD · microservicios · diseño de sistemas · Kubernetes · liderazgo técnico · Python o Java · cloud AWS/GCP · event-driven architecture · Docker · patrones de diseño

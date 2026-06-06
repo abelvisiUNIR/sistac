@@ -1,0 +1,20 @@
+Cecilia Martínez Morales
+cecilia.martínez32@ort.edu.uy | Tel.: +34 629 846 623
+Av. Italia 1821, Punta Carretas, Montevideo
+
+RESUMEN PROFESIONAL:
+Profesional con 9 años de experiencia en ingeniero/a de software senior. Titulado/a en Ingeniería en Computación con sólida formación técnica y experiencia comprobable en entornos corporativos. Orientado/a a resultados y al trabajo en equipo.
+
+EXPERIENCIA LABORAL (9 años):
+- Ingeniero/a de Software Sr. | ANCAP (2023–Actualidad)
+  Coordinación con equipos multidisciplinarios y presentación de resultados.
+- Engineering Manager | UPM Uruguay (2021–2023)
+  Responsable de kubernetes y generación de reportes.
+- Desarrollador/a Senior | Tata Consultancy Services Uruguay (2016–2020)
+  Coordinación con equipos multidisciplinarios y presentación de resultados.
+
+FORMACIÓN ACADÉMICA:
+- Ingeniería en Computación — Universidad de la República (UdelaR) (46)
+
+HABILIDADES TÉCNICAS:
+Python o Java · Kubernetes · liderazgo técnico · microservicios · diseño de sistemas · cloud AWS/GCP · arquitectura de software · CI/CD · Python

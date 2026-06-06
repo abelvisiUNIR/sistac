@@ -1,0 +1,23 @@
+Santiago Suárez Domínguez
+santiago.suárez2@ort.edu.uy | Tel.: +34 697 896 862
+Av. Brasil 3283, Apto. 10, Sayago, Montevideo
+
+RESUMEN PROFESIONAL:
+Profesional con 5 años de experiencia en analista de datos. Titulado/a en Licenciatura en Matemática con sólida formación técnica y experiencia comprobable en entornos corporativos. Orientado/a a resultados y al trabajo en equipo.
+
+EXPERIENCIA LABORAL (5 años):
+- Analista de Business Intelligence | Mercado Libre Uruguay (2021–Actualidad)
+  Optimización de procesos mediante Power BI.
+- Data Analyst | GeneXus (2019–2021)
+  Responsable de visualización de datos y generación de reportes.
+- Data Engineer Jr. | UPM Uruguay (2019–2020)
+  Responsable de excel avanzado y generación de reportes.
+
+FORMACIÓN ACADÉMICA:
+- Licenciatura en Matemática — Universidad de la República (UdelaR) (20)
+
+CERTIFICACIONES:
+- Google Data Analytics (2023)
+
+HABILIDADES TÉCNICAS:
+visualización de datos · SQL · machine learning básico · Excel avanzado · Power BI · pandas · Python · análisis estadístico · ETL

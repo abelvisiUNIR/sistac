@@ -1,0 +1,23 @@
+Matías Ramos Rubio
+matías.ramos16@yahoo.com | Tel.: +34 693 566 523
+Rivera 2240, Parque Rodó, Montevideo
+
+RESUMEN PROFESIONAL:
+Profesional con 11 años de experiencia en ingeniero/a de software senior. Titulado/a en Licenciatura en Ciencias de la Computación con sólida formación técnica y experiencia comprobable en entornos corporativos. Orientado/a a resultados y al trabajo en equipo.
+
+EXPERIENCIA LABORAL (11 años):
+- Engineering Manager | Tryolabs (2020–Actualidad)
+  Responsable de microservicios y generación de reportes.
+- Tech Lead | Baufest Uruguay (2017–2021)
+  Desarrollo e implementación de soluciones con CI/CD.
+- Desarrollador/a Senior | ANTEL (2017–2019)
+  Optimización de procesos mediante Python o Java.
+
+FORMACIÓN ACADÉMICA:
+- Licenciatura en Ciencias de la Computación — Instituto Tecnológico Superior (ITS) (38)
+
+CERTIFICACIONES:
+- AWS Solutions Architect (2023)
+
+HABILIDADES TÉCNICAS:
+Kubernetes · arquitectura de software · microservicios · Python o Java · CI/CD · liderazgo técnico · diseño de sistemas · cloud AWS/GCP · Terraform · Python

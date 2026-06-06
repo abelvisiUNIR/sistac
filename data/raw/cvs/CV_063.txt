@@ -1,0 +1,21 @@
+Verónica Núñez Sánchez
+verónica.núñez68@gmail.com | Tel.: +34 639 316 988
+Av. Uruguay 3121, Pocitos, Montevideo
+
+RESUMEN PROFESIONAL:
+Profesional con 4 años de experiencia en desarrollador/a backend python. Titulado/a en Ingeniería en Software con sólida formación técnica y experiencia comprobable en entornos corporativos. Orientado/a a resultados y al trabajo en equipo.
+
+EXPERIENCIA LABORAL (4 años):
+- Programador Senior | Snoop Consulting (2023–Actualidad)
+  Optimización de procesos mediante microservicios.
+- Backend Developer | Ministerio de Economía y Finanzas (2021–2023)
+  Responsable de git y generación de reportes.
+
+FORMACIÓN ACADÉMICA:
+- Ingeniería en Software — Universidad ORT Uruguay (51)
+
+CERTIFICACIONES:
+- Python Institute PCEP (2020)
+
+HABILIDADES TÉCNICAS:
+Docker · microservicios · APIs REST · Python · Django · PostgreSQL · Git · FastAPI · GraphQL

@@ -1,0 +1,18 @@
+Santiago Hernández Núñez
+santiago.hernández28@ort.edu.uy | Tel.: +34 699 109 909
+Punta Gorda 2665, Apto. 17, Carrasco, Montevideo
+
+RESUMEN PROFESIONAL:
+Profesional con 9 años de experiencia en ingeniero/a de software senior. Titulado/a en Licenciatura en Ciencias de la Computación con sólida formación técnica y experiencia comprobable en entornos corporativos. Orientado/a a resultados y al trabajo en equipo.
+
+EXPERIENCIA LABORAL (9 años):
+- Arquitecto/a de Software | ANCAP (2023–Actualidad)
+  Responsable de python o java y generación de reportes.
+- Engineering Manager | BBVA Uruguay (2020–2021)
+  Coordinación con equipos multidisciplinarios y presentación de resultados.
+
+FORMACIÓN ACADÉMICA:
+- Licenciatura en Ciencias de la Computación — Universidad ORT Uruguay (43)
+
+HABILIDADES TÉCNICAS:
+CI/CD · Kubernetes · cloud AWS/GCP · liderazgo técnico · arquitectura de software · Python o Java · microservicios

@@ -1,0 +1,23 @@
+Laura Fernández Martínez
+laura.fernández55@outlook.com | Tel.: +34 648 268 303
+Calle Colonia 2516, Parque Rodó, Montevideo
+
+RESUMEN PROFESIONAL:
+Profesional con 7 años de experiencia en ingeniero/a de software senior. Titulado/a en Licenciatura en Ciencias de la Computación con sólida formación técnica y experiencia comprobable en entornos corporativos. Orientado/a a resultados y al trabajo en equipo.
+
+EXPERIENCIA LABORAL (7 años):
+- Ingeniero/a de Software Sr. | ANCAP (2021–Actualidad)
+  Optimización de procesos mediante Kubernetes.
+- Arquitecto/a de Software | El Observador (2022–2023)
+  Desarrollo e implementación de soluciones con CI/CD.
+- Arquitecto/a de Software | Mercado Libre Uruguay (2018–2021)
+  Responsable de python o java y generación de reportes.
+
+FORMACIÓN ACADÉMICA:
+- Licenciatura en Ciencias de la Computación — Instituto Tecnológico Superior (ITS) (30)
+
+CERTIFICACIONES:
+- Kubernetes CKAD (2022)
+
+HABILIDADES TÉCNICAS:
+diseño de sistemas · cloud AWS/GCP · Kubernetes · CI/CD · Python o Java · arquitectura de software · liderazgo técnico · microservicios · Python · Java

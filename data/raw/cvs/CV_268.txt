@@ -1,0 +1,21 @@
+Nicolás Domínguez Domínguez
+nicolás.domínguez62@hotmail.com | Tel.: +34 621 456 825
+Punta Gorda 3470, Villa Española, Montevideo
+
+RESUMEN PROFESIONAL:
+Profesional con 12 años de experiencia en ingeniero/a de software senior. Titulado/a en Licenciatura en Ciencias de la Computación con sólida formación técnica y experiencia comprobable en entornos corporativos. Orientado/a a resultados y al trabajo en equipo.
+
+EXPERIENCIA LABORAL (12 años):
+- Arquitecto/a de Software | Conaprole (2023–Actualidad)
+  Coordinación con equipos multidisciplinarios y presentación de resultados.
+- Tech Lead | UPM Uruguay (2018–2021)
+  Responsable de microservicios y generación de reportes.
+
+FORMACIÓN ACADÉMICA:
+- Licenciatura en Ciencias de la Computación — Universidad Católica del Uruguay (UCU) (30)
+
+CERTIFICACIONES:
+- GCP Professional (2021)
+
+HABILIDADES TÉCNICAS:
+diseño de sistemas · microservicios · cloud AWS/GCP · liderazgo técnico · CI/CD · Kubernetes · Python o Java · GCP

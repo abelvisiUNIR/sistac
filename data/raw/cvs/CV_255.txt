@@ -1,0 +1,23 @@
+María José Sanz Domínguez
+maría.sanz81@ort.edu.uy | Tel.: +34 625 121 944
+Av. Brasil 1221, Apto. 4, Parque Rodó, Montevideo
+
+RESUMEN PROFESIONAL:
+Profesional con 11 años de experiencia en ingeniero/a de software senior. Titulado/a en Licenciatura en Ciencias de la Computación con sólida formación técnica y experiencia comprobable en entornos corporativos. Orientado/a a resultados y al trabajo en equipo.
+
+EXPERIENCIA LABORAL (11 años):
+- Tech Lead | ANTEL (2023–Actualidad)
+  Desarrollo e implementación de soluciones con arquitectura de software.
+- Arquitecto/a de Software | Santander Uruguay (2020–2022)
+  Optimización de procesos mediante microservicios.
+- Arquitecto/a de Software | Grupo Disco-Devoto (2016–2018)
+  Coordinación con equipos multidisciplinarios y presentación de resultados.
+
+FORMACIÓN ACADÉMICA:
+- Licenciatura en Ciencias de la Computación — Universidad Católica del Uruguay (UCU) (45)
+
+CERTIFICACIONES:
+- Kubernetes CKAD (2021)
+
+HABILIDADES TÉCNICAS:
+arquitectura de software · microservicios · liderazgo técnico · diseño de sistemas · Python o Java · CI/CD · patrones de diseño

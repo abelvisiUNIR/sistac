@@ -1,0 +1,23 @@
+Fernanda Hernández López
+fernanda.hernández66@gmail.com | Tel.: +34 677 622 298
+Calle Durazno 2231, Colón, Montevideo
+
+RESUMEN PROFESIONAL:
+Profesional con 4 años de experiencia en analista de datos. Titulado/a en Licenciatura en Estadística con sólida formación técnica y experiencia comprobable en entornos corporativos. Orientado/a a resultados y al trabajo en equipo.
+
+EXPERIENCIA LABORAL (4 años):
+- Data Engineer Jr. | Pragma Consultores (2021–Actualidad)
+  Coordinación con equipos multidisciplinarios y presentación de resultados.
+- Analista de Business Intelligence | Mercado Libre Uruguay (2021–2022)
+  Responsable de machine learning básico y generación de reportes.
+- Analista de Datos Jr. | ANCAP (2020–2021)
+  Optimización de procesos mediante análisis estadístico.
+
+FORMACIÓN ACADÉMICA:
+- Licenciatura en Estadística — Instituto Tecnológico Superior (ITS) (35)
+
+CERTIFICACIONES:
+- Microsoft Power BI (2022)
+
+HABILIDADES TÉCNICAS:
+SQL · machine learning básico · Power BI · Excel avanzado · análisis estadístico · visualización de datos

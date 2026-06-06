@@ -1,0 +1,21 @@
+Roberto Ramírez Torres
+roberto.ramírez48@hotmail.com | Tel.: +34 697 585 168
+Bulevar Artigas 1149, Punta Carretas, Montevideo
+
+RESUMEN PROFESIONAL:
+Profesional con 7 años de experiencia en analista de datos. Titulado/a en Ingeniería en Computación con sólida formación técnica y experiencia comprobable en entornos corporativos. Orientado/a a resultados y al trabajo en equipo.
+
+EXPERIENCIA LABORAL (7 años):
+- Data Engineer Jr. | OCA (2020–Actualidad)
+  Coordinación con equipos multidisciplinarios y presentación de resultados.
+- Data Engineer Jr. | ANTEL (2020–2023)
+  Optimización de procesos mediante análisis estadístico.
+
+FORMACIÓN ACADÉMICA:
+- Ingeniería en Computación — Instituto Tecnológico Superior (ITS) (35)
+
+CERTIFICACIONES:
+- Google Data Analytics (2020)
+
+HABILIDADES TÉCNICAS:
+Python · análisis estadístico · Excel avanzado · visualización de datos · Power BI · pandas · BigQuery

@@ -1,0 +1,20 @@
+Bruno Ortiz Álvarez
+bruno.ortiz34@gmail.com | Tel.: +34 610 982 252
+Constituyente 3486, Malvín, Montevideo
+
+RESUMEN PROFESIONAL:
+Profesional con 11 años de experiencia en ingeniero/a de software senior. Titulado/a en Ingeniería en Sistemas con sólida formación técnica y experiencia comprobable en entornos corporativos. Orientado/a a resultados y al trabajo en equipo.
+
+EXPERIENCIA LABORAL (11 años):
+- Ingeniero/a de Software Sr. | UPM Uruguay (2021–Actualidad)
+  Optimización de procesos mediante microservicios.
+- Engineering Manager | El Observador (2017–2021)
+  Responsable de liderazgo técnico y generación de reportes.
+- Arquitecto/a de Software | Overactive (2014–2018)
+  Coordinación con equipos multidisciplinarios y presentación de resultados.
+
+FORMACIÓN ACADÉMICA:
+- Ingeniería en Sistemas — Universidad ORT Uruguay (23)
+
+HABILIDADES TÉCNICAS:
+liderazgo técnico · diseño de sistemas · arquitectura de software · Kubernetes · Python o Java · cloud AWS/GCP · microservicios · AWS

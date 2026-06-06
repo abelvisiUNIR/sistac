@@ -1,0 +1,23 @@
+Valentina Gutiérrez Torres
+valentina.gutiérrez81@ort.edu.uy | Tel.: +34 694 923 302
+Rivera 1270, Apto. 5, Cerro, Montevideo
+
+RESUMEN PROFESIONAL:
+Profesional con 6 años de experiencia en analista de datos. Titulado/a en Ingeniería en Computación con sólida formación técnica y experiencia comprobable en entornos corporativos. Orientado/a a resultados y al trabajo en equipo.
+
+EXPERIENCIA LABORAL (6 años):
+- Especialista en Reportería | Conaprole (2021–Actualidad)
+  Desarrollo e implementación de soluciones con SQL.
+- Data Engineer Jr. | PedidosYa (2020–2021)
+  Desarrollo e implementación de soluciones con análisis estadístico.
+- Analista de Business Intelligence | Infocorp (2016–2018)
+  Optimización de procesos mediante Python.
+
+FORMACIÓN ACADÉMICA:
+- Ingeniería en Computación — Instituto Tecnológico Superior (ITS) (37)
+
+CERTIFICACIONES:
+- Microsoft Power BI (2024)
+
+HABILIDADES TÉCNICAS:
+SQL · Python · machine learning básico · Power BI · análisis estadístico · visualización de datos

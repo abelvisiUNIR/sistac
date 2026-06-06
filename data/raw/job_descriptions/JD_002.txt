@@ -1,0 +1,22 @@
+CARGO: Desarrollador/a Backend Python
+EMPRESA: Solventa Tech
+
+Solventa Tech busca un/a Desarrollador/a Backend Python para su equipo de ingeniería de plataformas. Trabajarás en el desarrollo y mantenimiento de APIs y microservicios que dan soporte a productos fintech con miles de usuarios activos.
+
+RESPONSABILIDADES:
+- Desarrollar y mantener APIs REST con Django o FastAPI.
+- Diseñar esquemas de base de datos en PostgreSQL.
+- Containerizar servicios con Docker y gestionar despliegues.
+- Participar en code reviews y garantizar calidad del código.
+- Integrar servicios de terceros y pasarelas de pago.
+
+REQUISITOS:
+- Licenciatura en Informática, Ingeniería de Sistemas o afín.
+- Mínimo 3 años de experiencia en desarrollo backend con Python.
+- Dominio de Django o FastAPI, PostgreSQL y Docker.
+- Conocimiento sólido de Git y metodologías ágiles.
+
+SE VALORA:
+- Experiencia con arquitecturas de microservicios.
+- Conocimiento de AWS o GCP.
+- Inglés técnico avanzado.

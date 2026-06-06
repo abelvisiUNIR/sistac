@@ -1,0 +1,20 @@
+Rodrigo Muñoz Molina
+rodrigo.muñoz43@outlook.com | Tel.: +34 695 207 978
+Av. Italia 2150, Palermo, Montevideo
+
+RESUMEN PROFESIONAL:
+Profesional con 6 años de experiencia en analista de datos. Titulado/a en Licenciatura en Matemática con sólida formación técnica y experiencia comprobable en entornos corporativos. Orientado/a a resultados y al trabajo en equipo.
+
+EXPERIENCIA LABORAL (6 años):
+- Data Analyst | Aeropuertos del Uruguay (2020–Actualidad)
+  Desarrollo e implementación de soluciones con Python.
+- Analista de Datos Jr. | OCA (2020–2022)
+  Desarrollo e implementación de soluciones con machine learning básico.
+- Especialista en Reportería | Infocorp (2018–2019)
+  Responsable de python y generación de reportes.
+
+FORMACIÓN ACADÉMICA:
+- Licenciatura en Matemática — Universidad Tecnológica (UTEC) (44)
+
+HABILIDADES TÉCNICAS:
+Excel avanzado · machine learning básico · análisis estadístico · Python · pandas · visualización de datos · SQL · Power BI · Tableau · ETL

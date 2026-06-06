@@ -1,0 +1,21 @@
+Maximiliano Gutiérrez Alonso
+maximiliano.gutiérrez88@hotmail.com | Tel.: +34 630 613 628
+Av. Uruguay 3293, Apto. 11, Palermo, Montevideo
+
+RESUMEN PROFESIONAL:
+Profesional con 7 años de experiencia en ingeniero/a de software senior. Titulado/a en Licenciatura en Ciencias de la Computación con sólida formación técnica y experiencia comprobable en entornos corporativos. Orientado/a a resultados y al trabajo en equipo.
+
+EXPERIENCIA LABORAL (7 años):
+- Engineering Manager | ANTEL (2023–Actualidad)
+  Coordinación con equipos multidisciplinarios y presentación de resultados.
+- Arquitecto/a de Software | Tryolabs (2020–2022)
+  Coordinación con equipos multidisciplinarios y presentación de resultados.
+
+FORMACIÓN ACADÉMICA:
+- Licenciatura en Ciencias de la Computación — Universidad Tecnológica (UTEC) (34)
+
+CERTIFICACIONES:
+- GCP Professional (2023)
+
+HABILIDADES TÉCNICAS:
+CI/CD · cloud AWS/GCP · liderazgo técnico · Python o Java · arquitectura de software · diseño de sistemas · microservicios · Kubernetes

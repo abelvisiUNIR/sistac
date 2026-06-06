@@ -1,0 +1,23 @@
+Fernanda Martínez Iglesias
+fernanda.martínez32@ort.edu.uy | Tel.: +34 676 273 801
+Rivera 1494, Carrasco, Montevideo
+
+RESUMEN PROFESIONAL:
+Profesional con 7 años de experiencia en desarrollador/a backend python. Titulado/a en Ingeniería en Software con sólida formación técnica y experiencia comprobable en entornos corporativos. Orientado/a a resultados y al trabajo en equipo.
+
+EXPERIENCIA LABORAL (7 años):
+- Programador Senior | ANTEL (2020–Actualidad)
+  Optimización de procesos mediante Git.
+- Ingeniero de Software | ANCAP (2020–2022)
+  Coordinación con equipos multidisciplinarios y presentación de resultados.
+- Desarrollador Full Stack | Grupo Disco-Devoto (2019–2020)
+  Coordinación con equipos multidisciplinarios y presentación de resultados.
+
+FORMACIÓN ACADÉMICA:
+- Ingeniería en Software — Universidad ORT Uruguay (34)
+
+CERTIFICACIONES:
+- Docker Certified Associate (2021)
+
+HABILIDADES TÉCNICAS:
+FastAPI · Python · Django · PostgreSQL · microservicios · Git · Docker · Celery

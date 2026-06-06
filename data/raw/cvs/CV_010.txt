@@ -1,0 +1,21 @@
+Ignacio Álvarez Cortés
+ignacio.álvarez73@outlook.com | Tel.: +34 661 661 953
+Av. Brasil 2044, Cordón, Montevideo
+
+RESUMEN PROFESIONAL:
+Profesional con 7 años de experiencia en analista de datos. Titulado/a en Ingeniería en Sistemas con sólida formación técnica y experiencia comprobable en entornos corporativos. Orientado/a a resultados y al trabajo en equipo.
+
+EXPERIENCIA LABORAL (7 años):
+- Data Engineer Jr. | Tryolabs (2020–Actualidad)
+  Desarrollo e implementación de soluciones con SQL.
+- Especialista en Reportería | Itaú Uruguay (2019–2022)
+  Responsable de excel avanzado y generación de reportes.
+
+FORMACIÓN ACADÉMICA:
+- Ingeniería en Sistemas — Universidad Católica del Uruguay (UCU) (30)
+
+CERTIFICACIONES:
+- Google Data Analytics (2020)
+
+HABILIDADES TÉCNICAS:
+machine learning básico · pandas · visualización de datos · SQL · Excel avanzado · Power BI · Python

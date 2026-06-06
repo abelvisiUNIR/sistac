@@ -1,0 +1,16 @@
+Javier López Gutiérrez
+javier.lópez49@yahoo.com | Tel.: +34 626 211 116
+Av. Gral. Flores 2941, Apto. 17, La Blanqueada, Montevideo
+
+RESUMEN PROFESIONAL:
+Profesional con 5 años de trayectoria en el mercado laboral uruguayo. Experiencia en diversas áreas organizacionales. Flexible y adaptable a nuevos entornos.
+
+EXPERIENCIA LABORAL (5 años):
+- Profesor/a de Inglés | Ministerio de Economía y Finanzas (2023–Actualidad)
+  Colaboración en proyectos transversales de la organización.
+
+FORMACIÓN ACADÉMICA:
+- Tecnicatura en Diseño Gráfico — Universidad ORT Uruguay (36)
+
+HABILIDADES TÉCNICAS:
+Django · microservicios · event-driven architecture · DevOps · Docker · Terraform

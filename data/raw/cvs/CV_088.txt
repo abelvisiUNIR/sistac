@@ -1,0 +1,20 @@
+Santiago Gutiérrez Torres
+santiago.gutiérrez78@outlook.com | Tel.: +34 692 381 533
+Calle Durazno 2342, Apto. 15, Carrasco, Montevideo
+
+RESUMEN PROFESIONAL:
+Profesional con 6 años de experiencia en desarrollador/a backend python. Titulado/a en Ingeniería en Software con sólida formación técnica y experiencia comprobable en entornos corporativos. Orientado/a a resultados y al trabajo en equipo.
+
+EXPERIENCIA LABORAL (6 años):
+- Programador Senior | PedidosYa (2021–Actualidad)
+  Desarrollo e implementación de soluciones con PostgreSQL.
+- Backend Developer | Mercado Libre Uruguay (2021–2023)
+  Responsable de apis rest y generación de reportes.
+- Desarrollador Full Stack | BBVA Uruguay (2019–2020)
+  Responsable de apis rest y generación de reportes.
+
+FORMACIÓN ACADÉMICA:
+- Ingeniería en Software — Universidad Tecnológica (UTEC) (27)
+
+HABILIDADES TÉCNICAS:
+Docker · Git · microservicios · APIs REST · PostgreSQL · FastAPI · Python · CI/CD

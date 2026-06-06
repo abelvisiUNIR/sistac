@@ -1,0 +1,18 @@
+Agustín Martínez Ortiz
+agustín.martínez43@hotmail.com | Tel.: +34 650 749 159
+Av. Brasil 2651, Sayago, Montevideo
+
+RESUMEN PROFESIONAL:
+Profesional con 5 años de experiencia en desarrollador/a backend python. Titulado/a en Ingeniería en Computación con sólida formación técnica y experiencia comprobable en entornos corporativos. Orientado/a a resultados y al trabajo en equipo.
+
+EXPERIENCIA LABORAL (5 años):
+- Desarrollador Python | Mercado Libre Uruguay (2022–Actualidad)
+  Desarrollo e implementación de soluciones con FastAPI.
+- Desarrollador Python | Hexacta (2019–2022)
+  Coordinación con equipos multidisciplinarios y presentación de resultados.
+
+FORMACIÓN ACADÉMICA:
+- Ingeniería en Computación — Universidad de la República (UdelaR) (41)
+
+HABILIDADES TÉCNICAS:
+FastAPI · PostgreSQL · Python · Django · APIs REST · microservicios · Docker · Git · Kubernetes · GraphQL

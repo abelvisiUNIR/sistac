@@ -1,0 +1,18 @@
+Florencia Rubio Ramos
+florencia.rubio47@ort.edu.uy | Tel.: +34 631 533 773
+Av. Brasil 1817, Parque Rodó, Montevideo
+
+RESUMEN PROFESIONAL:
+Profesional con 9 años de experiencia en ingeniero/a de software senior. Titulado/a en Ingeniería en Computación con sólida formación técnica y experiencia comprobable en entornos corporativos. Orientado/a a resultados y al trabajo en equipo.
+
+EXPERIENCIA LABORAL (9 años):
+- Arquitecto/a de Software | Baufest Uruguay (2022–Actualidad)
+  Optimización de procesos mediante CI/CD.
+- Engineering Manager | Itaú Uruguay (2020–2021)
+  Desarrollo e implementación de soluciones con cloud AWS/GCP.
+
+FORMACIÓN ACADÉMICA:
+- Ingeniería en Computación — Universidad ORT Uruguay (44)
+
+HABILIDADES TÉCNICAS:
+liderazgo técnico · microservicios · CI/CD · Python o Java · cloud AWS/GCP · Kubernetes · diseño de sistemas · arquitectura de software · GCP · Terraform

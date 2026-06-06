@@ -1,0 +1,22 @@
+CARGO: Analista de Datos
+EMPRESA: DataVision Uruguay
+
+DataVision Uruguay busca un/a Analista de Datos para integrarse al equipo de Inteligencia de Negocios. El/la candidato/a será responsable de analizar grandes volúmenes de datos, generar reportes ejecutivos y construir dashboards estratégicos para la toma de decisiones.
+
+RESPONSABILIDADES:
+- Diseñar y mantener dashboards en Power BI para distintas áreas de negocio.
+- Desarrollar scripts de análisis y automatización en Python (pandas, numpy).
+- Consultar y optimizar bases de datos relacionales con SQL avanzado.
+- Realizar análisis estadísticos descriptivos e inferenciales.
+- Colaborar con equipos de negocio para traducir necesidades en métricas.
+
+REQUISITOS:
+- Licenciatura en Sistemas, Estadística, Matemática o carrera afín.
+- Mínimo 2 años de experiencia en análisis de datos.
+- Dominio de Python (pandas, numpy) y SQL avanzado.
+- Experiencia con herramientas de BI (Power BI o Tableau).
+
+SE VALORA:
+- Conocimientos de machine learning (scikit-learn).
+- Experiencia con bases de datos NoSQL.
+- Inglés intermedio-avanzado.

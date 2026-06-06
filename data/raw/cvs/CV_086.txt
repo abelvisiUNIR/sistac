@@ -1,0 +1,20 @@
+Ramiro Vázquez Sanz
+ramiro.vázquez45@yahoo.com | Tel.: +34 643 492 770
+Av. Libertador 3143, Apto. 2, Malvín, Montevideo
+
+RESUMEN PROFESIONAL:
+Profesional con 7 años de experiencia en desarrollador/a backend python. Titulado/a en Ingeniería en Software con sólida formación técnica y experiencia comprobable en entornos corporativos. Orientado/a a resultados y al trabajo en equipo.
+
+EXPERIENCIA LABORAL (7 años):
+- Programador Senior | Baufest Uruguay (2022–Actualidad)
+  Coordinación con equipos multidisciplinarios y presentación de resultados.
+- Programador Senior | El Observador (2018–2021)
+  Optimización de procesos mediante PostgreSQL.
+- Ingeniero de Software | Overactive (2017–2019)
+  Responsable de microservicios y generación de reportes.
+
+FORMACIÓN ACADÉMICA:
+- Ingeniería en Software — Universidad Católica del Uruguay (UCU) (34)
+
+HABILIDADES TÉCNICAS:
+FastAPI · Docker · APIs REST · PostgreSQL · Python · Django · microservicios · Git · Kubernetes

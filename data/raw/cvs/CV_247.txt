@@ -1,0 +1,21 @@
+Sofía Ramos Rubio
+sofía.ramos5@yahoo.com | Tel.: +34 689 968 599
+Av. Brasil 2257, Palermo, Montevideo
+
+RESUMEN PROFESIONAL:
+Profesional con 10 años de experiencia en ingeniero/a de software senior. Titulado/a en Ingeniería en Sistemas con sólida formación técnica y experiencia comprobable en entornos corporativos. Orientado/a a resultados y al trabajo en equipo.
+
+EXPERIENCIA LABORAL (10 años):
+- Desarrollador/a Senior | ANCAP (2022–Actualidad)
+  Optimización de procesos mediante GCP.
+- Engineering Manager | UPM Uruguay (2019–2022)
+  Coordinación con equipos multidisciplinarios y presentación de resultados.
+
+FORMACIÓN ACADÉMICA:
+- Ingeniería en Sistemas — Universidad de Montevideo (UM) (25)
+
+CERTIFICACIONES:
+- GCP Professional (2019)
+
+HABILIDADES TÉCNICAS:
+Kubernetes · arquitectura de software · diseño de sistemas · cloud AWS/GCP · microservicios · Python o Java · CI/CD · GCP

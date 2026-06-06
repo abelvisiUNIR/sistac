@@ -1,0 +1,20 @@
+Valentina Álvarez Garrido
+valentina.álvarez43@gmail.com | Tel.: +34 640 388 266
+Punta Gorda 1236, Tres Cruces, Montevideo
+
+RESUMEN PROFESIONAL:
+Profesional con 5 años de experiencia en ingeniero/a de software senior. Titulado/a en Ingeniería en Sistemas con sólida formación técnica y experiencia comprobable en entornos corporativos. Orientado/a a resultados y al trabajo en equipo.
+
+EXPERIENCIA LABORAL (5 años):
+- Tech Lead | OCA (2022–Actualidad)
+  Desarrollo e implementación de soluciones con diseño de sistemas.
+- Engineering Manager | Hexacta (2021–2022)
+  Responsable de diseño de sistemas y generación de reportes.
+- Ingeniero/a de Software Sr. | Grupo Disco-Devoto (2017–2019)
+  Desarrollo e implementación de soluciones con Kubernetes.
+
+FORMACIÓN ACADÉMICA:
+- Ingeniería en Sistemas — Universidad de la República (UdelaR) (21)
+
+HABILIDADES TÉCNICAS:
+Python o Java · CI/CD · microservicios · arquitectura de software · Kubernetes · liderazgo técnico · diseño de sistemas · DevOps

@@ -1,0 +1,21 @@
+Andrés Moreno Garrido
+andrés.moreno63@hotmail.com | Tel.: +34 699 859 587
+Bulevar Artigas 1940, Parque Rodó, Montevideo
+
+RESUMEN PROFESIONAL:
+Profesional con 7 años de experiencia en ingeniero/a de software senior. Titulado/a en Ingeniería en Sistemas con sólida formación técnica y experiencia comprobable en entornos corporativos. Orientado/a a resultados y al trabajo en equipo.
+
+EXPERIENCIA LABORAL (7 años):
+- Desarrollador/a Senior | Hexacta (2022–Actualidad)
+  Coordinación con equipos multidisciplinarios y presentación de resultados.
+- Ingeniero/a de Software Sr. | Snoop Consulting (2019–2023)
+  Desarrollo e implementación de soluciones con patrones de diseño.
+
+FORMACIÓN ACADÉMICA:
+- Ingeniería en Sistemas — Universidad de Montevideo (UM) (20)
+
+CERTIFICACIONES:
+- GCP Professional (2024)
+
+HABILIDADES TÉCNICAS:
+cloud AWS/GCP · Kubernetes · microservicios · liderazgo técnico · arquitectura de software · CI/CD · diseño de sistemas · patrones de diseño

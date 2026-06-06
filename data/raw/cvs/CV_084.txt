@@ -1,0 +1,23 @@
+Roberto Martínez Vázquez
+roberto.martínez85@ort.edu.uy | Tel.: +34 671 304 199
+Av. Brasil 1647, Carrasco, Montevideo
+
+RESUMEN PROFESIONAL:
+Profesional con 4 años de experiencia en desarrollador/a backend python. Titulado/a en Tecnólogo en Informática con sólida formación técnica y experiencia comprobable en entornos corporativos. Orientado/a a resultados y al trabajo en equipo.
+
+EXPERIENCIA LABORAL (4 años):
+- Desarrollador Python | Globant Uruguay (2023–Actualidad)
+  Coordinación con equipos multidisciplinarios y presentación de resultados.
+- Desarrollador Full Stack | BBVA Uruguay (2018–2021)
+  Optimización de procesos mediante microservicios.
+- Desarrollador Full Stack | Conaprole (2019–2020)
+  Optimización de procesos mediante FastAPI.
+
+FORMACIÓN ACADÉMICA:
+- Tecnólogo en Informática — Universidad ORT Uruguay (41)
+
+CERTIFICACIONES:
+- AWS Certified Developer (2021)
+
+HABILIDADES TÉCNICAS:
+Django · FastAPI · PostgreSQL · Git · Docker · APIs REST · microservicios · testing unitario

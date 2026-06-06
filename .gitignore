@@ -7,12 +7,7 @@ __pycache__/
 desktop.ini
 Thumbs.db
 
-# Datos sintéticos — regenerables con synthetic_corpus_generator.py (seed=42)
-# No versionar: pueden contener proxies de datos personales (INV meta-governance)
-data/raw/cvs/
-data/raw/job_descriptions/
-data/raw/gold_standard/
-data/cleaned/
+# Datos sintéticos y procesados (ahora bajo control de versión)
 
 # Índices vectoriales — regenerables
 data/vectorstore/

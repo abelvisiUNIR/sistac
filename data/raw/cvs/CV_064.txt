@@ -1,0 +1,21 @@
+Sebastián Muñoz Iglesias
+sebastián.muñoz49@yahoo.com | Tel.: +34 633 796 699
+Rambla República del Perú 2356, Tres Cruces, Montevideo
+
+RESUMEN PROFESIONAL:
+Profesional con 7 años de experiencia en desarrollador/a backend python. Titulado/a en Ingeniería en Software con sólida formación técnica y experiencia comprobable en entornos corporativos. Orientado/a a resultados y al trabajo en equipo.
+
+EXPERIENCIA LABORAL (7 años):
+- Programador Senior | OCA (2022–Actualidad)
+  Responsable de apis rest y generación de reportes.
+- Desarrollador Full Stack | Hexacta (2022–2023)
+  Optimización de procesos mediante Git.
+
+FORMACIÓN ACADÉMICA:
+- Ingeniería en Software — Universidad de la República (UdelaR) (27)
+
+CERTIFICACIONES:
+- AWS Certified Developer (2019)
+
+HABILIDADES TÉCNICAS:
+Django · Python · FastAPI · microservicios · PostgreSQL · Git · GraphQL · Redis

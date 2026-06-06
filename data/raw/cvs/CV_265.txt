@@ -1,0 +1,23 @@
+Beatriz Delgado Molina
+beatriz.delgado83@yahoo.com | Tel.: +34 610 483 900
+Av. Gral. Flores 2878, Cerro, Montevideo
+
+RESUMEN PROFESIONAL:
+Profesional con 9 años de experiencia en ingeniero/a de software senior. Titulado/a en Ingeniería en Sistemas con sólida formación técnica y experiencia comprobable en entornos corporativos. Orientado/a a resultados y al trabajo en equipo.
+
+EXPERIENCIA LABORAL (9 años):
+- Ingeniero/a de Software Sr. | Santander Uruguay (2023–Actualidad)
+  Desarrollo e implementación de soluciones con microservicios.
+- Arquitecto/a de Software | Ministerio de Economía y Finanzas (2018–2022)
+  Responsable de cloud aws/gcp y generación de reportes.
+- Tech Lead | Cutcsa (2018–2020)
+  Coordinación con equipos multidisciplinarios y presentación de resultados.
+
+FORMACIÓN ACADÉMICA:
+- Ingeniería en Sistemas — Universidad Tecnológica (UTEC) (27)
+
+CERTIFICACIONES:
+- Kubernetes CKAD (2022)
+
+HABILIDADES TÉCNICAS:
+diseño de sistemas · Kubernetes · microservicios · arquitectura de software · Python o Java · CI/CD · cloud AWS/GCP · Python

@@ -1,0 +1,23 @@
+Florencia Díaz Ortiz
+florencia.díaz92@outlook.com | Tel.: +34 675 822 379
+Rivera 2776, Apto. 8, Palermo, Montevideo
+
+RESUMEN PROFESIONAL:
+Profesional con 10 años de experiencia en analista de datos. Titulado/a en Ingeniería en Sistemas con sólida formación técnica y experiencia comprobable en entornos corporativos. Orientado/a a resultados y al trabajo en equipo.
+
+EXPERIENCIA LABORAL (10 años):
+- Data Engineer Jr. | Conaprole (2020–Actualidad)
+  Desarrollo e implementación de soluciones con Python.
+- Analista de Business Intelligence | Ministerio de Economía y Finanzas (2019–2023)
+  Optimización de procesos mediante Python.
+- Analista de Business Intelligence | El Observador (2017–2019)
+  Desarrollo e implementación de soluciones con numpy.
+
+FORMACIÓN ACADÉMICA:
+- Ingeniería en Sistemas — Universidad Católica del Uruguay (UCU) (27)
+
+CERTIFICACIONES:
+- IBM Data Science (2023)
+
+HABILIDADES TÉCNICAS:
+Excel avanzado · SQL · análisis estadístico · visualización de datos · machine learning básico · Python · BigQuery · numpy

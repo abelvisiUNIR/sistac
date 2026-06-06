@@ -1,0 +1,23 @@
+Martín González Alonso
+martín.gonzález39@hotmail.com | Tel.: +34 627 882 361
+Av. 18 de Julio 2143, Palermo, Montevideo
+
+RESUMEN PROFESIONAL:
+Profesional con 8 años de experiencia en analista de datos. Titulado/a en Licenciatura en Sistemas con sólida formación técnica y experiencia comprobable en entornos corporativos. Orientado/a a resultados y al trabajo en equipo.
+
+EXPERIENCIA LABORAL (8 años):
+- Data Engineer Jr. | Overactive (2021–Actualidad)
+  Optimización de procesos mediante machine learning básico.
+- Data Analyst | Pragma Consultores (2020–2023)
+  Desarrollo e implementación de soluciones con machine learning.
+- Especialista en Reportería | UPM Uruguay (2017–2019)
+  Coordinación con equipos multidisciplinarios y presentación de resultados.
+
+FORMACIÓN ACADÉMICA:
+- Licenciatura en Sistemas — Universidad de Montevideo (UM) (29)
+
+CERTIFICACIONES:
+- Microsoft Power BI (2019)
+
+HABILIDADES TÉCNICAS:
+Power BI · pandas · análisis estadístico · SQL · machine learning básico · Python · machine learning

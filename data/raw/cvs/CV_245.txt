@@ -1,0 +1,23 @@
+Fernanda Ruiz Álvarez
+fernanda.ruiz45@ort.edu.uy | Tel.: +34 680 708 970
+Rivera 2753, Apto. 9, Pocitos, Montevideo
+
+RESUMEN PROFESIONAL:
+Profesional con 13 años de experiencia en ingeniero/a de software senior. Titulado/a en Ingeniería en Computación con sólida formación técnica y experiencia comprobable en entornos corporativos. Orientado/a a resultados y al trabajo en equipo.
+
+EXPERIENCIA LABORAL (13 años):
+- Arquitecto/a de Software | OCA (2022–Actualidad)
+  Coordinación con equipos multidisciplinarios y presentación de resultados.
+- Arquitecto/a de Software | Tryolabs (2018–2022)
+  Responsable de microservicios y generación de reportes.
+- Engineering Manager | Conaprole (2020–2022)
+  Optimización de procesos mediante Python o Java.
+
+FORMACIÓN ACADÉMICA:
+- Ingeniería en Computación — Instituto Tecnológico Superior (ITS) (34)
+
+CERTIFICACIONES:
+- GCP Professional (2022)
+
+HABILIDADES TÉCNICAS:
+cloud AWS/GCP · Kubernetes · microservicios · diseño de sistemas · Python o Java · liderazgo técnico · CI/CD · arquitectura de software · patrones de diseño · DDD · DevOps

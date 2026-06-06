@@ -1,0 +1,18 @@
+Damián Núñez García
+damián.núñez24@ort.edu.uy | Tel.: +34 650 928 726
+Av. Gral. Flores 3419, Apto. 16, Malvín, Montevideo
+
+RESUMEN PROFESIONAL:
+Profesional con 8 años de experiencia en desarrollador/a backend python. Titulado/a en Licenciatura en Sistemas con sólida formación técnica y experiencia comprobable en entornos corporativos. Orientado/a a resultados y al trabajo en equipo.
+
+EXPERIENCIA LABORAL (8 años):
+- Desarrollador Python | Tryolabs (2023–Actualidad)
+  Desarrollo e implementación de soluciones con PostgreSQL.
+- Programador Senior | ANTEL (2018–2022)
+  Responsable de apis rest y generación de reportes.
+
+FORMACIÓN ACADÉMICA:
+- Licenciatura en Sistemas — Universidad ORT Uruguay (21)
+
+HABILIDADES TÉCNICAS:
+Django · microservicios · FastAPI · Git · APIs REST · Docker · Python · PostgreSQL

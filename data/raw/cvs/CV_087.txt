@@ -1,0 +1,20 @@
+Gabriela Rubio Suárez
+gabriela.rubio18@ort.edu.uy | Tel.: +34 682 129 277
+Av. Gral. Flores 1622, Apto. 8, Pocitos, Montevideo
+
+RESUMEN PROFESIONAL:
+Profesional con 10 años de experiencia en desarrollador/a backend python. Titulado/a en Licenciatura en Sistemas con sólida formación técnica y experiencia comprobable en entornos corporativos. Orientado/a a resultados y al trabajo en equipo.
+
+EXPERIENCIA LABORAL (10 años):
+- Desarrollador Full Stack | OCA (2023–Actualidad)
+  Responsable de docker y generación de reportes.
+- Desarrollador Full Stack | Banco República (BROU) (2019–2021)
+  Desarrollo e implementación de soluciones con FastAPI.
+- Desarrollador Python | Baufest Uruguay (2016–2019)
+  Desarrollo e implementación de soluciones con Git.
+
+FORMACIÓN ACADÉMICA:
+- Licenciatura en Sistemas — Universidad Católica del Uruguay (UCU) (41)
+
+HABILIDADES TÉCNICAS:
+Git · microservicios · Django · FastAPI · Docker · APIs REST · GraphQL · Flask · Python

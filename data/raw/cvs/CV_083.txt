@@ -1,0 +1,18 @@
+Lucía Ortega López
+lucía.ortega5@outlook.com | Tel.: +34 612 426 367
+Bulevar Artigas 1103, Cerro, Montevideo
+
+RESUMEN PROFESIONAL:
+Profesional con 9 años de experiencia en desarrollador/a backend python. Titulado/a en Licenciatura en Sistemas con sólida formación técnica y experiencia comprobable en entornos corporativos. Orientado/a a resultados y al trabajo en equipo.
+
+EXPERIENCIA LABORAL (9 años):
+- Desarrollador Python | Mercado Libre Uruguay (2020–Actualidad)
+  Coordinación con equipos multidisciplinarios y presentación de resultados.
+- Backend Developer | Itaú Uruguay (2021–2023)
+  Optimización de procesos mediante PostgreSQL.
+
+FORMACIÓN ACADÉMICA:
+- Licenciatura en Sistemas — Universidad Tecnológica (UTEC) (33)
+
+HABILIDADES TÉCNICAS:
+Django · Docker · Python · FastAPI · PostgreSQL · APIs REST · AWS

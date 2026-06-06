@@ -1,0 +1,21 @@
+Claudia Núñez Marín
+claudia.núñez74@ort.edu.uy | Tel.: +34 628 223 875
+Av. Libertador 1508, Apto. 6, Buceo, Montevideo
+
+RESUMEN PROFESIONAL:
+Profesional con 6 años de experiencia en desarrollador/a backend python. Titulado/a en Ingeniería en Software con sólida formación técnica y experiencia comprobable en entornos corporativos. Orientado/a a resultados y al trabajo en equipo.
+
+EXPERIENCIA LABORAL (6 años):
+- Backend Developer | Cutcsa (2020–Actualidad)
+  Optimización de procesos mediante Django.
+- Ingeniero de Software | Ministerio de Economía y Finanzas (2021–2022)
+  Responsable de fastapi y generación de reportes.
+
+FORMACIÓN ACADÉMICA:
+- Ingeniería en Software — Instituto Tecnológico Superior (ITS) (20)
+
+CERTIFICACIONES:
+- Docker Certified Associate (2023)
+
+HABILIDADES TÉCNICAS:
+Python · PostgreSQL · microservicios · APIs REST · Django · FastAPI

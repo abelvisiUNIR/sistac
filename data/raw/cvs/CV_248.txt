@@ -1,0 +1,23 @@
+Gonzalo Gómez Muñoz
+gonzalo.gómez96@yahoo.com | Tel.: +34 610 467 991
+Av. Uruguay 1612, Carrasco, Montevideo
+
+RESUMEN PROFESIONAL:
+Profesional con 5 años de experiencia en ingeniero/a de software senior. Titulado/a en Ingeniería en Sistemas con sólida formación técnica y experiencia comprobable en entornos corporativos. Orientado/a a resultados y al trabajo en equipo.
+
+EXPERIENCIA LABORAL (5 años):
+- Desarrollador/a Senior | Mercado Libre Uruguay (2022–Actualidad)
+  Responsable de microservicios y generación de reportes.
+- Arquitecto/a de Software | Hexacta (2021–2023)
+  Desarrollo e implementación de soluciones con arquitectura de software.
+- Arquitecto/a de Software | Cutcsa (2018–2019)
+  Responsable de diseño de sistemas y generación de reportes.
+
+FORMACIÓN ACADÉMICA:
+- Ingeniería en Sistemas — Universidad de la República (UdelaR) (37)
+
+CERTIFICACIONES:
+- Kubernetes CKAD (2022)
+
+HABILIDADES TÉCNICAS:
+diseño de sistemas · Python o Java · Kubernetes · cloud AWS/GCP · arquitectura de software · liderazgo técnico · CI/CD

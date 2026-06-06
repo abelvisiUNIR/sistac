@@ -1,0 +1,23 @@
+Andrea Pérez Delgado
+andrea.pérez48@outlook.com | Tel.: +34 684 490 942
+Rambla República del Perú 2321, Buceo, Montevideo
+
+RESUMEN PROFESIONAL:
+Profesional con 9 años de experiencia en analista de datos. Titulado/a en Licenciatura en Estadística con sólida formación técnica y experiencia comprobable en entornos corporativos. Orientado/a a resultados y al trabajo en equipo.
+
+EXPERIENCIA LABORAL (9 años):
+- Analista de Business Intelligence | Santander Uruguay (2020–Actualidad)
+  Responsable de power bi y generación de reportes.
+- Data Analyst | Ministerio de Economía y Finanzas (2017–2021)
+  Coordinación con equipos multidisciplinarios y presentación de resultados.
+- Especialista en Reportería | ANCAP (2019–2020)
+  Responsable de pandas y generación de reportes.
+
+FORMACIÓN ACADÉMICA:
+- Licenciatura en Estadística — Universidad de la República (UdelaR) (37)
+
+CERTIFICACIONES:
+- Microsoft Power BI (2024)
+
+HABILIDADES TÉCNICAS:
+visualización de datos · análisis estadístico · SQL · Python · pandas · Power BI · BigQuery
