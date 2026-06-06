@@ -92,105 +92,105 @@ stages:
             displayName: "Publicar resultados de tests"
             continueOnError: true
 
-# ── Stage 2: Build Docker image ───────────────────────────────────────────────
-  - stage: build_app
-    displayName: "2. Build Docker + push a ACR"
-    dependsOn: validate
-    condition: succeeded()
-    jobs:
-      - job: docker_build
-        displayName: "Docker build & push"
-        steps:
-          - task: Docker@2
-            displayName: "Login a Azure Container Registry"
-            inputs:
-              command: login
-              containerRegistry: "sistac-acr-connection"
-              # 'sistac-acr-connection' = Service Connection configurada en
-              # Azure DevOps → Project Settings → Service connections → Docker Registry
-
-          - task: Docker@2
-            displayName: "Build imagen SISTAC"
-            inputs:
-              command: build
-              dockerfile: Dockerfile
-              repository: $(IMAGE_NAME)
-              tags: |
-                $(IMAGE_TAG)
-                latest
-
-          - task: Docker@2
-            displayName: "Push imagen a ACR"
-            inputs:
-              command: push
-              repository: $(IMAGE_NAME)
-              tags: |
-                $(IMAGE_TAG)
-                latest
-
-          - script: |
-              echo "##vso[task.setvariable variable=IMAGE_FULL_TAG;isOutput=true]$(ACR_LOGIN_SERVER)/$(IMAGE_NAME):$(IMAGE_TAG)"
-            name: setTag
-            displayName: "Exportar tag de imagen"
-
-# ── Stage 3: Deploy a Azure Container Instance ────────────────────────────────
-  - stage: deploy
-    displayName: "3. Deploy a Azure (Container Instance)"
-    dependsOn: build_app
-    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
-    jobs:
-      - deployment: deploy_aci
-        displayName: "Deploy SISTAC App"
-        environment: "produccion"
-        strategy:
-          runOnce:
-            deploy:
-              steps:
-                - task: AzureCLI@2
-                  displayName: "Deploy a Azure Container Instance"
-                  inputs:
-                    azureSubscription: "sistac-azure-subscription"
-                    # 'sistac-azure-subscription' = Service Connection ARM en
-                    # Azure DevOps → Project Settings → Service connections
-                    scriptType: bash
-                    scriptLocation: inlineScript
-                    inlineScript: |
-                      az container create \
-                        --resource-group $(RESOURCE_GROUP) \
-                        --name $(ACI_NAME) \
-                        --image $(ACR_LOGIN_SERVER)/$(IMAGE_NAME):$(IMAGE_TAG) \
-                        --registry-login-server $(ACR_LOGIN_SERVER) \
-                        --registry-username $(ACR_USERNAME) \
-                        --registry-password $(ACR_PASSWORD) \
-                        --ports 8000 \
-                        --protocol TCP \
-                        --os-type Linux \
-                        --cpu 1 \
-                        --memory 2 \
-                        --environment-variables \
-                          LLM_PROVIDER=anthropic \
-                          AZURE_SEARCH_ENDPOINT=$(AZURE_SEARCH_ENDPOINT) \
-                          AZURE_SEARCH_INDEX=$(AZURE_SEARCH_INDEX) \
-                        --secure-environment-variables \
-                          ANTHROPIC_API_KEY=$(ANTHROPIC_API_KEY) \
-                          AZURE_SEARCH_KEY=$(AZURE_SEARCH_KEY) \
-                        --dns-name-label sistac-app \
-                        --restart-policy Always
-
-                - task: AzureCLI@2
-                  displayName: "Verificar deploy y obtener URL"
-                  inputs:
-                    azureSubscription: "sistac-azure-subscription"
-                    scriptType: bash
-                    scriptLocation: inlineScript
-                    inlineScript: |
-                      FQDN=$(az container show \
-                        --resource-group $(RESOURCE_GROUP) \
-                        --name $(ACI_NAME) \
-                        --query ipAddress.fqdn -o tsv)
-                      echo "##vso[task.logissue type=warning]App disponible en: http://$FQDN:8000"
-                      echo "URL: http://$FQDN:8000"
-
-                      # Health check
-                      sleep 30
-                      curl -f "http://$FQDN:8000/health" && echo "Health check OK" || echo "Health check falló — revisar logs"
+# ── Stage 2: Build Docker image (Comentado temporalmente por falta de permisos en Microsoft Entra ID) ──────────
+#   - stage: build_app
+#     displayName: "2. Build Docker + push a ACR"
+#     dependsOn: validate
+#     condition: succeeded()
+#     jobs:
+#       - job: docker_build
+#         displayName: "Docker build & push"
+#         steps:
+#           - task: Docker@2
+#             displayName: "Login a Azure Container Registry"
+#             inputs:
+#               command: login
+#               containerRegistry: "sistac-acr-connection"
+#               # 'sistac-acr-connection' = Service Connection configurada en
+#               # Azure DevOps → Project Settings → Service connections → Docker Registry
+#
+#           - task: Docker@2
+#             displayName: "Build imagen SISTAC"
+#             inputs:
+#               command: build
+#               dockerfile: Dockerfile
+#               repository: $(IMAGE_NAME)
+#               tags: |
+#                 $(IMAGE_TAG)
+#                 latest
+#
+#           - task: Docker@2
+#             displayName: "Push imagen a ACR"
+#             inputs:
+#               command: push
+#               repository: $(IMAGE_NAME)
+#               tags: |
+#                 $(IMAGE_TAG)
+#                 latest
+#
+#           - script: |
+#               echo "##vso[task.setvariable variable=IMAGE_FULL_TAG;isOutput=true]$(ACR_LOGIN_SERVER)/$(IMAGE_NAME):$(IMAGE_TAG)"
+#             name: setTag
+#             displayName: "Exportar tag de imagen"
+#
+# # ── Stage 3: Deploy a Azure Container Instance (Comentado temporalmente) ──────────────────
+#   - stage: deploy
+#     displayName: "3. Deploy a Azure (Container Instance)"
+#     dependsOn: build_app
+#     condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+#     jobs:
+#       - deployment: deploy_aci
+#         displayName: "Deploy SISTAC App"
+#         environment: "produccion"
+#         strategy:
+#           runOnce:
+#             deploy:
+#               steps:
+#                 - task: AzureCLI@2
+#                   displayName: "Deploy a Azure Container Instance"
+#                   inputs:
+#                     azureSubscription: "sistac-azure-subscription"
+#                     # 'sistac-azure-subscription' = Service Connection ARM en
+#                     # Azure DevOps → Project Settings → Service connections
+#                     scriptType: bash
+#                     scriptLocation: inlineScript
+#                     inlineScript: |
+#                       az container create \
+#                         --resource-group $(RESOURCE_GROUP) \
+#                         --name $(ACI_NAME) \
+#                         --image $(ACR_LOGIN_SERVER)/$(IMAGE_NAME):$(IMAGE_TAG) \
+#                         --registry-login-server $(ACR_LOGIN_SERVER) \
+#                         --registry-username $(ACR_USERNAME) \
+#                         --registry-password $(ACR_PASSWORD) \
+#                         --ports 8000 \
+#                         --protocol TCP \
+#                         --os-type Linux \
+#                         --cpu 1 \
+#                         --memory 2 \
+#                         --environment-variables \
+#                           LLM_PROVIDER=anthropic \
+#                           AZURE_SEARCH_ENDPOINT=$(AZURE_SEARCH_ENDPOINT) \
+#                           AZURE_SEARCH_INDEX=$(AZURE_SEARCH_INDEX) \
+#                         --secure-environment-variables \
+#                           ANTHROPIC_API_KEY=$(ANTHROPIC_API_KEY) \
+#                           AZURE_SEARCH_KEY=$(AZURE_SEARCH_KEY) \
+#                         --dns-name-label sistac-app \
+#                         --restart-policy Always
+#
+#                 - task: AzureCLI@2
+#                   displayName: "Verificar deploy y obtener URL"
+#                   inputs:
+#                     azureSubscription: "sistac-azure-subscription"
+#                     scriptType: bash
+#                     scriptLocation: inlineScript
+#                     inlineScript: |
+#                       FQDN=$(az container show \
+#                         --resource-group $(RESOURCE_GROUP) \
+#                         --name $(ACI_NAME) \
+#                         --query ipAddress.fqdn -o tsv)
+#                       echo "##vso[task.logissue type=warning]App disponible en: http://$FQDN:8000"
+#                       echo "URL: http://$FQDN:8000"
+#
+#                       # Health check
+#                       sleep 30
+#                       curl -f "http://$FQDN:8000/health" && echo "Health check OK" || echo "Health check falló — revisar logs"
