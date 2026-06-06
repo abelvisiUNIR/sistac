@@ -45,10 +45,11 @@
 
 <!-- Tabs -->
 <div class="bg-white border-b border-slate-200">
-  <div class="max-w-5xl mx-auto px-5 flex">
+  <div class="max-w-5xl mx-auto px-5 flex overflow-x-auto">
     <button id="tb-evaluar"   onclick="tab('evaluar')"   class="tab-btn active-tab">Evaluar candidatos</button>
     <button id="tb-cargos"    onclick="tab('cargos')"    class="tab-btn">Gestionar cargos</button>
     <button id="tb-historial" onclick="tab('historial')" class="tab-btn">Historial</button>
+    <button id="tb-gold"      onclick="tab('gold')"      class="tab-btn">Generar Gold Standard</button>
   </div>
 </div>
 
@@ -253,6 +254,24 @@
         </div>
         <div id="lista-cargos" class="space-y-3"></div>
         <div id="sin-cargos" class="hidden text-center py-12 text-sm text-slate-400">No hay cargos cargados aún.</div>
+
+        <!-- Panel de Control y Acciones de Azure -->
+        <div class="mt-8 bg-white border border-slate-200 rounded-xl p-5 space-y-4 shadow-sm">
+          <div>
+            <h3 class="text-sm font-bold text-slate-800">Acciones del Experimento y Azure</h3>
+            <p class="text-xs text-slate-400 mt-0.5">Control directo sobre el vector store y ejecución de la tesis.</p>
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <button id="btn-admin-reset" onclick="resetIndiceAzure()"
+              class="border border-red-200 hover:border-red-500 hover:bg-red-50 text-red-600 font-semibold py-2.5 rounded-lg transition-all text-xs text-center flex items-center justify-center gap-1.5">
+              🗑 Resetear Índice
+            </button>
+            <button id="btn-admin-run" onclick="correrExperimentoTesis()"
+              class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 rounded-lg transition-all text-xs text-center flex items-center justify-center gap-1.5">
+              🚀 Correr Experimento (300 CVs)
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -268,6 +287,113 @@
     </div>
     <div id="t-hist" class="space-y-2"></div>
     <div id="sin-hist" class="hidden text-center py-14 text-sm text-slate-400">No hay evaluaciones aún.</div>
+  </div>
+
+  <!-- ═══ TAB GENERAR GOLD STANDARD (MATRIZ) ═══════════════════════════════ -->
+  <div id="p-gold" class="hidden fade-in">
+    <div class="grid lg:grid-cols-5 gap-7">
+
+      <!-- Columna izquierda: formulario de generación (2/5) -->
+      <div class="lg:col-span-2 space-y-5">
+        <div>
+          <h2 class="text-lg font-bold text-slate-900">Simulador de Candidatos</h2>
+          <p class="text-sm text-slate-500 mt-0.5">Generá perfiles aleatorios basados en tu JD, evaluálos y agregalos al Gold Standard.</p>
+        </div>
+
+        <!-- Cargo -->
+        <div>
+          <label class="label">Cargo (JD)</label>
+          <select id="sel-gold-cargo" class="field">
+            <option value="">Cargando cargos…</option>
+          </select>
+        </div>
+
+        <!-- Botón generar -->
+        <button id="btn-gold-generar" onclick="generarCandidato()"
+          class="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300 text-white font-semibold py-3 rounded-xl transition-colors text-sm">
+          Simular Candidato Aleatorio
+        </button>
+
+        <hr class="border-slate-200" />
+
+        <!-- Panel de Decisión y Metadatos (se muestra una vez generado) -->
+        <div id="gold-decision-panel" class="hidden space-y-4 fade-in">
+          <div>
+            <span class="text-xs font-semibold text-slate-400 uppercase tracking-wide">Datos Demográficos Ficticios</span>
+            <div class="grid grid-cols-2 gap-3 mt-1.5">
+              <div class="bg-slate-100 rounded-lg p-2.5">
+                <p class="text-xs text-slate-400">Género</p>
+                <p class="text-sm font-semibold text-slate-700" id="gold-meta-genero">—</p>
+              </div>
+              <div class="bg-slate-100 rounded-lg p-2.5">
+                <p class="text-xs text-slate-400">Edad</p>
+                <p class="text-sm font-semibold text-slate-700" id="gold-meta-edad">—</p>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <label class="label">Afinidad Simulación (Referencia)</label>
+            <span id="gold-meta-afinidad" class="inline-block text-xs font-semibold px-2.5 py-1 rounded-full uppercase">—</span>
+          </div>
+
+          <div class="space-y-2">
+            <label class="label">Evaluación Manual (Tu Decisión de Experto)</label>
+            <div class="grid grid-cols-2 gap-3">
+              <button id="btn-dec-apto" onclick="setDecision('APTO')"
+                class="border border-slate-200 hover:border-emerald-500 hover:bg-emerald-50 text-slate-600 font-semibold py-3 rounded-xl transition-all text-sm flex items-center justify-center gap-1.5">
+                <span class="text-lg">✓</span> APTO
+              </button>
+              <button id="btn-dec-noapto" onclick="setDecision('NO_APTO')"
+                class="border border-slate-200 hover:border-red-500 hover:bg-red-50 text-slate-600 font-semibold py-3 rounded-xl transition-all text-sm flex items-center justify-center gap-1.5">
+                <span class="text-lg">✕</span> NO APTO
+              </button>
+            </div>
+          </div>
+
+          <!-- Cronómetro visible del reclutador -->
+          <div class="flex items-center justify-between bg-blue-50 border border-blue-200 rounded-xl p-3 text-sm">
+            <span class="text-blue-700 font-medium">Tiempo de Lectura:</span>
+            <span id="gold-timer" class="font-mono font-bold text-blue-700">00:00</span>
+          </div>
+
+          <button id="btn-gold-guardar" onclick="guardarDecisionGold()" disabled
+            class="w-full bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-300 disabled:cursor-not-allowed text-white font-semibold py-3 rounded-xl transition-colors text-sm">
+            Confirmar y Guardar en Gold Standard
+          </button>
+        </div>
+      </div>
+
+      <!-- Columna derecha: visualización y edición del CV generado (3/5) -->
+      <div class="lg:col-span-3 space-y-4">
+        <div class="flex items-center justify-between">
+          <label class="label uppercase tracking-wide text-xs font-semibold text-slate-400">Texto del CV Ficticio Generado</label>
+          <span class="text-xs text-slate-400">Podés editar el texto directamente si detectás algún error</span>
+        </div>
+
+        <!-- Textarea o Placeholder -->
+        <div id="gold-cv-placeholder" class="border-2 border-dashed border-slate-200 bg-white rounded-2xl p-10 text-center flex flex-col items-center justify-center h-[500px]">
+          <svg class="w-12 h-12 text-slate-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+              d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+          </svg>
+          <p class="text-sm font-medium text-slate-500">Ningún candidato generado aún</p>
+          <p class="text-xs text-slate-400 mt-1">Hacé click en "Simular Candidato Aleatorio" para comenzar.</p>
+        </div>
+
+        <div id="gold-cv-loading" class="hidden border border-slate-200 bg-white rounded-2xl p-10 text-center flex flex-col items-center justify-center gap-3 h-[500px]">
+          <div class="flex gap-2">
+            <div class="dot w-2.5 h-2.5 bg-blue-500 rounded-full"></div>
+            <div class="dot w-2.5 h-2.5 bg-blue-500 rounded-full"></div>
+            <div class="dot w-2.5 h-2.5 bg-blue-500 rounded-full"></div>
+          </div>
+          <p class="text-sm font-medium text-slate-600">Claude está redactando un CV rioplatense a medida…</p>
+        </div>
+
+        <textarea id="gold-cv-text" class="hidden w-full h-[500px] border border-slate-200 rounded-2xl p-5 font-mono text-sm leading-relaxed outline-none focus:border-blue-500 bg-white" placeholder="Currículum…"></textarea>
+      </div>
+
+    </div>
   </div>
 
 </main>
@@ -292,7 +418,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // ── Tabs ──────────────────────────────────────────────────────────────────
 function tab(t) {
-  ['evaluar','cargos','historial'].forEach(x => {
+  ['evaluar','cargos','historial','gold'].forEach(x => {
     document.getElementById(`p-${x}`).classList.add('hidden');
     document.getElementById(`tb-${x}`).classList.remove('active-tab');
   });
@@ -300,6 +426,7 @@ function tab(t) {
   document.getElementById(`tb-${t}`).classList.add('active-tab');
   if (t === 'historial') cargarHistorial();
   if (t === 'cargos')    renderCargos();
+  if (t === 'gold')      cargarGoldCargos();
 }
 
 // ── Health ────────────────────────────────────────────────────────────────
@@ -520,6 +647,9 @@ async function cargarCargos() {
       : '<option value="">— Creá un cargo primero —</option>';
     renderCargos();
     checkHealth();
+    if (document.getElementById('sel-gold-cargo')) {
+      cargarGoldCargos();
+    }
   } catch {}
 }
 
@@ -626,6 +756,194 @@ function toast(msg, type='info') {
   el.textContent = msg;
   el.classList.remove('hidden');
   setTimeout(() => el.classList.add('hidden'), 4000);
+}
+
+
+// ── Generar Gold Standard (Matriz) ─────────────────────────────────────────
+let goldCandidatoActual = null;
+let goldTimerInterval = null;
+let goldStartTime = null;
+let goldDecision = null;
+
+function cargarGoldCargos() {
+  const sel = document.getElementById('sel-gold-cargo');
+  const ids = Object.keys(cargos);
+  sel.innerHTML = ids.length
+    ? ids.map(id => `<option value="${id}">${cargos[id].nombre}</option>`).join('')
+    : '<option value="">— Creá un cargo primero —</option>';
+}
+
+async function generarCandidato() {
+  const cargoId = document.getElementById('sel-gold-cargo').value;
+  if (!cargoId) { toast('Seleccioná un cargo.', 'err'); return; }
+
+  // Restablecer interfaz
+  stopGoldTimer();
+  goldDecision = null;
+  document.getElementById('btn-dec-apto').className = "border border-slate-200 hover:border-emerald-500 hover:bg-emerald-50 text-slate-600 font-semibold py-3 rounded-xl transition-all text-sm flex items-center justify-center gap-1.5";
+  document.getElementById('btn-dec-noapto').className = "border border-slate-200 hover:border-red-500 hover:bg-red-50 text-slate-600 font-semibold py-3 rounded-xl transition-all text-sm flex items-center justify-center gap-1.5";
+  document.getElementById('btn-gold-guardar').disabled = true;
+  document.getElementById('gold-decision-panel').classList.add('hidden');
+  document.getElementById('gold-cv-text').classList.add('hidden');
+  document.getElementById('gold-cv-placeholder').classList.add('hidden');
+  document.getElementById('gold-cv-loading').classList.remove('hidden');
+  document.getElementById('btn-gold-generar').disabled = true;
+
+  try {
+    const fd = new FormData();
+    fd.append('cargo_id', cargoId);
+
+    const r = await fetch(`${API}/api/casos/simular-candidato`, { method:'POST', body:fd });
+    if (!r.ok) throw new Error((await r.json()).detail || r.statusText);
+    const d = await r.json();
+
+    goldCandidatoActual = d;
+
+    // Mostrar metadatos demográficos
+    document.getElementById('gold-meta-genero').textContent = d.gender === 'F' ? 'Femenino (F)' : 'Masculino (M)';
+    document.getElementById('gold-meta-edad').textContent = `${d.age} años (Grupo ${d.age_group})`;
+    
+    const afinidadColor = d.afinidad === 'alto' ? 'bg-emerald-100 text-emerald-700' : d.afinidad === 'medio' ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-600';
+    const afinLabel = document.getElementById('gold-meta-afinidad');
+    afinLabel.className = `inline-block text-xs font-semibold px-2.5 py-1 rounded-full uppercase ${afinidadColor}`;
+    afinLabel.textContent = d.afinidad;
+
+    // Colocar CV text
+    const textEl = document.getElementById('gold-cv-text');
+    textEl.value = d.cv_text;
+    textEl.classList.remove('hidden');
+
+    document.getElementById('gold-decision-panel').classList.remove('hidden');
+
+    // Empezar cronómetro
+    startGoldTimer();
+    toast('Candidato simulado. Leé su CV y tomá una decisión.', 'ok');
+  } catch(e) {
+    toast(`Error: ${e.message}`, 'err');
+    document.getElementById('gold-cv-placeholder').classList.remove('hidden');
+  } finally {
+    document.getElementById('gold-cv-loading').classList.add('hidden');
+    document.getElementById('btn-gold-generar').disabled = false;
+  }
+}
+
+function startGoldTimer() {
+  goldStartTime = Date.now();
+  document.getElementById('gold-timer').textContent = "00:00";
+  goldTimerInterval = setInterval(() => {
+    const elapsed = Math.floor((Date.now() - goldStartTime) / 1000);
+    const m = String(Math.floor(elapsed / 60)).padStart(2, '0');
+    const s = String(elapsed % 60).padStart(2, '0');
+    document.getElementById('gold-timer').textContent = `${m}:${s}`;
+  }, 1000);
+}
+
+function stopGoldTimer() {
+  if (goldTimerInterval) {
+    clearInterval(goldTimerInterval);
+    goldTimerInterval = null;
+  }
+}
+
+function setDecision(dec) {
+  goldDecision = dec;
+  const aptoBtn = document.getElementById('btn-dec-apto');
+  const noaptoBtn = document.getElementById('btn-dec-noapto');
+
+  if (dec === 'APTO') {
+    aptoBtn.className = "bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3 rounded-xl transition-all text-sm flex items-center justify-center gap-1.5 shadow-md shadow-emerald-100";
+    noaptoBtn.className = "border border-slate-200 hover:border-red-500 hover:bg-red-50 text-slate-400 font-semibold py-3 rounded-xl transition-all text-sm flex items-center justify-center gap-1.5";
+  } else {
+    aptoBtn.className = "border border-slate-200 hover:border-emerald-500 hover:bg-emerald-50 text-slate-400 font-semibold py-3 rounded-xl transition-all text-sm flex items-center justify-center gap-1.5";
+    noaptoBtn.className = "bg-red-600 hover:bg-red-700 text-white font-semibold py-3 rounded-xl transition-all text-sm flex items-center justify-center gap-1.5 shadow-md shadow-red-100";
+  }
+
+  document.getElementById('btn-gold-guardar').disabled = false;
+}
+
+async function guardarDecisionGold() {
+  if (!goldCandidatoActual || !goldDecision) return;
+
+  const cargoId = document.getElementById('sel-gold-cargo').value;
+  const cvText = document.getElementById('gold-cv-text').value.trim();
+  const timeSpent = (Date.now() - goldStartTime) / 1000;
+
+  stopGoldTimer();
+  const btn = document.getElementById('btn-gold-guardar');
+  btn.disabled = true;
+  btn.textContent = 'Guardando…';
+
+  try {
+    const fd = new FormData();
+    fd.append('cargo_id', cargoId);
+    fd.append('cv_text', cvText);
+    fd.append('decision', goldDecision);
+    fd.append('gender', goldCandidatoActual.gender);
+    fd.append('age_group', goldCandidatoActual.age_group);
+    fd.append('time_spent_seconds', timeSpent);
+
+    const r = await fetch(`${API}/api/casos/guardar-decision`, { method:'POST', body:fd });
+    if (!r.ok) throw new Error((await r.json()).detail || r.statusText);
+    const d = await r.json();
+
+    toast(`Candidato guardado como ${d.cv_id} (${goldDecision}) en ${d.time_seconds}s.`, 'ok');
+
+    // Limpiar panel
+    document.getElementById('gold-decision-panel').classList.add('hidden');
+    document.getElementById('gold-cv-text').classList.add('hidden');
+    document.getElementById('gold-cv-placeholder').classList.remove('hidden');
+    goldCandidatoActual = null;
+    goldDecision = null;
+    
+    await cargarCargos();
+  } catch(e) {
+    toast(`Error: ${e.message}`, 'err');
+    btn.disabled = false;
+    btn.textContent = 'Confirmar y Guardar en Gold Standard';
+    startGoldTimer();
+  }
+}
+async function resetIndiceAzure() {
+  if (!confirm("¿Estás seguro de que deseas ELIMINAR y recrear el índice 'sistac-cvs' en Azure AI Search? Esto borrará de la nube todos los CVs indexados actualmente.")) return;
+
+  const btn = document.getElementById('btn-admin-reset');
+  const runBtn = document.getElementById('btn-admin-run');
+  btn.disabled = true;
+  btn.textContent = 'Borrando…';
+  runBtn.disabled = true;
+
+  try {
+    const r = await fetch(`${API}/api/admin/reset-indice`, { method:'POST' });
+    if (!r.ok) throw new Error((await r.json()).detail || r.statusText);
+    const d = await r.json();
+    toast(d.message, 'ok');
+    await cargarCargos();
+  } catch(e) {
+    toast(`Error: ${e.message}`, 'err');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '🗑 Resetear Índice';
+    runBtn.disabled = false;
+  }
+}
+
+async function correrExperimentoTesis() {
+  if (!confirm("¿Iniciar la ejecución del experimento completo con los 300 CVs del Gold Standard en segundo plano? (Este proceso llamará masivamente a Claude y puede tomar tiempo).")) return;
+
+  const btn = document.getElementById('btn-admin-run');
+  btn.disabled = true;
+  btn.textContent = 'Ejecutando…';
+
+  try {
+    const r = await fetch(`${API}/api/admin/ejecutar-experimento`, { method:'POST' });
+    if (!r.ok) throw new Error((await r.json()).detail || r.statusText);
+    const d = await r.json();
+    toast(d.message, 'ok');
+  } catch(e) {
+    toast(`Error: ${e.message}`, 'err');
+    btn.disabled = false;
+    btn.textContent = '🚀 Correr Experimento (300 CVs)';
+  }
 }
 </script>
 </body>

@@ -104,6 +104,26 @@ def run_c0_baseline() -> list[dict]:
 
 # ── C1, C2, C3: Sistemas automáticos ─────────────────────────────────────────
 
+CACHE_FILE = Path("/app/data/eval_cache.json")
+
+def load_cache() -> dict:
+    if CACHE_FILE.exists():
+        try:
+            with open(CACHE_FILE, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except Exception as e:
+            print(f"  [WARN] Error cargando caché de evaluaciones: {e}")
+    return {}
+
+def save_cache(cache: dict) -> None:
+    try:
+        CACHE_FILE.parent.mkdir(parents=True, exist_ok=True)
+        with open(CACHE_FILE, "w", encoding="utf-8") as f:
+            json.dump(cache, f, ensure_ascii=False, indent=2)
+    except Exception as e:
+        print(f"  [WARN] Error guardando caché de evaluaciones: {e}")
+
+
 def _run_pipeline(config: str, eval_pairs: list[dict]) -> list[dict]:
     """
     Ejecuta el pipeline RAG para una configuración experimental.
@@ -118,7 +138,22 @@ def _run_pipeline(config: str, eval_pairs: list[dict]) -> list[dict]:
     pipeline = SistacRAGPipeline(config=config)
     results = []
 
+    cache = load_cache()
+
     for pair in eval_pairs:
+        cache_key = f"{config}_{pair['cv_id']}_{pair['jd_id']}"
+
+        # Si ya existe en la caché local, recuperamos el resultado
+        if cache_key in cache:
+            result = cache[cache_key]
+            # Nos aseguramos de inyectar la metadata actual del Gold Standard
+            result["expected_label"] = pair.get("expected_label", "")
+            result["expected_score"] = pair.get("expected_score", None)
+            result["group_gender"]   = pair.get("group_gender", "")
+            result["group_age"]      = pair.get("group_age", "")
+            results.append(result)
+            continue
+
         print(f"  [{config.upper()}] Evaluando {pair['cv_id']} ↔ {pair['jd_id']}...")
         result = pipeline.evaluate(
             cv_id=pair["cv_id"],
@@ -131,10 +166,16 @@ def _run_pipeline(config: str, eval_pairs: list[dict]) -> list[dict]:
         result["expected_score"] = pair.get("expected_score", None)
         result["group_gender"]   = pair.get("group_gender", "")
         result["group_age"]      = pair.get("group_age", "")
+        
+        # Guardamos en caché y en disco de inmediato
+        cache[cache_key] = result
+        save_cache(cache)
+        
         results.append(result)
 
     print(f"  [{config.upper()}] {len(results)} evaluaciones completadas.")
     return results
+
 
 
 def run_c1_llm_pure(eval_pairs: list[dict]) -> list[dict]:
@@ -204,26 +245,51 @@ def load_eval_pairs() -> list[dict]:
 
 # ── Cálculo de métricas ───────────────────────────────────────────────────────
 
-def compute_h1_metrics(c0_results: list[dict], cx_results: list[dict]) -> dict:
+def compute_h1_metrics(c0_results: list[dict], cx_results: list[dict], config_name: str) -> dict:
     """H1 — Eficiencia: compara T_cand de C0 vs Cx (Mann-Whitney U)."""
     times_c0 = [r["time_seconds"] for r in c0_results]
     times_cx = [r["time_seconds"] for r in cx_results]
-    return efficiency_report(times_baseline=times_c0, times_system=times_cx)
+    return efficiency_report(times_baseline=times_c0, times_system=times_cx, config_name=config_name)
 
 
-def compute_h2_metrics(results: list[dict]) -> dict:
+
+def compute_h2_metrics(results: list[dict], config_name: str) -> dict:
     """H2 — Eficacia: F1 macro y AUC-ROC del sistema vs Gold Standard."""
-    y_true = [1 if r["expected_label"] == "APTO" else 0 for r in results]
-    y_pred = [1 if r["decision"] == "APTO" else 0 for r in results]
-    y_score = [r["score"] / 100.0 if r["score"] is not None else 0.5 for r in results]
-    return efficacy_report(y_true=y_true, y_pred=y_pred, y_score=y_score)
+    y_true = np.array([1 if r["expected_label"] == "APTO" else 0 for r in results])
+    y_pred = np.array([1 if r["decision"] == "APTO" else 0 for r in results])
+    y_score = np.array([r["score"] / 100.0 if r["score"] is not None else 0.5 for r in results])
+    res = efficacy_report(y_true=y_true, y_pred=y_pred, y_score=y_score, config_name=config_name)
+    return {
+        "f1": res.get("F1_macro", 0.0),
+        "auc_roc": res.get("AUC_ROC", 0.0),
+        "auc_ci_low": res.get("AUC_ROC_CI_lower", 0.0),
+        "auc_ci_high": res.get("AUC_ROC_CI_upper", 0.0),
+        "h2_accepted": res.get("H2_accepted", False)
+    }
 
 
-def compute_h3_metrics(results: list[dict], group_attr: str = "group_gender") -> dict:
+def compute_h3_metrics(results: list[dict], config_name: str, group_attr: str = "group_gender") -> dict:
     """H3 — Equidad: DIR y SPD entre grupos protegidos."""
-    y_pred = [1 if r["decision"] == "APTO" else 0 for r in results]
-    group  = [r.get(group_attr, "desconocido") for r in results]
-    return fairness_report(y_pred=y_pred, group=group)
+    y_pred = np.array([1 if r["decision"] == "APTO" else 0 for r in results])
+    group = np.array([r.get(group_attr, "desconocido") for r in results])
+    
+    # Privilegiado: "M" para género, "23-35" para edad
+    priv_group = "M" if group_attr == "group_gender" else "23-35"
+    
+    res = fairness_report(
+        y_pred=y_pred,
+        group=group,
+        config_name=config_name,
+        privileged_group=priv_group,
+        positive_label=1
+    )
+    
+    return {
+        "dir": res.get("DIR", 0.0),
+        "spd": res.get("SPD", 0.0),
+        "selection_rate_privileged": res.get("selection_rate_privileged", 0.0),
+        "selection_rate_minority": res.get("selection_rate_minority", 0.0)
+    }
 
 
 # ── Guardar resultados ────────────────────────────────────────────────────────
@@ -339,18 +405,56 @@ def main() -> None:
     print("\n[6/6] Calculando métricas H1 / H2 / H3...")
 
     # H2 — Eficacia (C1, C2, C3 vs Gold Standard)
-    h2_c1 = compute_h2_metrics(c1_results)
-    h2_c2 = compute_h2_metrics(c2_results)
-    h2_c3 = compute_h2_metrics(c3_results)
+    h2_c1 = compute_h2_metrics(c1_results, "C1")
+    h2_c2 = compute_h2_metrics(c2_results, "C2")
+    h2_c3 = compute_h2_metrics(c3_results, "C3")
 
     # H3 — Equidad (C2 vs C3)
-    h3_c2 = compute_h3_metrics(c2_results)
-    h3_c3 = compute_h3_metrics(c3_results)
+    h3_c2 = compute_h3_metrics(c2_results, "C2")
+    h3_c3 = compute_h3_metrics(c3_results, "C3")
 
     # H1 — Eficiencia (C0 vs C1/C2/C3)
-    h1_c1 = compute_h1_metrics(c0_results, c1_results) if c0_results else {}
-    h1_c2 = compute_h1_metrics(c0_results, c2_results) if c0_results else {}
-    h1_c3 = compute_h1_metrics(c0_results, c3_results) if c0_results else {}
+    h1_c1 = compute_h1_metrics(c0_results, c1_results, "C1") if c0_results else {}
+    h1_c2 = compute_h1_metrics(c0_results, c2_results, "C2") if c0_results else {}
+    h1_c3 = compute_h1_metrics(c0_results, c3_results, "C3") if c0_results else {}
+
+    # 4.5. Guardar tablas H1
+    h1_headers = ["Configuración", "Mediana C0 (s)", "Mediana Cx (s)", "IQR C0 (s)", "IQR Cx (s)", "Factor Speedup", "U Mann-Whitney", "p-valor", "H1 aceptada"]
+    h1_rows = []
+    if c0_results:
+        for name, h1_res in [("C1 (LLM puro)", h1_c1), ("C2 (LLM + RAG)", h1_c2), ("C3 (LLM + RAG + PII)", h1_c3)]:
+            if h1_res:
+                h1_rows.append([
+                    name,
+                    f"{h1_res.get('median_baseline_s', 0.0):.1f}",
+                    f"{h1_res.get('median_system_s', 0.0):.1f}",
+                    f"{h1_res.get('IQR_baseline_s', 0.0):.1f}",
+                    f"{h1_res.get('IQR_system_s', 0.0):.1f}",
+                    f"{h1_res.get('speedup_factor', 0.0):.1f}x",
+                    f"{h1_res.get('mannwhitney_U', 0.0):.1f}",
+                    f"{h1_res.get('p_value', 0.0):.4f}",
+                    "Sí" if h1_res.get("H1_accepted") else "No"
+                ])
+    else:
+        h1_rows = [
+            ["C1 (LLM puro)", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "No"],
+            ["C2 (LLM + RAG)", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "No"],
+            ["C3 (LLM + RAG + PII)", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "No"],
+        ]
+    save_word_table(
+        headers=h1_headers,
+        rows=h1_rows,
+        caption="Tabla 7.3. Métricas de eficiencia por configuración (H1)",
+        filename="tab_resultados_h1.docx",
+        note=(
+            "Medianas e IQR expresados en segundos por candidato. "
+            "U Mann-Whitney y p-valor corresponden a la comparación unilateral con C0."
+        ),
+    )
+    save_csv(
+        [{"config": r[0], "median_c0": r[1], "median_cx": r[2], "speedup": r[5], "p_value": r[7], "h1_accepted": r[8]} for r in h1_rows],
+        "tab_resultados_h1.csv",
+    )
 
     # 5. Guardar tablas H2
     h2_headers = ["Configuración", "F1-score (macro)", "AUC-ROC", "IC 95% AUC-ROC", "H2 aceptada"]
@@ -420,6 +524,7 @@ def main() -> None:
     print("Experimento completado. Outputs en paper/tables/")
     print("Insertar tablas en SISTAC_TFE.docx sección 7.")
     print("=" * 60)
+
 
 
 def _generate_template_tables() -> None:

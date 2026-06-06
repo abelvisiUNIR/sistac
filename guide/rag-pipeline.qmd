@@ -1,0 +1,53 @@
+---
+title: "Pipeline RAG e Invariantes Técnicos"
+subtitle: "Estrategia de Chunking, Generación de Embeddings, Recuperación Vectorial y Anonimización de PII"
+---
+
+El pipeline RAG (Retrieval-Augmented Generation) de SISTAC integra técnicas avanzadas de procesamiento de lenguaje natural y búsqueda semántica híbrida en la nube.
+
+---
+
+## 1. Segmentación y Enriquecimiento (Chunking)
+
+Los currículums y descripciones de puestos son documentos estructurados pero semi-organizados. Para evitar que el LLM reciba información irrelevante y para mantenerse dentro de los límites de tokens de Claude/GPT, los documentos se procesan bajo los siguientes parámetros:
+
+* **Estrategia:** Segmentador recursivo por caracteres (`RecursiveCharacterTextSplitter`).
+* **Tamaño del Chunk:** **512 tokens** (aproximadamente 380 palabras).
+* **Solapamiento (Overlap):** **64 tokens** para asegurar la continuidad del contexto semántico entre fragmentos adyacentes.
+
+Cada fragmento resultante en la base de datos vectorial se identifica mediante una clave unificada que combina el identificador del currículum, la JD vacante y el número correlativo: 
+`{cv_id}_{jd_id}_chunk_{idx}`
+
+---
+
+## 2. Generación de Embeddings y Almacén Vectorial
+
+SISTAC soporta representación vectorial mediante dos esquemas configurables:
+1. **Esquema Local (Multilingüe):** `paraphrase-multilingual-mpnet-base-v2` (SentenceTransformer de HuggingFace), que genera vectores de **768 dimensiones** y tiene un rendimiento sobresaliente en español.
+2. **Esquema Cloud (OpenAI):** `text-embedding-3-small` que genera vectores de **1536 dimensiones**.
+
+Los vectores y metadatos se almacenan en **Azure AI Search** bajo un índice denominado `sistac-cvs`. La similitud entre vectores se calcula mediante la **distancia coseno (Cosine Similarity)**.
+
+---
+
+## 3. Recuperación Híbrida y Reranking Semántico
+
+Para maximizar el acierto en la recuperación de información (Context Recall) sin saturar al LLM, la consulta a Azure AI Search sigue el siguiente flujo técnico:
+
+1. **Búsqueda Híbrida:** Se realiza una consulta combinada que suma la puntuación de la búsqueda por palabras clave clásica (TF-IDF/BM25) con la puntuación de la búsqueda por vectores (KNN).
+2. **Azure Semantic Ranker:** Los resultados se someten a un segundo paso de ordenación (*reranking*) semántica utilizando el clasificador de deep learning nativo de Azure, que detecta la intención de la búsqueda más allá de la coincidencia literal.
+3. **Filtro Cliente Antiescalabilidad:** Para evitar la contaminación cruzada entre candidatos y cargos durante simulaciones paralelas, el pipeline realiza un *over-fetching* de fragmentos y filtra en memoria únicamente aquellos que pertenecen de forma estricta al par `{cv_id}_{jd_id}` antes de enviarlos al LLM Scorer.
+
+---
+
+## 4. Mitigación de Sesgos (Módulo PII Anonimizador)
+
+En la condición experimental **C3**, el currículum pasa por una etapa de anonimización profunda antes de ser indexado en Azure y analizado por el LLM.
+
+* **Motor:** `SistacAnonymizer` implementado con modelos de PLN basados en **spaCy** en español (`es_core_news_lg`).
+* **Entidades Enmascaradas (PII):**
+  * Nombres propios (PER)
+  * Direcciones físicas (LOC)
+  * Números de teléfono, correos electrónicos y enlaces URL
+  * Organizaciones específicas (ORG)
+* **Objetivo:** Ocultar cualquier identificador demográfico indirecto de género o edad para evaluar si las decisiones automatizadas reducen a cero el impacto dispar.

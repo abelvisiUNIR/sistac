@@ -13,11 +13,13 @@ from __future__ import annotations
 
 import sys
 import uuid
+import random
+import csv
 from datetime import datetime
 from pathlib import Path
 from typing import Optional
 
-from fastapi import FastAPI, File, Form, HTTPException, UploadFile
+from fastapi import FastAPI, File, Form, HTTPException, UploadFile, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
@@ -29,7 +31,7 @@ _SCRIPTS_DIR  = _PROJECT_ROOT / "scripts" / "python"
 if str(_SCRIPTS_DIR) not in sys.path:
     sys.path.insert(0, str(_SCRIPTS_DIR))
 
-from config import SCORE_THRESHOLD
+from config import SCORE_THRESHOLD, CVS_RAW, GOLD_STANDARD_DIR
 from utils.doc_extractor import extract_text, SUPPORTED_EXTENSIONS
 
 # ── App ───────────────────────────────────────────────────────────────────────
@@ -50,6 +52,40 @@ app.add_middleware(
 # Storage en memoria (sesión)
 _cargos: dict[str, dict] = {}
 _resultados: list[dict] = []
+
+# ====== MongoDB Client ======
+import os
+from pymongo import MongoClient
+
+MONGO_URI = os.getenv("MONGO_URI")
+db_client = None
+db = None
+resultados_col = None
+cargos_col = None
+
+if MONGO_URI:
+    try:
+        db_client = MongoClient(MONGO_URI, serverSelectionTimeoutMS=2000)
+        # Validar conexión
+        db_client.server_info()
+        db = db_client["sistac_tfe"]
+        resultados_col = db["resultados"]
+        cargos_col = db["cargos"]
+        print("[INFO] Conectado exitosamente a MongoDB")
+    except Exception as e:
+        print(f"[WARN] No se pudo conectar a MongoDB: {e}. Usando almacenamiento en memoria.")
+
+@app.on_event("startup")
+async def startup_event():
+    if cargos_col is not None:
+        try:
+            db_cargos = list(cargos_col.find({}, {"_id": 0}))
+            for c in db_cargos:
+                _cargos[c["id"]] = c
+            print(f"[INFO] Cargados {len(db_cargos)} cargos desde MongoDB.")
+        except Exception as e:
+            print(f"[WARN] No se pudieron cargar cargos desde MongoDB: {e}")
+
 
 
 # ── Health ────────────────────────────────────────────────────────────────────
@@ -98,7 +134,7 @@ async def crear_cargo(
         )
 
     cargo_id = f"JD_{str(uuid.uuid4())[:8].upper()}"
-    _cargos[cargo_id] = {
+    cargo_data = {
         "id":          cargo_id,
         "nombre":      nombre,
         "descripcion": descripcion,
@@ -107,6 +143,12 @@ async def crear_cargo(
         "fecha":       datetime.now().isoformat(),
         "candidatos":  0,
     }
+    _cargos[cargo_id] = cargo_data
+    if cargos_col is not None:
+        try:
+            cargos_col.update_one({"id": cargo_id}, {"$set": cargo_data}, upsert=True)
+        except Exception as e:
+            print(f"[WARN] Error guardando cargo en MongoDB: {e}")
 
     # Indexar en Azure Search (C2/C3)
     indexado = False
@@ -131,6 +173,13 @@ async def crear_cargo(
 
 @app.get("/api/cargos")
 def listar_cargos():
+    if cargos_col is not None:
+        try:
+            db_cargos = list(cargos_col.find({}, {"_id": 0}))
+            for c in db_cargos:
+                _cargos[c["id"]] = c
+        except Exception as e:
+            print(f"[WARN] Error leyendo cargos de MongoDB: {e}")
     return {"cargos": list(_cargos.values())}
 
 
@@ -139,6 +188,11 @@ def eliminar_cargo(cargo_id: str):
     if cargo_id not in _cargos:
         raise HTTPException(status_code=404, detail="Cargo no encontrado.")
     del _cargos[cargo_id]
+    if cargos_col is not None:
+        try:
+            cargos_col.delete_one({"id": cargo_id})
+        except Exception as e:
+            print(f"[WARN] Error eliminando cargo de MongoDB: {e}")
     return {"ok": True}
 
 
@@ -168,6 +222,8 @@ async def evaluar_batch(
     from rag.pipeline import SistacRAGPipeline
     pipeline = await run_in_threadpool(SistacRAGPipeline, config=config)
 
+    # Extraer texto de todos los archivos válidos
+    valid_cvs = {}  # {cv_id: (cv_text, filename)}
     for archivo_cv in archivos_cv:
         ext = Path(archivo_cv.filename).suffix.lower()
         if ext not in SUPPORTED_EXTENSIONS:
@@ -201,6 +257,29 @@ async def evaluar_batch(
             continue
 
         cv_id = f"CV_{str(uuid.uuid4())[:8].upper()}"
+        valid_cvs[cv_id] = (cv_text, archivo_cv.filename)
+
+    # Indexar todos los CVs válidos juntos en Azure AI Search (si C2/C3)
+    if config in {"c2", "c3"} and valid_cvs:
+        try:
+            cv_texts_to_index = {cid: val[0] for cid, val in valid_cvs.items()}
+            await run_in_threadpool(
+                pipeline.index,
+                cv_texts=cv_texts_to_index,
+                jd_texts={cargo_id: cargo["descripcion"]}
+            )
+        except Exception as exc:
+            for cid, (cv_text, filename) in valid_cvs.items():
+                resultados_batch.append({
+                    "archivo_cv": filename,
+                    "error": f"Fallo al indexar en Azure AI Search: {exc}",
+                    "score": None,
+                    "decision": "ERROR",
+                })
+            valid_cvs = {}  # Limpiar para no evaluar sin índice
+
+    # Evaluar los CVs válidos
+    for cv_id, (cv_text, filename) in valid_cvs.items():
         try:
             resultado = await run_in_threadpool(
                 pipeline.evaluate,
@@ -209,36 +288,45 @@ async def evaluar_batch(
                 jd_id=cargo_id,
                 jd_text=cargo["descripcion"],
             )
+            entrada = {
+                "id":              str(uuid.uuid4())[:8],
+                "cv_id":           cv_id,
+                "candidato_nombre": Path(filename).stem,
+                "archivo_cv":      filename,
+                "cargo_id":        cargo_id,
+                "cargo_nombre":    cargo["nombre"],
+                "score":           resultado["score"],
+                "decision":        resultado["decision"],
+                "justificacion":   resultado["justification"],
+                "dimensiones":     resultado.get("dimensions", {}),
+                "chunks_usados":   resultado.get("chunks_used", 0),
+                "chunks":          resultado.get("chunks", []),
+                "anonimizado":     resultado.get("anonymized", False),
+                "tiempo_segundos": resultado.get("time_seconds", 0),
+                "config":          config,
+                "fecha":           datetime.now().isoformat(),
+                "error":           None,
+            }
+            _resultados.insert(0, entrada)
+            _cargos[cargo_id]["candidatos"] += 1
+            if resultados_col is not None:
+                try:
+                    resultados_col.insert_one(dict(entrada))
+                except Exception as e:
+                    print(f"[WARN] Error guardando resultado en MongoDB: {e}")
+            if cargos_col is not None:
+                try:
+                    cargos_col.update_one({"id": cargo_id}, {"$inc": {"candidatos": 1}})
+                except Exception as e:
+                    print(f"[WARN] Error incrementando candidatos en MongoDB: {e}")
+            resultados_batch.append(entrada)
         except Exception as exc:
             resultados_batch.append({
-                "archivo_cv": archivo_cv.filename,
+                "archivo_cv": filename,
                 "error": f"Error en pipeline: {exc}",
                 "score": None,
                 "decision": "ERROR",
             })
-            continue
-
-        entrada = {
-            "id":              str(uuid.uuid4())[:8],
-            "cv_id":           cv_id,
-            "candidato_nombre": Path(archivo_cv.filename).stem,
-            "archivo_cv":      archivo_cv.filename,
-            "cargo_id":        cargo_id,
-            "cargo_nombre":    cargo["nombre"],
-            "score":           resultado["score"],
-            "decision":        resultado["decision"],
-            "justificacion":   resultado["justification"],
-            "dimensiones":     resultado.get("dimensions", {}),
-            "chunks_usados":   resultado.get("chunks_used", 0),
-            "anonimizado":     resultado.get("anonymized", False),
-            "tiempo_segundos": resultado.get("time_seconds", 0),
-            "config":          config,
-            "fecha":           datetime.now().isoformat(),
-            "error":           None,
-        }
-        _resultados.insert(0, entrada)
-        _cargos[cargo_id]["candidatos"] += 1
-        resultados_batch.append(entrada)
 
     # Ordenar: APTOs primero, luego por score descendente, errores al final
     resultados_batch.sort(key=lambda r: (
@@ -301,6 +389,8 @@ async def evaluar_cv(
     def _run_pipeline() -> dict:
         from rag.pipeline import SistacRAGPipeline
         p = SistacRAGPipeline(config=config)
+        if config in {"c2", "c3"}:
+            p.index(cv_texts={cv_id: cv_text}, jd_texts={cargo_id: cargo["descripcion"]})
         return p.evaluate(
             cv_id=cv_id,
             cv_text=cv_text,
@@ -325,6 +415,7 @@ async def evaluar_cv(
         "justificacion":    resultado["justification"],
         "dimensiones":      resultado.get("dimensions", {}),
         "chunks_usados":    resultado.get("chunks_used", 0),
+        "chunks":           resultado.get("chunks", []),
         "anonimizado":      resultado.get("anonymized", False),
         "tiempo_segundos":  resultado.get("time_seconds", 0),
         "config":           config,
@@ -332,16 +423,369 @@ async def evaluar_cv(
     }
     _resultados.insert(0, entrada)
     _cargos[cargo_id]["candidatos"] += 1
+    if resultados_col is not None:
+        try:
+            resultados_col.insert_one(dict(entrada))
+        except Exception as e:
+            print(f"[WARN] Error guardando resultado en MongoDB: {e}")
+    if cargos_col is not None:
+        try:
+            cargos_col.update_one({"id": cargo_id}, {"$inc": {"candidatos": 1}})
+        except Exception as e:
+            print(f"[WARN] Error incrementando candidatos en MongoDB: {e}")
 
     return entrada
 
 
 @app.get("/api/resultados")
 def listar_resultados(cargo_id: Optional[str] = None, limite: int = 100):
+    if resultados_col is not None:
+        try:
+            query = {}
+            if cargo_id:
+                query["cargo_id"] = cargo_id
+            db_res = list(resultados_col.find(query, {"_id": 0}).sort([("fecha", -1)]).limit(limite))
+            return {"resultados": db_res, "total": resultados_col.count_documents(query)}
+        except Exception as e:
+            print(f"[WARN] Error consultando resultados de MongoDB: {e}")
+            
     resultados = _resultados
     if cargo_id:
         resultados = [r for r in resultados if r["cargo_id"] == cargo_id]
     return {"resultados": resultados[:limite], "total": len(resultados)}
+
+
+# ── API: Generación de Casos Sintéticos (Gold Standard) ─────────────────────────
+
+@app.post("/api/casos/simular-candidato")
+async def simular_candidato(
+    cargo_id: str = Form(...),
+    gender: Optional[str] = Form(None),
+    age_group: Optional[str] = Form(None),
+    afinidad: Optional[str] = Form(None),
+):
+    """
+    Genera un candidato aleatorio (con PII y afinidad aleatoria o parametrizada) basado en la JD del cargo.
+    """
+    if cargo_id not in _cargos:
+        raise HTTPException(status_code=404, detail="Cargo no encontrado.")
+    
+    cargo = _cargos[cargo_id]
+    jd_desc = cargo["descripcion"]
+    
+    # Pools locales de nombres y apellidos uruguayos (rioplatenses)
+    nombres_f = [
+        "Ana Laura", "María José", "Valentina", "Florencia", "Camila",
+        "Lucía", "Sofía", "Natalia", "Carolina", "Gabriela",
+        "Verónica", "Alejandra", "Patricia", "Jimena", "Romina"
+    ]
+    nombres_m = [
+        "Santiago", "Martín", "Alejandro", "Federico", "Nicolás",
+        "Gonzalo", "Pablo", "Sebastián", "Diego", "Matías",
+        "Andrés", "Carlos", "Jorge", "Roberto", "Hernán"
+    ]
+    apellidos = [
+        "González", "Rodríguez", "García", "Fernández", "López",
+        "Martínez", "Sánchez", "Pérez", "Gómez", "Díaz",
+        "Ruiz", "Suárez", "Molina", "Morales", "Castro"
+    ]
+    barrios = ["Pocitos", "Punta Carretas", "Malvín", "Buceo", "Carrasco", "Centro", "Cordón"]
+    calles = ["Av. Brasil", "Bulevar Artigas", "Av. Italia", "Av. 18 de Julio", "Calle Colonia", "Rivera"]
+    
+    # Seleccionar género, edad y afinidad
+    if not gender or gender not in {"F", "M"}:
+        gender = random.choice(["F", "M"])
+        
+    if not age_group or age_group not in {"23-35", "36-45", "46-58"}:
+        age_group = random.choice(["23-35", "36-45", "46-58"])
+    
+    if age_group == "23-35":
+        age = random.randint(23, 35)
+    elif age_group == "36-45":
+        age = random.randint(36, 45)
+    else:
+        age = random.randint(46, 58)
+        
+    if not afinidad or afinidad not in {"alto", "medio", "bajo"}:
+        afinidad = random.choice(["alto", "medio", "bajo"])
+    
+    # Generar PII
+    nombre = random.choice(nombres_f if gender == "F" else nombres_m)
+    apellido1 = random.choice(apellidos)
+    apellido2 = random.choice(apellidos)
+    nombre_completo = f"{nombre} {apellido1} {apellido2}"
+    
+    email = f"{nombre.split()[0].lower()}.{apellido1.lower()}{random.randint(1,99)}@gmail.com"
+    telefono = f"+34 6{random.randint(10,99)} {random.randint(100,999)} {random.randint(100,999)}"
+    direccion = f"{random.choice(calles)} {random.randint(800, 3500)}, {random.choice(barrios)}, Montevideo"
+    
+    prompt = f"""
+    Genera el contenido de un currículum vitae (CV) en formato de texto plano para un/a candidato/a en Uruguay.
+    Nombre del candidato: {nombre_completo}
+    Género: {gender}
+    Edad: {age} años
+    El currículum debe ser para postular al siguiente cargo (Descripción de Puesto - JD):
+    ---
+    {jd_desc}
+    ---
+    Nivel de adecuación/afinidad deseado con el cargo: {afinidad}
+    * Si es 'alto', debe ser muy calificado, con experiencia y habilidades completas y alineadas con la JD.
+    * Si es 'medio', debe ser aceptable pero con algunas brechas de experiencia o falta de algunas tecnologías requeridas.
+    * Si es 'bajo', debe no cumplir con los requisitos básicos (ej. campo de estudio errado, muy poca experiencia, o falta total de las habilidades técnicas requeridas).
+    
+    Por favor redacta el currículum de forma natural y realista. Incluye los siguientes datos de contacto:
+    Email: {email}
+    Teléfono: {telefono}
+    Dirección: {direccion}
+    Resumen profesional, historial de experiencia laboral detallada con años y roles (los años deben ser coherentes con la edad de {age} años del candidato), estudios universitarios en Uruguay, y habilidades técnicas.
+    
+    Retorna SOLAMENTE el currículum formateado en texto plano, sin comentarios ni explicaciones adicionales, ni introducciones como 'Aquí tienes el currículum...'. Empieza directamente con el nombre del candidato.
+    """
+    
+    from llm.provider import get_chat_completion
+    try:
+        cv_text = await run_in_threadpool(
+            get_chat_completion,
+            prompt=prompt,
+            system="Eres un redactor experto de currículums profesionales en español rioplatense."
+        )
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"Error al generar con LLM: {exc}")
+        
+    return {
+        "nombre": nombre_completo,
+        "gender": gender,
+        "age_group": age_group,
+        "age": age,
+        "cv_text": cv_text.strip(),
+        "afinidad": afinidad
+    }
+
+
+@app.post("/api/casos/guardar-decision")
+async def guardar_decision(
+    cargo_id: str = Form(...),
+    cv_text: str = Form(...),
+    decision: str = Form(...),
+    gender: str = Form(...),
+    age_group: str = Form(...),
+    time_spent_seconds: float = Form(...),
+):
+    """
+    Guarda el CV y registra la decisión del reclutador en el Gold Standard.
+    """
+    if cargo_id not in _cargos:
+        raise HTTPException(status_code=404, detail="Cargo no encontrado.")
+    
+    # Asegurar directorios creados
+    GOLD_STANDARD_DIR.mkdir(parents=True, exist_ok=True)
+    CVS_RAW.mkdir(parents=True, exist_ok=True)
+    
+    # Generar el siguiente ID correlativo
+    gt_path = GOLD_STANDARD_DIR / "ground_truth.csv"
+    max_num = 300
+    if gt_path.exists():
+        try:
+            with open(gt_path, mode="r", encoding="utf-8") as f:
+                reader = csv.DictReader(f)
+                for row in reader:
+                    cv_id = row.get("cv_id", "")
+                    if cv_id.startswith("CV_"):
+                        try:
+                            num = int(cv_id.split("_")[1])
+                            if num > max_num:
+                                max_num = num
+                        except (IndexError, ValueError):
+                            pass
+        except Exception as e:
+            print(f"[WARN] Error leyendo ground_truth.csv: {e}")
+            
+    next_id = f"CV_{max_num + 1:03d}"
+    
+    # Guardar el CV .txt en data/raw/cvs/
+    cv_file_path = CVS_RAW / f"{next_id}.txt"
+    try:
+        cv_file_path.write_text(cv_text, encoding="utf-8")
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"Error al escribir el archivo del CV: {exc}")
+        
+    # Registrar en ground_truth.csv
+    expected_score = 85 if decision == "APTO" else 30
+    escribir_cabecera_gt = not gt_path.exists()
+    try:
+        with open(gt_path, mode="a", newline="", encoding="utf-8") as f:
+            writer = csv.DictWriter(f, fieldnames=["cv_id", "jd_id", "expected_label", "expected_score", "group_gender", "group_age"])
+            if escribir_cabecera_gt:
+                writer.writeheader()
+            writer.writerow({
+                "cv_id": next_id,
+                "jd_id": cargo_id,
+                "expected_label": decision,
+                "expected_score": expected_score,
+                "group_gender": gender,
+                "group_age": age_group
+            })
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"Error al escribir en ground_truth.csv: {exc}")
+        
+    # Registrar en c0_times.csv
+    c0_path = GOLD_STANDARD_DIR / "c0_times.csv"
+    escribir_cabecera_c0 = not c0_path.exists()
+    try:
+        with open(c0_path, mode="a", newline="", encoding="utf-8") as f:
+            writer = csv.DictWriter(f, fieldnames=["cv_id", "jd_id", "time_seconds", "decision", "evaluator_id"])
+            if escribir_cabecera_c0:
+                writer.writeheader()
+            writer.writerow({
+                "cv_id": next_id,
+                "jd_id": cargo_id,
+                "time_seconds": round(time_spent_seconds, 1),
+                "decision": decision,
+                "evaluator_id": "EVAL_INTERACTIVE"
+            })
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"Error al escribir en c0_times.csv: {exc}")
+        
+    return {
+        "status": "success",
+        "cv_id": next_id,
+        "decision": decision,
+        "time_seconds": round(time_spent_seconds, 1)
+    }
+
+
+# ── API: Administración y Experimentos ──────────────────────────────────────────
+
+@app.post("/api/admin/reset-indice")
+async def reset_indice():
+    """
+    Borra y recrea el índice sistac-cvs en Azure AI Search (create_index.py --delete).
+    """
+    try:
+        from rag.create_index import delete_index, create_index
+        await run_in_threadpool(delete_index)
+        await run_in_threadpool(create_index)
+        return {"status": "success", "message": "El índice vectorial en Azure AI Search ha sido borrado y recreado desde cero."}
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"Fallo al resetear el índice en Azure: {exc}")
+
+
+_indexacion_activa = False
+_experimento_activo = False
+
+
+@app.post("/api/admin/indexar-corpus")
+async def indexar_corpus(background_tasks: BackgroundTasks, config: str = "c2"):
+    """
+    Indexa los CVs y JDs en Azure AI Search en segundo plano.
+    """
+    global _indexacion_activa
+    if _indexacion_activa:
+        raise HTTPException(status_code=400, detail="La indexación ya está en ejecución en segundo plano.")
+
+    try:
+        from rag.index_corpus import index_corpus, load_corpus
+        
+        def run_indexing():
+            global _indexacion_activa
+            try:
+                cv_texts, jd_texts = load_corpus()
+                index_corpus(cv_texts, jd_texts, config=config)
+            finally:
+                _indexacion_activa = False
+            
+        _indexacion_activa = True
+        background_tasks.add_task(run_indexing)
+        return {
+            "status": "success", 
+            "message": f"La indexación del corpus (config={config.upper()}) se ha iniciado en segundo plano. Esto demorará unos minutos."
+        }
+    except Exception as exc:
+        _indexacion_activa = False
+        raise HTTPException(status_code=500, detail=f"Fallo al iniciar la indexación del corpus: {exc}")
+
+
+@app.get("/api/admin/estado-indexacion")
+async def estado_indexacion():
+    global _indexacion_activa
+    return {"activo": _indexacion_activa}
+
+
+@app.post("/api/admin/ejecutar-experimento")
+async def ejecutar_experimento(background_tasks: BackgroundTasks):
+    """
+    Inicia la ejecución del experimento completo de los 300 CVs en segundo plano.
+    """
+    global _experimento_activo
+    if _experimento_activo:
+        raise HTTPException(status_code=400, detail="El experimento ya está en ejecución en segundo plano.")
+
+    from experiments.orquestador_c0_c3 import main as run_experiment
+    try:
+        def run_wrapper():
+            global _experimento_activo
+            try:
+                run_experiment()
+            finally:
+                _experimento_activo = True  # En realidad queremos ponerlo a False, pero espera:
+                # Si ponemos _experimento_activo = False en la finalización:
+                _experimento_activo = False
+                
+        _experimento_activo = True
+        background_tasks.add_task(run_wrapper)
+        return {"status": "success", "message": "El experimento factorial completo (C0-C3) se ha iniciado en segundo plano."}
+    except Exception as exc:
+        _experimento_activo = False
+        raise HTTPException(status_code=500, detail=f"Error al iniciar el experimento: {exc}")
+
+
+@app.get("/api/admin/estado-experimento")
+async def estado_experimento():
+    global _experimento_activo
+    return {"activo": _experimento_activo}
+
+
+
+@app.get("/api/admin/metricas")
+async def obtener_metricas():
+    """
+    Lee las métricas consolidadas (H1, H2, H3) desde paper/tables/ si existen.
+    Si no existen, retorna status "no_data".
+    """
+    from config import TABLES_DIR
+    import csv
+    
+    h1_path = TABLES_DIR / "tab_resultados_h1.csv"
+    h2_path = TABLES_DIR / "tab_resultados_h2.csv"
+    h3_path = TABLES_DIR / "tab_resultados_h3.csv"
+    ragas_path = TABLES_DIR / "tab_ragas_c2.csv"
+    
+    if not (h1_path.exists() or h2_path.exists() or h3_path.exists()):
+        return {"status": "no_data", "message": "No se encontraron archivos de métricas generados. Ejecutá el experimento primero."}
+        
+    def _cargar_csv(path: Path) -> list[dict]:
+        if not path.exists():
+            return []
+        try:
+            with open(path, mode="r", encoding="utf-8") as f:
+                return list(csv.DictReader(f))
+        except Exception as e:
+            print(f"[WARN] Error leyendo {path.name}: {e}")
+            return []
+            
+    h1_data = await run_in_threadpool(_cargar_csv, h1_path)
+    h2_data = await run_in_threadpool(_cargar_csv, h2_path)
+    h3_data = await run_in_threadpool(_cargar_csv, h3_path)
+    ragas_data = await run_in_threadpool(_cargar_csv, ragas_path)
+    
+    return {
+        "status": "success",
+        "h1": h1_data,
+        "h2": h2_data,
+        "h3": h3_data,
+        "ragas": ragas_data
+    }
+
 
 
 # ── Diagnóstico ───────────────────────────────────────────────────────────────

@@ -20,13 +20,12 @@ data/vectorstore/
 *.pkl
 
 # Carpetas heredadas del template (eliminadas del proyecto activo)
-guide/
 paper/preambles/
 paper/quarto/
 paper/replication/
-paper/sections/
 paper/supplementary/
 paper/talks/
 scripts/R/
 master_supporting_docs/
+
 

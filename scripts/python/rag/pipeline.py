@@ -220,6 +220,7 @@ class SistacRAGPipeline:
             "justification": result["justification"],
             "dimensions":   result["dimensions"],
             "chunks_used":  len(chunks),
+            "chunks":       chunks,
             "anonymized":   self.config == "c3",
             "time_seconds": round(t_end - t_start, 3),
         }
@@ -274,8 +275,8 @@ def _azure_headers() -> dict:
     }
 
 
-def _upload_to_azure(documents: list[dict]) -> None:
-    """Sube documentos al índice de Azure AI Search."""
+def _upload_to_azure(documents: list[dict], max_retries: int = 3, initial_delay: float = 2.0) -> None:
+    """Sube documentos al índice de Azure AI Search con reintentos si falla por capacidad o red."""
     url = (
         f"{AZURE_SEARCH_ENDPOINT}/indexes/{AZURE_SEARCH_INDEX}"
         f"/docs/index?api-version=2024-07-01"
@@ -283,8 +284,21 @@ def _upload_to_azure(documents: list[dict]) -> None:
     payload = {
         "value": [{"@search.action": "upload", **doc} for doc in documents]
     }
-    response = requests.post(url, headers=_azure_headers(), json=payload)
-    response.raise_for_status()
+    
+    delay = initial_delay
+    for attempt in range(1, max_retries + 1):
+        try:
+            response = requests.post(url, headers=_azure_headers(), json=payload)
+            response.raise_for_status()
+            return
+        except Exception as exc:
+            if attempt == max_retries:
+                print(f"  [ERROR] Falló subida a Azure tras {max_retries} intentos: {exc}")
+                raise exc
+            print(f"  [WARN] Intento {attempt} fallido al subir a Azure: {exc}. Reintentando en {delay}s...")
+            time.sleep(delay)
+            delay *= 2
+
 
 
 def _search_chunks(

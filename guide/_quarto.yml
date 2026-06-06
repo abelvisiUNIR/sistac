@@ -1,0 +1,36 @@
+project:
+  type: website
+  output-dir: ../docs
+
+website:
+  title: "SISTAC Guide"
+  navbar:
+    left:
+      - text: "Inicio"
+        href: index.qmd
+      - text: "Manual de Usuario"
+        href: user-guide.qmd
+      - text: "Arquitectura"
+        href: architecture.qmd
+      - text: "Pipeline RAG"
+        href: rag-pipeline.qmd
+    right:
+      - icon: github
+        href: https://github.com/marioagustinbelvisi204/sistac
+  page-footer:
+    center: "Trabajo de Fin de Estudios (TFE) - Máster en IA y Data, UNIR. Autores: Mario A. Belvisi & David I. Madrid."
+
+format:
+  html:
+    theme:
+      - darkly
+      - custom.scss
+    toc: true
+    toc-depth: 3
+    code-copy: true
+    code-overflow: wrap
+    smooth-scroll: true
+    mainfont: "Inter, system-ui, sans-serif"
+    monofont: "JetBrains Mono, Fira Code, monospace"
+    mermaid:
+      theme: dark

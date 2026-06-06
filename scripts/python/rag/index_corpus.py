@@ -140,7 +140,11 @@ def index_corpus(
                 chunk_id = f"{cv_id}_{jd_id}_chunk_{idx:03d}"
 
                 if not dry_run:
-                    embedding = get_embedding(chunk)
+                    try:
+                        embedding = get_embedding(chunk)
+                    except Exception as err:
+                        print(f"  [WARN] Falló la generación del embedding para {chunk_id}: {err}. Omitiendo este chunk.")
+                        continue
                 else:
                     embedding = [0.0] * 768  # placeholder en dry-run
 
@@ -159,8 +163,11 @@ def index_corpus(
 
                 # Subir en batches para no saturar la API
                 if len(batch_docs) >= batch_size and not dry_run:
-                    _upload_to_azure(batch_docs)
-                    print(f"    Subidos {total_chunks} chunks... ({cv_id} procesado)")
+                    try:
+                        _upload_to_azure(batch_docs)
+                        print(f"    Subidos {total_chunks} chunks... ({cv_id} procesado)")
+                    except Exception as err:
+                        print(f"  [ERROR BATCH] Error crítico al subir batch a Azure: {err}. Continuando con los demás...")
                     batch_docs = []
                     time.sleep(0.5)  # rate limit suave
 
@@ -169,12 +176,16 @@ def index_corpus(
 
     # Subir el batch restante
     if batch_docs and not dry_run:
-        _upload_to_azure(batch_docs)
-        print(f"  Subido batch final: {len(batch_docs)} chunks")
+        try:
+            _upload_to_azure(batch_docs)
+            print(f"  Subido batch final: {len(batch_docs)} chunks")
+        except Exception as err:
+            print(f"  [ERROR BATCH] Error crítico al subir el batch final a Azure: {err}.")
 
     print(f"\n  Total chunks: {total_chunks}")
     if dry_run:
         print("  [DRY RUN] No se subió nada — usar sin --dry-run para indexar")
+
 
 
 def verify_index_count() -> None:

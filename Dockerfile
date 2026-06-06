@@ -18,6 +18,8 @@ RUN python -m spacy download es_core_news_lg
 # Código del proyecto
 COPY scripts/python/ scripts/python/
 COPY app/ app/
+COPY data/ data/
+COPY paper/ paper/
 
 # Variables de entorno (las reales vienen de Azure DevOps / Azure App Service)
 ENV LLM_PROVIDER=anthropic

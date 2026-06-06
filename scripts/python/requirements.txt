@@ -60,3 +60,5 @@ ruff>=0.4.0
 python-dotenv>=1.0.0           # Variables de entorno (ANTHROPIC_API_KEY)
 tqdm>=4.66.0                   # Barras de progreso
 loguru>=0.7.0                  # Logging estructurado
+pymongo>=4.6.0                 # Driver de MongoDB para persistencia de datos
+
