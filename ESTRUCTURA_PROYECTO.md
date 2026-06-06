@@ -31,13 +31,12 @@ clo-author/
 ├── paper/                         # Memoria de la Tesis y Resultados Académicos
 │   ├── SISTAC_TFE.docx            # Archivo de Word oficial de la tesis
 │   ├── sections/                  # Capítulos y textos de ayuda en markdown (.md)
-│   └── tables/                    # Tablas (.csv y .docx) auto-generadas para copiar y pegar
+│   └── tables/                    # Tablas (.csv y .docx) auto-generadas. Nota: en local figura vacío
+│                                  # ya que se guardan en el volumen de Docker; se descargan en ZIP desde la web.
 │
 ├── results/                       # Logs y resultados temporales de ejecuciones
 │
 ├── guide/                         # Documentación técnica escrita en Quarto (.qmd)
-│
-├── tests/                         # Pruebas unitarias de calidad de software (pytest)
 │
 ├── Dockerfile                     # Receta de empaquetado del contenedor FastAPI
 ├── docker-compose.yml             # Orquestador de servicios (sistac-app + mongodb)
@@ -97,7 +96,7 @@ Es el núcleo de la contribución técnica:
 Contiene la información de partida del experimento. La subcarpeta `gold_standard/` sirve como la "verdad absoluta" que define si el sistema acierta (F1) y cuánto tiempo tarda de diferencia frente a la revisión manual de los 300 currículums.
 
 ### 4. `paper/` (La Tesis Escrita)
-Contiene el documento oficial de Word del TFE y las tablas de Word generadas automáticamente. Para redactar la tesis, simplemente copias las tablas desde `/tables/` y las pegas en tu documento final.
+Contiene el documento oficial de Word del TFE y las tablas de Word generadas automáticamente. Debido a que las tablas se generan dentro del contenedor Docker y se guardan en un volumen persistente (`sistac-paper`), la carpeta `/tables/` local figurará vacía en tu computadora. Puedes descargar todas estas tablas consolidadas en formato ZIP usando el botón **"Descargar Tablas (ZIP)"** en la pestaña **Métricas TFE** de la aplicación web.
 
 ### 5. `guide/` (La Documentación)
 Compila la documentación en formato Quarto para presentar la arquitectura del proyecto, diagramas adicionales y guías de personalización a los directores del TFE.
