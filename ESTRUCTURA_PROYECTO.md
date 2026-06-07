@@ -1,6 +1,6 @@
 # Mapa del Repositorio y Estructura del Proyecto SISTAC
 
-Este documento describe la estructura organizativa del repositorio del proyecto **SISTAC** para tu Trabajo de Fin de Estudios (TFE). Explica el propósito de cada carpeta y cómo interactúan el código, los datos y los reportes finales.
+Este documento describe la estructura organizativa definitiva del repositorio del proyecto **SISTAC** para tu Trabajo de Fin de Estudios (TFE). Detalla el propósito de cada carpeta y la función exacta de cada script en los procesos de ingesta, anonimización, indexación, evaluación de hipótesis y visualización web.
 
 ---
 
@@ -9,94 +9,128 @@ Este documento describe la estructura organizativa del repositorio del proyecto 
 ```text
 clo-author/
 │
-├── app/                           # Aplicación FastAPI y Frontend Web
-│   ├── main.py                    # Servidor API y endpoints (Cargos, Métricas, etc.)
-│   └── static/                    # Interfaz de usuario (HTML, CSS, JS con Chart.js)
-│       └── index.html             # Dashboard de administración y visualización
+├── app/                                 # Aplicación FastAPI y Frontend Web
+│   ├── main.py                          # Servidor API de FastAPI, endpoints de simulación y descarga
+│   └── static/                          # Archivos estáticos de la interfaz web
+│       ├── index.html                   # Dashboard principal e interfaz del simulador interactivo
+│       └── index_.html                  # Resguardo histórico de la interfaz anterior
 │
-├── scripts/python/                # Código fuente lógico y experimental
-│   ├── rag/                       # Vector store (Azure AI Search), pipeline e indexación
-│   ├── llm/                       # Abstracción de APIs de Claude (Anthropic) y GPT (OpenAI)
-│   ├── pii/                       # Módulo de anonimización para mitigación de sesgos (C3)
-│   ├── scoring/                   # Criterios y prompt del calificador automático
-│   ├── evaluation/                # Algoritmos estadísticos de métricas (H1, H2, H3)
-│   └── experiments/               # Orquestador del experimento factorial (orquestador_c0_c3.py)
+├── data/                                # Almacenamiento de datos del experimento
+│   ├── raw/                             # Datos crudos cargados localmente
+│   │   ├── cvs/                         # 300 currículums sintéticos generados en formato .txt (CV_001.txt a CV_300.txt)
+│   │   ├── job_descriptions/            # 5 descripciones de cargos/vacantes en formato .txt (JD_001.txt a JD_005.txt)
+│   │   └── gold_standard/               # Datos del experimento humano (C0) y etiquetas de control
+│   │       ├── ground_truth.csv         # Tabla maestra de CVs-JDs con etiquetas deseadas y columna 'eval_source'
+│   │       └── c0_times.csv             # Registro de tiempos reales invertidos por los evaluadores en el screening manual
+│   └── cleaned/                         # Datos procesados y divisiones experimentales
+│       └── evaluation_sets/             # Particiones de entrenamiento y prueba
+│           ├── train_ids.csv            # IDs de los 240 CVs de entrenamiento (se indexan en Azure Search)
+│           └── test_ids.csv             # IDs de los 60 CVs de prueba (reservados para evaluar C1, C2 y C3)
 │
-├── data/                          # Volumen de datos de entrada (Gold Standard)
-│   └── raw/                       # Archivos de texto originales
-│       ├── cvs/                   # 300 currículums sintéticos en formato .txt
-│       ├── job_descriptions/      # 5 descripciones de puestos
-│       └── gold_standard/         # Datos humanos (ground_truth.csv y c0_times.csv)
+├── scripts/python/                      # Lógica principal del proyecto y scripts experimentales
+│   ├── config.py                        # Parámetros generales, umbrales de hipótesis, claves y rutas del proyecto
+│   ├── requirements.txt                 # Dependencias y paquetes de Python necesarios en Docker y local
+│   │
+│   ├── data/                            # Scripts de administración e ingesta de datos
+│   │   ├── seed_mongodb.py              # Sembrador inicial de MongoDB (cargos, cvs, ground truth y tiempos C0)
+│   │   ├── split_corpus.py              # Genera la división train/test estratificada basada en el ground truth
+│   │   ├── synthetic_corpus_generator.py # Generador local de los 300 CVs sintéticos mediante LLM (Claude)
+│   │   └── mongo_transfer.py            # Script auxiliar para transferencias de datos en la base de datos
+│   │
+│   ├── pii/                             # Módulo de anonimización para mitigación de sesgos (Pipeline C3)
+│   │   ├── anonymizer.py                # Motor de reemplazo de PII integrado con Microsoft Presidio
+│   │   ├── recognizers.py               # Reconocedores customizados de entidades en español rioplatense
+│   │   ├── test_anonymization.py        # Pruebas unitarias de anonimización
+│   │   └── conftest.py                  # Configuraciones locales de pruebas unitarias
+│   │
+│   ├── rag/                             # Infraestructura RAG y conexiones con Azure AI Search
+│   │   ├── create_index.py              # Crea el índice vectorial 'sistac-cvs' con sus campos en Azure AI Search
+│   │   ├── index_corpus.py              # Sube los chunks vectorizados de CVs y JDs a la nube de Azure
+│   │   ├── pipeline.py                  # Coordina el flujo RAG: Retrieval (Azure Search) + Prompting + Generación
+│   │   ├── ragas_eval.py                # Evaluación de calidad RAG con métricas RAGAS
+│   │   ├── evaluate_pilot_c2.py         # Evaluación inicial del piloto experimental de 5 casos
+│   │   └── search_test.py               # Script rápido de prueba de consultas en Azure Search
+│   │
+│   ├── scoring/                         # Criterios del calificador automático
+│   │   └── scorer.py                    # Prompt estructurado y lógica de evaluación de afinidad CV vs JD
+│   │
+│   ├── evaluation/                      # Algoritmos estadísticos y métricas del TFE
+│   │   ├── efficiency_metrics.py        # Calcula diferencias de tiempo H1 (prueba Mann-Whitney U, Speedup, mediana)
+│   │   ├── efficacy_metrics.py          # Evalúa concordancia H2 vs Gold Standard (F1-score macro y AUC-ROC)
+│   │   ├── fairness_metrics.py          # Analiza impacto dispar H3 (DIR y SPD para evitar sesgo de género/edad)
+│   │   └── export_excel_report.py       # Compila el reporte consolidado multimétrico y las gráficas en Excel
+│   │
+│   ├── experiments/                     # Orquestación del experimento científico
+│   │   └── orquestador_c0_c3.py         # Corre el experimento de forma masiva evaluando las configuraciones C0, C1, C2 y C3
+│   │
+│   ├── figures/                         # Scripts de generación visual para la tesis
+│   │   ├── gen_cap5_figures.py          # Genera las figuras del capítulo 5 (diagramas de arquitectura)
+│   │   ├── gen_cap6_figures.py          # Genera las figuras estadísticas del capítulo 6 (Boxplots, curvas ROC y DIR)
+│   │   └── insert_cap5_docx.py          # Inserta automáticamente las figuras dentro del documento Word (.docx)
+│   │
+│   ├── utils/                           # Utilidades auxiliares
+│   │   ├── doc_extractor.py             # Extractor genérico de textos (soportando TXT, PDF, DOCX e imágenes/OCR)
+│   │   └── docx_extractor.py            # Utilidad específica de lectura estructural de archivos Word
+│   │
+│   └── scratch/                         # Scripts temporales e instrumentales de administración
+│       ├── cleanup_empty_folders.py     # Script para remover carpetas vacías/bloqueadas en local por Drive
+│       └── update_gt_csv.py             # Añade de forma retroactiva el campo 'eval_source' al ground_truth.csv
 │
-├── paper/                         # Memoria de la Tesis y Resultados Académicos
-│   ├── SISTAC_TFE.docx            # Archivo de Word oficial de la tesis
-│   ├── sections/                  # Capítulos y textos de ayuda en markdown (.md)
-│   └── tables/                    # Tablas (.csv y .docx) auto-generadas. Nota: en local figura vacío
-│                                  # ya que se guardan en el volumen de Docker; se descargan en ZIP desde la web.
+├── paper/                               # Memoria oficial y artefactos de resultados del TFE
+│   ├── SISTAC_TFE.docx                  # Documento principal Word de la tesis
+│   ├── sections/                        # Redacción de secciones del paper en markdown
+│   │   ├── contribuciones_y_diseno_sistac.md # Detalle metodológico del capítulo 5
+│   │   └── framework_validacion_experimental.md # Resultados de las hipótesis del capítulo 6
+│   ├── tables/                          # Reporte Excel unificado generado por el sistema
+│   │   └── reporte_completo_sistac.xlsx # Reporte unificado que contiene las pestañas H1, H2, H3, RAGAS y Raw
+│   └── figures/                         # Archivos PNG de gráficos a alta resolución (300 DPI) para la memoria
+│       ├── cap5/                        # Diagramas del sistema
+│       └── cap6/                        # Gráficos de resultados (ROC, Boxplot de tiempos, DIR)
 │
-├── results/                       # Logs y resultados temporales de ejecuciones
+├── guide/                               # Documentación interactiva del proyecto (Quarto)
+│   ├── _quarto.yml                      # Configuración del sitio estático Quarto
+│   ├── index.qmd                        # Página de inicio de la guía
+│   ├── architecture.qmd                 # Explicación de la arquitectura RAG
+│   ├── rag-pipeline.qmd                 # Flujo detallado de recuperación de información
+│   └── user-guide.qmd                   # Manual de usuario paso a paso del dashboard
 │
-├── guide/                         # Documentación técnica escrita en Quarto (.qmd)
+├── results/                             # Logs y salidas temporales de las ejecuciones locales
 │
-├── Dockerfile                     # Receta de empaquetado del contenedor FastAPI
-├── docker-compose.yml             # Orquestador de servicios (sistac-app + mongodb)
-└── .env                           # Credenciales de APIs y Azure (ignorado en git)
+├── Dockerfile                           # Definición de contenedor Docker para levantar FastAPI
+├── docker-compose.yml                   # Orquestación de contenedores (sistac-app y base de datos mongodb)
+├── azure-pipelines.yml                  # Configuración del pipeline CI/CD en Azure DevOps
+├── ESTRUCTURA_PROYECTO.md               # Este archivo (mapa de referencia del proyecto)
+├── MEMORY.md                            # Resumen técnico de hitos de desarrollo para el agente
+├── README.md                            # Guía de inicio rápido e instalación local
+├── Bibliography_base.bib                # Base de datos bibliográfica de la tesis
+├── CHANGELOG.md                         # Registro histórico de versiones y cambios del código
+└── CLAUDE.md                            # Guía de comandos del proyecto para el asistente de desarrollo
 ```
 
 ---
 
-## 2. Diagrama de Interacción entre Carpetas
+## 2. Descripción de las Carpetas Principales
 
-El siguiente diagrama de flujo ilustra cómo se mueven los datos y el control a través de las diferentes carpetas del proyecto cuando ejecutas la tesis o interactúas con el dashboard:
+### 1. `app/` (Visualización e Interfaz Interactiva)
+*   **Propósito:** Proporcionar un portal web interactivo para los evaluadores de reclutamiento y coordinadores del experimento.
+*   **`main.py`:** Define el servidor web FastAPI. Contiene endpoints clave como `/api/cargo` (ingesta), `/api/evaluar` (evaluación), `/api/casos/simular-candidato` (creación de PII uruguayo), `/api/casos/guardar-decision` (guardado de decisiones manuales) y `/api/admin/descargar-tablas` (generador dinámico de Excel y empaquetador ZIP).
+*   **`static/index.html`:** El panel de control. Utiliza HTML5 semántico, CSS personalizado (glassmorphism premium y animaciones), Javascript nativo y Chart.js para renderizar los resultados de eficiencia, eficacia y equidad directo del backend.
 
-```mermaid
-graph TD
-    %% Carpetas
-    subgraph Codigo ["Carpeta: /app y /scripts"]
-        APP["/app (main.py y static/)<br>API y Dashboard Web"]
-        ORQ["/scripts/python/experiments/<br>Orquestador Factorial"]
-        PII["/scripts/python/pii/<br>Anonimizador PII"]
-        EVAL["/scripts/python/evaluation/<br>Métricas Estadísticas"]
-        RAG["/scripts/python/rag/<br>Pipeline de Azure Search"]
-    end
-    
-    subgraph Entrada ["Carpeta: /data/raw"]
-        CVS["/cvs/ (300 CVs)"]
-        JDS["/job_descriptions/"]
-        GS["/gold_standard/ (Ground Truth y C0 Tiempos)"]
-    end
+### 2. `data/` (El Dataset)
+*   **Propósito:** Almacenar de forma segura el corpus y los registros del experimento.
+*   **`raw/`:** Contiene los insumos crudos. El subdirectorio `gold_standard/` sirve como el punto de comparación humana (tiempo y decisión) contra los tres algoritmos automatizados (C1, C2, C3).
+*   **`cleaned/`:** Contiene la división train/test del corpus sintético para evitar *data leakage* (los 60 CVs de test jamás son indexados y actúan como datos no vistos).
 
-    subgraph Salida ["Carpeta: /paper/tables"]
-        DOCX["Tablas de Tesis (.docx y .csv)"]
-    end
+### 3. `scripts/python/` (Núcleo Lógico)
+*   **Propósito:** Contener todo el código Python estructurado que da soporte científico a las tres hipótesis (H1, H2, H3) del TFE.
+*   **`rag/`:** Interactúa con Azure AI Search y gestiona el indexado vectorial.
+*   **`pii/`:** Implementa la anonimización activa para neutralizar variables demográficas que puedan causar sesgo algorítmico.
+*   **`evaluation/`:** Módulo matemático y estadístico que calcula las hipótesis, guardando las salidas tabulares y estructurando el archivo Excel dinámico.
 
-    %% Relaciones de flujo
-    CVS & JDS & GS -->|1. Lectura de Insumos| ORQ
-    ORQ -->|2. Envía texto para anonimizar| PII
-    ORQ -->|3. Consulta Embeddings e Indexación| RAG
-    ORQ -->|4. Procesa y calcula hipótesis| EVAL
-    EVAL -->|5. Exporta tablas listas para la tesis| DOCX
-    DOCX -.->|6. Leídas y graficadas en pantalla| APP
-```
+### 4. `paper/` (Resultados de la Memoria)
+*   **Propósito:** Alojar el documento Word maestro de tu tesis académica (`SISTAC_TFE.docx`) y todos los insumos necesarios para la redacción de sus capítulos.
+*   **`sections/`:** Contiene capítulos redactados en markdown como soporte y referencia bibliográfica rápida.
+*   **`tables/` y `figures/`:** Carpetas de salida física para las tablas estadísticas y gráficos generados a alta calidad (300 DPI) para copiar directamente a la memoria de la tesis.
 
----
-
-## 3. Propósito Detallado de las Secciones
-
-### 1. `app/` (El Panel Web)
-Es el frontend interactivo que permite visualizar el progreso del TFE. La API en `main.py` coordina las acciones del panel con MongoDB y el orquestador en segundo plano.
-
-### 2. `scripts/python/` (La Lógica Científica)
-Es el núcleo de la contribución técnica:
-* `rag/`: Contiene el cargador robusto tolerante a fallos (`index_corpus.py`) y la lógica de recuperación de trozos de currículums.
-* `pii/`: Contiene `anonymizer.py` que implementa técnicas de sustitución (anonimización) para asegurar que el LLM no reciba datos sensibles en C3.
-* `evaluation/`: Contiene el cálculo de la prueba no paramétrica de Mann-Whitney U para H1, F1-macro para H2, yDIR/SPD para H3.
-
-### 3. `data/` (El Dataset)
-Contiene la información de partida del experimento. La subcarpeta `gold_standard/` sirve como la "verdad absoluta" que define si el sistema acierta (F1) y cuánto tiempo tarda de diferencia frente a la revisión manual de los 300 currículums.
-
-### 4. `paper/` (La Tesis Escrita)
-Contiene el documento oficial de Word del TFE y las tablas de Word generadas automáticamente. Debido a que las tablas se generan dentro del contenedor Docker y se guardan en un volumen persistente (`sistac-paper`), la carpeta `/tables/` local figurará vacía en tu computadora. Puedes descargar todas estas tablas consolidadas en formato ZIP usando el botón **"Descargar Tablas (ZIP)"** en la pestaña **Métricas TFE** de la aplicación web.
-
-### 5. `guide/` (La Documentación)
-Compila la documentación en formato Quarto para presentar la arquitectura del proyecto, diagramas adicionales y guías de personalización a los directores del TFE.
+### 5. `guide/` (Manual Técnico)
+*   **Propósito:** Proveer una documentación dinámica del proyecto en Quarto para directores y evaluadores del TFE, explicando diagramas UML y flujos de datos paso a paso.
