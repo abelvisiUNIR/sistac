@@ -589,7 +589,7 @@ async def guardar_decision(
     max_num = 300
     if gt_path.exists():
         try:
-            with open(gt_path, mode="r", encoding="utf-8") as f:
+            with open(gt_path, mode="r", encoding="utf-8-sig") as f:
                 reader = csv.DictReader(f)
                 for row in reader:
                     cv_id = row.get("cv_id", "")
@@ -608,7 +608,7 @@ async def guardar_decision(
     # Guardar el CV .txt en data/raw/cvs/
     cv_file_path = CVS_RAW / f"{next_id}.txt"
     try:
-        cv_file_path.write_text(cv_text, encoding="utf-8")
+        cv_file_path.write_text(cv_text, encoding="utf-8-sig")
     except Exception as exc:
         raise HTTPException(status_code=500, detail=f"Error al escribir el archivo del CV: {exc}")
         
@@ -617,7 +617,7 @@ async def guardar_decision(
     escribir_cabecera_gt = not gt_path.exists()
     try:
         with open(gt_path, mode="a", newline="", encoding="utf-8-sig") as f:
-            writer = csv.DictWriter(f, fieldnames=["cv_id", "jd_id", "expected_label", "expected_score", "group_gender", "group_age"])
+            writer = csv.DictWriter(f, fieldnames=["cv_id", "jd_id", "expected_label", "expected_score", "group_gender", "group_age", "eval_source"])
             if escribir_cabecera_gt:
                 writer.writeheader()
             writer.writerow({
@@ -626,7 +626,8 @@ async def guardar_decision(
                 "expected_label": decision,
                 "expected_score": expected_score,
                 "group_gender": gender,
-                "group_age": age_group
+                "group_age": age_group,
+                "eval_source": "aplicacion_interactiva"
             })
     except Exception as exc:
         raise HTTPException(status_code=500, detail=f"Error al escribir en ground_truth.csv: {exc}")
@@ -648,6 +649,56 @@ async def guardar_decision(
             })
     except Exception as exc:
         raise HTTPException(status_code=500, detail=f"Error al escribir en c0_times.csv: {exc}")
+        
+    # Persistir en las colecciones de MongoDB para mantenerlas sincronizadas en tiempo real
+    if db is not None:
+        try:
+            lineas = [l.strip() for l in cv_text.splitlines() if l.strip()]
+            nombre_candidato = lineas[0] if lineas else "Candidato Simulado"
+            
+            # 1. Colección cvs
+            db["cvs"].update_one(
+                {"id": next_id},
+                {"$set": {
+                    "id": next_id,
+                    "nombre": nombre_candidato,
+                    "contenido": cv_text,
+                    "archivo": f"{next_id}.txt",
+                    "fecha_importacion": datetime.now().isoformat()
+                }},
+                upsert=True
+            )
+            
+            # 2. Colección ground_truth
+            db["ground_truth"].update_one(
+                {"cv_id": next_id, "jd_id": cargo_id},
+                {"$set": {
+                    "cv_id": next_id,
+                    "jd_id": cargo_id,
+                    "expected_label": decision,
+                    "expected_score": expected_score,
+                    "group_gender": gender,
+                    "group_age": age_group,
+                    "eval_source": "aplicacion_interactiva"
+                }},
+                upsert=True
+            )
+            
+            # 3. Colección c0_times
+            db["c0_times"].update_one(
+                {"cv_id": next_id, "jd_id": cargo_id},
+                {"$set": {
+                    "cv_id": next_id,
+                    "jd_id": cargo_id,
+                    "time_seconds": round(time_spent_seconds, 1),
+                    "decision": decision,
+                    "evaluator_id": "EVAL_INTERACTIVE"
+                }},
+                upsert=True
+            )
+            print(f"[INFO] Caso {next_id} guardado en MongoDB con éxito.")
+        except Exception as e:
+            print(f"[WARN] Error al guardar el caso simulado en MongoDB: {e}")
         
     return {
         "status": "success",

@@ -96,7 +96,8 @@ def seed_database():
                     "expected_label": row["expected_label"],
                     "expected_score": float(row["expected_score"]) if row.get("expected_score") else None,
                     "group_gender": row.get("group_gender", ""),
-                    "group_age": row.get("group_age", "")
+                    "group_age": row.get("group_age", ""),
+                    "eval_source": row.get("eval_source", "sintetico_original")
                 }
                 gt_col.update_one(
                     {"cv_id": row["cv_id"], "jd_id": row["jd_id"]},

@@ -215,7 +215,7 @@ def load_eval_pairs() -> list[dict]:
         )
 
     pairs = []
-    with open(gt_path, newline="", encoding="utf-8") as f:
+    with open(gt_path, newline="", encoding="utf-8-sig") as f:
         reader = csv.DictReader(f)
         for row in reader:
             cv_path = CVS_RAW / f"{row['cv_id']}.txt"

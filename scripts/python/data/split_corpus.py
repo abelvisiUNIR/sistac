@@ -58,7 +58,7 @@ def load_ground_truth() -> list[dict]:
             "Generá el corpus primero:\n"
             "  py -3 scripts/python/data/synthetic_corpus_generator.py"
         )
-    with open(GROUND_TRUTH_PATH, encoding="utf-8") as f:
+    with open(GROUND_TRUTH_PATH, encoding="utf-8-sig") as f:
         return list(csv.DictReader(f))
 
 
@@ -105,7 +105,7 @@ def save_split(rows: list[dict], path: Path, name: str) -> None:
     """Guarda una partición como CSV."""
     path.parent.mkdir(parents=True, exist_ok=True)
     fieldnames = ["cv_id", "jd_id", "expected_label", "expected_score",
-                  "group_gender", "group_age"]
+                  "group_gender", "group_age", "eval_source"]
     with open(path, "w", newline="", encoding="utf-8") as f:
         writer = csv.DictWriter(f, fieldnames=fieldnames)
         writer.writeheader()

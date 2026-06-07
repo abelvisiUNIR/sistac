@@ -213,7 +213,7 @@ def generate_excel_report():
             
     # Guardar archivo Excel
     wb.save(str(excel_path))
-    print(f"  ✓ Reporte Excel unificado creado en: {excel_path.name}")
+    print(f"  [OK] Reporte Excel unificado creado en: {excel_path.name}")
 
 if __name__ == "__main__":
     generate_excel_report()

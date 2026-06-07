@@ -658,6 +658,7 @@ def generate_corpus() -> None:
                     "expected_score": gs_score,
                     "group_gender":   gender,
                     "group_age":      group_age,
+                    "eval_source":    "sintetico_original",
                 })
 
                 # Tiempo C0
@@ -677,7 +678,7 @@ def generate_corpus() -> None:
     # ── Guardar Ground Truth ──────────────────────────────────────────────────
     gt_path = GOLD_STANDARD_DIR / "ground_truth.csv"
     gt_fields = ["cv_id", "jd_id", "expected_label", "expected_score",
-                 "group_gender", "group_age"]
+                 "group_gender", "group_age", "eval_source"]
     with open(gt_path, "w", newline="", encoding="utf-8") as f:
         writer = csv.DictWriter(f, fieldnames=gt_fields)
         writer.writeheader()
