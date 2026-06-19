@@ -17,7 +17,10 @@ from pathlib import Path
 from dotenv import load_dotenv
 
 # Cargar variables de entorno desde .env (si existe)
-load_dotenv(Path(__file__).parent.parent.parent / ".env")
+load_dotenv(Path(__file__).parent.parent.parent / ".env", override=True)
+
+# Cargar flag de base de datos externa (permite correr todo el experimento sobre el dataset real/externo)
+USE_EXTERNAL_DATA = os.getenv("USE_EXTERNAL_DATA", "false").lower() == "true"
 
 # ── Raíz del proyecto ────────────────────────────────────────────────────────
 # Este archivo está en scripts/python/config.py → tres niveles arriba = raíz
@@ -27,10 +30,16 @@ PROJECT_ROOT = Path(__file__).parent.parent.parent
 DATA_RAW   = PROJECT_ROOT / "data" / "raw"
 DATA_CLEAN = PROJECT_ROOT / "data" / "cleaned"
 
-CVS_RAW          = DATA_RAW / "cvs"
-JOB_DESCRIPTIONS = DATA_RAW / "job_descriptions"
-GOLD_STANDARD_DIR = DATA_RAW / "gold_standard"
-VECTORSTORE_DIR  = DATA_RAW / "vectorstore"
+if USE_EXTERNAL_DATA:
+    CVS_RAW          = DATA_RAW / "cvs_external"
+    JOB_DESCRIPTIONS = DATA_RAW / "job_descriptions_external"
+    GOLD_STANDARD_DIR = DATA_RAW / "gold_standard_external"
+    VECTORSTORE_DIR  = DATA_RAW / "vectorstore_external"
+else:
+    CVS_RAW          = DATA_RAW / "cvs"
+    JOB_DESCRIPTIONS = DATA_RAW / "job_descriptions"
+    GOLD_STANDARD_DIR = DATA_RAW / "gold_standard"
+    VECTORSTORE_DIR  = DATA_RAW / "vectorstore"
 
 CVS_PROCESSED = DATA_CLEAN / "cvs_processed"
 EMBEDDINGS_DIR = DATA_CLEAN / "embeddings"
@@ -46,10 +55,28 @@ EXPLORATIONS    = PROJECT_ROOT / "explorations"
 BIB_FILE        = PROJECT_ROOT / "Bibliography_base.bib"
 SCRIPTS_DIR     = PROJECT_ROOT / "scripts" / "python"
 
-# ── Azure AI Search (vector store oficial del experimento) ───────────────────
+# ── Vector Store Provider (azure | google) ──────────────────────────────────
+VECTORSTORE_PROVIDER = os.getenv("VECTORSTORE_PROVIDER", "azure").lower()
+
+# ── Azure AI Search (vector store original) ──────────────────────────────────
 AZURE_SEARCH_ENDPOINT = os.getenv("AZURE_SEARCH_ENDPOINT", "")
 AZURE_SEARCH_KEY      = os.getenv("AZURE_SEARCH_KEY", "")
-AZURE_SEARCH_INDEX    = os.getenv("AZURE_SEARCH_INDEX", "sistac-cvs")
+
+if USE_EXTERNAL_DATA:
+    AZURE_SEARCH_INDEX = os.getenv("AZURE_SEARCH_INDEX_EXTERNAL", "sistac-cvs-external")
+else:
+    AZURE_SEARCH_INDEX = os.getenv("AZURE_SEARCH_INDEX", "sistac-cvs")
+
+# ── Google Vertex AI Search ──────────────────────────────────────────────────
+GCP_PROJECT_ID        = os.getenv("GCP_PROJECT_ID", "")
+GCP_LOCATION          = os.getenv("GCP_LOCATION", "global")
+GCP_DATA_STORE_ID     = os.getenv("GCP_DATA_STORE_ID", "sistac-cvs-datastore")
+
+if USE_EXTERNAL_DATA:
+    GCP_SEARCH_APP_ID = os.getenv("GCP_SEARCH_APP_ID_EXTERNAL", "sistac-search-app-external")
+else:
+    GCP_SEARCH_APP_ID = os.getenv("GCP_SEARCH_APP_ID", "sistac-search-app")
+
 
 # ── Configuración LLM ─────────────────────────────────────────────────────────
 ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
@@ -145,14 +172,48 @@ def check_azure_config() -> bool:
     return True
 
 
+def check_gcp_config() -> bool:
+    """Verificar que Google Vertex AI Search esté configurado."""
+    missing = []
+    if not GCP_PROJECT_ID:
+        missing.append("GCP_PROJECT_ID")
+    if not GCP_SEARCH_APP_ID:
+        missing.append("GCP_SEARCH_APP_ID")
+    if "GOOGLE_APPLICATION_CREDENTIALS" not in os.environ:
+        missing.append("GOOGLE_APPLICATION_CREDENTIALS")
+    if missing:
+        raise EnvironmentError(
+            f"Variables de Google Cloud no configuradas: {', '.join(missing)}\n"
+            "Agregá al archivo .env:\n"
+            "  GCP_PROJECT_ID=tu-proyecto-gcp\n"
+            "  GCP_SEARCH_APP_ID=tu-app-search-id\n"
+            "  GOOGLE_APPLICATION_CREDENTIALS=ruta/a/credenciales.json"
+        )
+    return True
+
+
+def check_vectorstore_config() -> bool:
+    """Verifica la configuración del vector store activo."""
+    if VECTORSTORE_PROVIDER == "google":
+        return check_gcp_config()
+    else:
+        return check_azure_config()
+
+
 if __name__ == "__main__":
     ensure_dirs()
     print("Configuracion SISTAC:")
     print(f"  PROJECT_ROOT    : {PROJECT_ROOT}")
     print(f"  LLM_MODEL       : {LLM_MODEL}")
     print(f"  EMBEDDING       : {EMBEDDING_MODEL}")
+    print(f"  PROVIDER        : {VECTORSTORE_PROVIDER}")
     print(f"  ANTHROPIC_KEY   : {'OK' if ANTHROPIC_API_KEY else 'FALTA (.env)'}")
     print(f"  OPENAI_KEY      : {'OK' if OPENAI_API_KEY else 'FALTA (.env)'}")
-    print(f"  AZURE_ENDPOINT  : {'OK' if AZURE_SEARCH_ENDPOINT else 'FALTA (.env)'}")
+    if VECTORSTORE_PROVIDER == "google":
+        print(f"  GCP_PROJECT_ID  : {'OK' if GCP_PROJECT_ID else 'FALTA (.env)'}")
+        print(f"  GCP_SEARCH_APP  : {GCP_SEARCH_APP_ID}")
+    else:
+        print(f"  AZURE_ENDPOINT  : {'OK' if AZURE_SEARCH_ENDPOINT else 'FALTA (.env)'}")
+        print(f"  AZURE_INDEX     : {AZURE_SEARCH_INDEX}")
     print(f"  SCORE_THRESHOLD : {SCORE_THRESHOLD}")
     print(f"  RANDOM_SEED     : {RANDOM_SEED}")

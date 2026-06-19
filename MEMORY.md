@@ -87,3 +87,11 @@ Append `[LEARN:category]` entries below. Most recent at bottom.
 [LEARN:infra] Vector store: Azure AI Search (Semantic Ranker nativo reemplaza cross-encoder). Embeddings: `paraphrase-multilingual-mpnet-base-v2` cuando LLM_PROVIDER=anthropic; `text-embedding-3-small` (OpenAI) cuando LLM_PROVIDER=openai. Score threshold unificado: 70 (calibrado con piloto C2, 5 CVs). Piloto David en `rag/` conservado como referencia.
 
 [LEARN:infra] RAGAS configurado con Claude Haiku como LLM juez (via LangchainLLMWrapper / ChatAnthropic). Si falla: fallback a métricas proxy (ROUGE-L para faithfulness, coseno para context precision).
+
+[LEARN:infra] RAGAS proxy fallback tiene una implementación autocontenida de ROUGE-L (`_rouge_l`) en `ragas_eval.py` basada en longitud de LCS (Longest Common Subsequence) para evitar NameError e independizar la ejecución de paquetes no instalados.
+
+[LEARN:stack] Rutas de exportación y reporte Excel unificado se centralizan importándose desde `config.py` en `export_excel_report.py`, respetando de manera consistente la variable `USE_EXTERNAL_DATA` para apuntar a la ruta de datos externa correcta sin intervención manual.
+
+[LEARN:infra] La búsqueda vectorial RAG en `pipeline.py` maneja excepciones de conexión y autenticación tanto para Google como para Azure AI Search, redirigiendo automáticamente a `_search_chunks_fallback_local` (búsqueda local y liviana en memoria sobre el corpus txt) como mecanismo redundante.
+
+[LEARN:workflow] El cálculo de DIR en `fairness_metrics.py` es resiliente a tasas de selección de 0% en el grupo privilegiado, emitiendo una advertencia estadística de Python y retornando NaN (o 1.0 si ambos son 0) en lugar de lanzar excepciones bloqueantes para el orquestador.

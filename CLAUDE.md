@@ -153,8 +153,8 @@ Output organization: by-script
 | Cap. 5 — Pipeline RAG + PII | `paper/SISTAC_TFE.docx` | 🔵 En redacción (estructura definida) |
 | Cap. 6 — Validación experimental | `paper/SISTAC_TFE.docx` | 🔵 En redacción (estructura definida) |
 | Cap. 7-9 — Resultados, Discusión, Conclusiones | `paper/SISTAC_TFE.docx` | ⬜ Post-experimento |
-| Dataset sintético | `data/raw/` | ⬜ No iniciado (PrivBayes + LLM) |
-| Pipeline RAG (David, H2) | `scripts/python/rag/` | ⬜ No iniciado |
+| Dataset sintético | `data/raw/` | ✅ Generado y verificado (300 CVs + 5 JDs) |
+| Pipeline RAG (David, H2) | `scripts/python/rag/` | ✅ Completo e integrado (Azure + GCP + Fallback local) |
 | Módulo PII (Mario, H3) | `scripts/python/pii/` | ✅ Completo — 10/10 tests PASSED |
 | Métricas H1/H2/H3 | `scripts/python/evaluation/` | ✅ Implementadas |
-| Orquestador C0-C3 | `scripts/python/experiments/` | 🔵 Scaffolded (stubs) |
+| Orquestador C0-C3 | `scripts/python/experiments/` | ✅ Completo y verificado (con caché portable) |

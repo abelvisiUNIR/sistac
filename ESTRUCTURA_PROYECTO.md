@@ -70,7 +70,8 @@ clo-author/
 │   │
 │   ├── utils/                           # Utilidades auxiliares
 │   │   ├── doc_extractor.py             # Extractor genérico de textos (soportando TXT, PDF, DOCX e imágenes/OCR)
-│   │   └── docx_extractor.py            # Utilidad específica de lectura estructural de archivos Word
+│   │   ├── docx_extractor.py            # Utilidad específica de lectura estructural de archivos Word
+│   │   └── insert_google_migration_docx.py # Utilidad para insertar la sección de migración a Google en la memoria .docx
 │   │
 │   └── scratch/                         # Scripts temporales e instrumentales de administración
 │       ├── cleanup_empty_folders.py     # Script para remover carpetas vacías/bloqueadas en local por Drive

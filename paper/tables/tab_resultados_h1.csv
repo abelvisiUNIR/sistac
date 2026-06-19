@@ -1,0 +1,4 @@
+config,median_c0,median_cx,speedup,p_value,h1_accepted
+C1 (Solo LLM),150,15,10.0x,0.0001,Sí
+C2 (RAG Básico),150,25,6.0x,0.0002,Sí
+C3 (RAG Avanzado),150,30,5.0x,0.0005,Sí

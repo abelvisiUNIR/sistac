@@ -1,0 +1,4 @@
+config,f1,auc_roc
+C1 (Solo LLM),0.88,0.92
+C2 (RAG Básico),0.86,0.91
+C3 (RAG Avanzado),0.89,0.94

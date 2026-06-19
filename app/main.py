@@ -18,6 +18,8 @@ import csv
 from datetime import datetime
 from pathlib import Path
 from typing import Optional
+from pydantic import BaseModel
+from bson import ObjectId
 
 from fastapi import FastAPI, File, Form, HTTPException, UploadFile, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
@@ -31,7 +33,7 @@ _SCRIPTS_DIR  = _PROJECT_ROOT / "scripts" / "python"
 if str(_SCRIPTS_DIR) not in sys.path:
     sys.path.insert(0, str(_SCRIPTS_DIR))
 
-from config import SCORE_THRESHOLD, CVS_RAW, GOLD_STANDARD_DIR
+from config import SCORE_THRESHOLD, CVS_RAW, GOLD_STANDARD_DIR, USE_EXTERNAL_DATA
 from utils.doc_extractor import extract_text, SUPPORTED_EXTENSIONS
 
 # ── App ───────────────────────────────────────────────────────────────────────
@@ -183,7 +185,19 @@ def listar_cargos():
                 _cargos[c["id"]] = c
         except Exception as e:
             print(f"[WARN] Error leyendo cargos de MongoDB: {e}")
-    return {"cargos": list(_cargos.values())}
+            
+    filtered_cargos = []
+    for c in _cargos.values():
+        cid = c.get("id", "")
+        is_standard = cid in {"JD_001", "JD_002", "JD_003", "JD_004", "JD_005"}
+        if USE_EXTERNAL_DATA:
+            if not is_standard:
+                filtered_cargos.append(c)
+        else:
+            if is_standard or not cid.startswith("JD_EXT_"):
+                filtered_cargos.append(c)
+                
+    return {"cargos": filtered_cargos}
 
 
 @app.delete("/api/cargo/{cargo_id}")
@@ -915,6 +929,163 @@ async def obtener_metricas():
         "h3": h3_data,
         "ragas": ragas_data
     }
+
+
+class GuardarMetricasRequest(BaseModel):
+    comentario: str
+    datos_metricas: dict
+
+
+@app.post("/api/admin/metricas/guardar")
+async def guardar_metricas(req: GuardarMetricasRequest):
+    if db is None:
+        raise HTTPException(status_code=500, detail="MongoDB no está conectado. Verifica tu MONGO_URI en el archivo .env.")
+    try:
+        doc = {
+            "fecha": datetime.now().isoformat(),
+            "comentario": req.comentario,
+            "h1": req.datos_metricas.get("h1", []),
+            "h2": req.datos_metricas.get("h2", []),
+            "h3": req.datos_metricas.get("h3", []),
+            "ragas": req.datos_metricas.get("ragas", []),
+        }
+        res = db["metricas_historial"].insert_one(doc)
+        return {"status": "success", "message": "Métricas persistidas en MongoDB con éxito.", "version_id": str(res.inserted_id)}
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"Fallo al guardar métricas en MongoDB: {exc}")
+
+
+@app.get("/api/admin/metricas/historial")
+async def obtener_historial_metricas():
+    if db is None:
+        raise HTTPException(status_code=500, detail="MongoDB no está conectado. Verifica tu MONGO_URI en el archivo .env.")
+    try:
+        cursor = db["metricas_historial"].find({}, {"_id": 1, "fecha": 1, "comentario": 1}).sort("fecha", -1)
+        versiones = []
+        for doc in cursor:
+            versiones.append({
+                "id": str(doc["_id"]),
+                "fecha": doc["fecha"],
+                "comentario": doc["comentario"]
+            })
+        return {"status": "success", "versiones": versiones}
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"Fallo al obtener historial de métricas: {exc}")
+
+
+@app.get("/api/admin/metricas/version/{version_id}")
+async def obtener_version_metricas(version_id: str):
+    if db is None:
+        raise HTTPException(status_code=500, detail="MongoDB no está conectado. Verifica tu MONGO_URI en el archivo .env.")
+    try:
+        doc = db["metricas_historial"].find_one({"_id": ObjectId(version_id)})
+        if not doc:
+            raise HTTPException(status_code=404, detail="Versión de métricas no encontrada.")
+        return {
+            "status": "success",
+            "fecha": doc["fecha"],
+            "comentario": doc["comentario"],
+            "h1": doc.get("h1", []),
+            "h2": doc.get("h2", []),
+            "h3": doc.get("h3", []),
+            "ragas": doc.get("ragas", []),
+        }
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"Fallo al obtener la versión de métricas: {exc}")
+
+# ── API: Gestión de .env ──────────────────────────────────────────────────────
+
+class EnvUpdateRequest(BaseModel):
+    variables: dict[str, str]
+
+@app.get("/api/admin/env")
+def get_env_variables():
+    """
+    Retorna las variables de entorno activas del archivo .env
+    """
+    env_path = _PROJECT_ROOT / ".env"
+    result = {}
+    if env_path.exists():
+        try:
+            content = env_path.read_text(encoding="utf-8")
+            for line in content.splitlines():
+                line = line.strip()
+                if not line or line.startswith("#"):
+                    continue
+                if "=" in line:
+                    key, val = line.split("=", 1)
+                    val = val.strip()
+                    if (val.startswith('"') and val.endswith('"')) or (val.startswith("'") and val.endswith("'")):
+                        val = val[1:-1]
+                    result[key.strip()] = val
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Error al leer el archivo .env: {e}")
+            
+    # Garantizar que las variables estándar están presentes
+    std_keys = [
+        "LLM_PROVIDER", "ANTHROPIC_API_KEY", "OPENAI_API_KEY", "GOOGLE_API_KEY",
+        "AZURE_SEARCH_ENDPOINT", "AZURE_SEARCH_KEY", "AZURE_SEARCH_INDEX",
+        "HF_TOKEN", "USE_EXTERNAL_DATA", "AZURE_SEARCH_INDEX_EXTERNAL", "MONGO_URI"
+    ]
+    for k in std_keys:
+        if k not in result:
+            result[k] = os.getenv(k, "")
+            
+    return {"status": "success", "variables": result}
+
+def _auto_restart():
+    import time
+    import os
+    time.sleep(1.0)
+    print("[INFO] Autoreinicio del contenedor para aplicar variables de entorno...")
+    os._exit(0)
+
+@app.post("/api/admin/env")
+async def update_env_variables(req: EnvUpdateRequest, background_tasks: BackgroundTasks):
+    """
+    Actualiza el archivo .env y fuerza la recarga de uvicorn tocando main.py
+    """
+    env_path = _PROJECT_ROOT / ".env"
+    try:
+        lines = []
+        if env_path.exists():
+            lines = env_path.read_text(encoding="utf-8").splitlines()
+        
+        updated_keys = set()
+        new_lines = []
+        for line in lines:
+            stripped = line.strip()
+            if stripped and not stripped.startswith("#") and "=" in stripped:
+                key, _ = stripped.split("=", 1)
+                key = key.strip()
+                if key in req.variables:
+                    new_lines.append(f"{key}={req.variables[key]}")
+                    updated_keys.add(key)
+                    continue
+            new_lines.append(line)
+            
+        for k, v in req.variables.items():
+            if k not in updated_keys:
+                new_lines.append(f"{k}={v}")
+                
+        env_content = "\n".join(new_lines) + "\n"
+        env_path.write_text(env_content, encoding="utf-8")
+        
+        # Actualizar os.environ para el proceso actual por si acaso
+        for k, v in req.variables.items():
+            os.environ[k] = v
+            
+        # Tocar app/main.py para forzar el reinicio de uvicorn si está en modo reload
+        main_py = Path(__file__)
+        if main_py.exists():
+            main_py.touch()
+            
+        # Registrar el autoreinicio del contenedor en segundo plano
+        background_tasks.add_task(_auto_restart)
+            
+        return {"status": "success", "message": "Variables de entorno guardadas correctamente. El servidor se está reiniciando para aplicar los cambios."}
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"Fallo al escribir en el archivo .env: {exc}")
 
 
 

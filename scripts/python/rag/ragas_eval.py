@@ -96,6 +96,43 @@ def run_ragas_evaluation(eval_dataset: list[dict]) -> dict:
     }
 
 
+def _rouge_l(candidate: str, reference: str) -> float:
+    """
+    Calcula el score ROUGE-L aproximado (LCS F-measure) entre dos textos.
+    """
+    if not candidate or not reference:
+        return 0.0
+
+    cand_tokens = [w.strip(".,;:?!()[]{}'\"").lower() for w in candidate.split() if w.strip()]
+    ref_tokens = [w.strip(".,;:?!()[]{}'\"").lower() for w in reference.split() if w.strip()]
+
+    if not cand_tokens or not ref_tokens:
+        return 0.0
+
+    m = len(cand_tokens)
+    n = len(ref_tokens)
+    dp = [0] * (n + 1)
+
+    for i in range(1, m + 1):
+        prev = 0
+        for j in range(1, n + 1):
+            temp = dp[j]
+            if cand_tokens[i - 1] == ref_tokens[j - 1]:
+                dp[j] = prev + 1
+            else:
+                dp[j] = max(dp[j], dp[j - 1])
+            prev = temp
+
+    lcs_len = dp[n]
+
+    precision = lcs_len / m
+    recall = lcs_len / n
+
+    if precision + recall == 0:
+        return 0.0
+    return (2 * precision * recall) / (precision + recall)
+
+
 def run_proxy_evaluation(eval_dataset: list[dict]) -> dict:
     """
     Métricas proxy cuando RAGAS no está disponible.

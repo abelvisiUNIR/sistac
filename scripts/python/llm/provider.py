@@ -26,6 +26,7 @@ LLM_PROVIDER: str = os.getenv("LLM_PROVIDER", "anthropic").lower()
 _ANTHROPIC_MODEL = os.getenv("ANTHROPIC_MODEL", "claude-haiku-4-5")
 _OPENAI_CHAT_MODEL = os.getenv("OPENAI_CHAT_MODEL", "gpt-4o-mini")
 _OPENAI_EMBED_MODEL = os.getenv("OPENAI_EMBED_MODEL", "text-embedding-3-small")
+_GOOGLE_MODEL = os.getenv("GOOGLE_MODEL", "gemini-2.5-flash")
 
 _MAX_RETRIES = 3
 _RETRY_BASE_DELAY = 2.0  # segundos
@@ -82,6 +83,35 @@ def _openai_chat(prompt: str, system: Optional[str] = None, max_tokens: int = 10
     return response.choices[0].message.content
 
 
+def _google_chat(prompt: str, system: Optional[str] = None, max_tokens: int = 1024) -> str:
+    from google import genai
+    from google.genai import types
+
+    api_key = os.getenv("GOOGLE_API_KEY", "")
+    if not api_key:
+        raise ValueError(
+            "GOOGLE_API_KEY no está configurada.\n"
+            "Agregala al archivo .env:\n"
+            "  GOOGLE_API_KEY=AIza..."
+        )
+
+    client = genai.Client(api_key=api_key)
+    
+    config = types.GenerateContentConfig(
+        max_output_tokens=max_tokens,
+        temperature=0.0
+    )
+    if system:
+        config.system_instruction = system
+
+    response = client.models.generate_content(
+        model=_GOOGLE_MODEL,
+        contents=prompt,
+        config=config
+    )
+    return response.text.strip()
+
+
 def get_chat_completion(
     prompt: str,
     system: Optional[str] = None,
@@ -98,12 +128,15 @@ def get_chat_completion(
     Returns:
         Texto de la respuesta del modelo.
     """
-    if LLM_PROVIDER == "anthropic":
+    provider = os.getenv("LLM_PROVIDER", "anthropic").lower()
+    if provider == "anthropic":
         return _retry(_anthropic_chat, prompt, system, max_tokens)
-    elif LLM_PROVIDER == "openai":
+    elif provider == "openai":
         return _retry(_openai_chat, prompt, system, max_tokens)
+    elif provider == "google":
+        return _retry(_google_chat, prompt, system, max_tokens)
     else:
-        raise ValueError(f"LLM_PROVIDER desconocido: '{LLM_PROVIDER}'. Usar 'anthropic' u 'openai'.")
+        raise ValueError(f"LLM_PROVIDER desconocido: '{provider}'. Usar 'anthropic', 'openai' o 'google'.")
 
 
 # ---------------------------------------------------------------------------
@@ -115,7 +148,7 @@ _ST_MODEL = None
 
 def _anthropic_embed(text: str) -> list[float]:
     """
-    Anthropic no tiene API de embeddings propia.
+    Anthropic/Google no tienen API de embeddings compatible por defecto o se usa local.
     Usar sentence-transformers: paraphrase-multilingual-mpnet-base-v2 → 768 dims.
     Debe coincidir con EMBEDDING_DIMENSIONS = 768 en rag/create_index.py.
 
@@ -164,12 +197,13 @@ def get_embedding(text: str) -> list[float]:
     Returns:
         Lista de floats (vector de embedding).
     """
-    if LLM_PROVIDER == "anthropic":
+    provider = os.getenv("LLM_PROVIDER", "anthropic").lower()
+    if provider in {"anthropic", "google"}:
         return _retry(_anthropic_embed, text)
-    elif LLM_PROVIDER == "openai":
+    elif provider == "openai":
         return _retry(_openai_embed, text)
     else:
-        raise ValueError(f"LLM_PROVIDER desconocido: '{LLM_PROVIDER}'.")
+        raise ValueError(f"LLM_PROVIDER desconocido: '{provider}'.")
 
 
 # ---------------------------------------------------------------------------
@@ -177,10 +211,12 @@ def get_embedding(text: str) -> list[float]:
 # ---------------------------------------------------------------------------
 
 if __name__ == "__main__":
-    print(f"Proveedor activo: {LLM_PROVIDER}")
+    provider = os.getenv("LLM_PROVIDER", "anthropic").lower()
+    print(f"Proveedor activo: {provider}")
     reply = get_chat_completion(
         prompt="Responde solo 'OK' si me escuchas.",
         system="Eres un asistente de prueba.",
         max_tokens=10,
     )
     print(f"Respuesta: {reply}")
+

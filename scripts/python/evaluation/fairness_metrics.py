@@ -8,7 +8,6 @@ Autora: Mario A. Belvisi Lescano
 """
 
 import numpy as np
-import pandas as pd
 
 
 def disparate_impact_ratio(
@@ -40,9 +39,14 @@ def disparate_impact_ratio(
     p_min = np.mean(y_pred[mask_min] == positive_label)
 
     if p_priv == 0:
-        raise ValueError(
-            "P(ŷ=1 | grupo_privilegiado) = 0. No se puede calcular DIR."
+        if p_min == 0:
+            return 1.0  # Perfect parity when no one is selected
+        # Instead of crashing, return a NaN and warn
+        import warnings
+        warnings.warn(
+            "P(ŷ=1 | grupo_privilegiado) = 0. No se puede calcular DIR. Retornando NaN."
         )
+        return float("nan")
 
     return p_min / p_priv
 

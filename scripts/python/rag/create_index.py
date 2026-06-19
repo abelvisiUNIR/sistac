@@ -31,13 +31,16 @@ _SCRIPTS_DIR = Path(__file__).parent.parent
 if str(_SCRIPTS_DIR) not in sys.path:
     sys.path.insert(0, str(_SCRIPTS_DIR))
 
+
+
 from config import (
     AZURE_SEARCH_ENDPOINT,
     AZURE_SEARCH_KEY,
     AZURE_SEARCH_INDEX,
     check_azure_config,
+    VECTORSTORE_PROVIDER,
+    check_vectorstore_config,
 )
-
 # Dimensiones del modelo de embeddings
 # paraphrase-multilingual-mpnet-base-v2 → 768
 # text-embedding-3-small (OpenAI) → 1536
@@ -247,9 +250,42 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
+    if VECTORSTORE_PROVIDER == "google":
+        print("=== SISTAC — Google Vertex AI Search: Configuración del índice ===\n")
+        from config import check_gcp_config, GCP_PROJECT_ID, GCP_SEARCH_APP_ID, GCP_DATA_STORE_ID, GCP_LOCATION
+        try:
+            check_gcp_config()
+            print(f"  GCP Project ID  : {GCP_PROJECT_ID}")
+            print(f"  Search App ID   : {GCP_SEARCH_APP_ID}")
+            print(f"  Data Store ID   : {GCP_DATA_STORE_ID}")
+            print("\n[INFO] En Google Cloud Vertex AI Search, el índice y esquema se crean")
+            print("y configuran a través de la consola de GCP (Vertex AI Agent Builder).")
+            print("Asegurate de haber creado el Data Store de tipo 'Unstructured Documents' y")
+            print("conectarlo al bucket de Cloud Storage correspondiente.")
+            print("\nVerificando conexión con el SDK de Google...")
+            try:
+                from google.cloud import discoveryengine_v1beta as discoveryengine
+                client = discoveryengine.DocumentServiceClient()
+                parent = client.branch_path(
+                    project=GCP_PROJECT_ID,
+                    location=GCP_LOCATION,
+                    data_store=GCP_DATA_STORE_ID,
+                    branch="default_branch",
+                )
+                # Intento simple de listar documentos para validar credenciales
+                list(client.list_documents(parent=parent, page_size=1))
+                print("  [SUCCESS] Conexión establecida con éxito y credenciales validadas.")
+            except Exception as conn_err:
+                print(f"  [WARN] No se pudo conectar o el Data Store está vacío: {conn_err}")
+                print("  Esto es normal si el Data Store es nuevo y aún no tiene documentos.")
+            sys.exit(0)
+        except EnvironmentError as e:
+            print(f"\n[ERROR] {e}")
+            sys.exit(1)
+
     print("=== SISTAC — Azure AI Search: Configuración del índice ===\n")
 
-    # Verificar credenciales
+    # Verificar credenciales Azure
     try:
         check_azure_config()
         print(f"  Endpoint : {AZURE_SEARCH_ENDPOINT}")

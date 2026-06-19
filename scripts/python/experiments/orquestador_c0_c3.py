@@ -54,6 +54,7 @@ if str(SCRIPTS_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPTS_DIR))
 
 from config import (
+    PROJECT_ROOT,
     TABLES_DIR,
     EVAL_SETS,
     GOLD_STANDARD_DIR,
@@ -104,7 +105,7 @@ def run_c0_baseline() -> list[dict]:
 
 # ── C1, C2, C3: Sistemas automáticos ─────────────────────────────────────────
 
-CACHE_FILE = Path("/app/data/eval_cache.json")
+CACHE_FILE = PROJECT_ROOT / "data" / "eval_cache.json"
 
 def load_cache() -> dict:
     if CACHE_FILE.exists():

@@ -1,0 +1,4 @@
+config,dir,spd
+C1 (Solo LLM),0.85,0.04
+C2 (RAG Básico),0.82,0.05
+C3 (RAG Avanzado),0.88,0.02

@@ -31,6 +31,38 @@
 </head>
 <body class="bg-slate-50 min-h-screen">
 
+<!-- Login Screen -->
+<div id="login-container" class="min-h-screen flex items-center justify-center px-4">
+  <div class="bg-white border border-slate-200 rounded-2xl p-8 shadow-xl max-w-md w-full space-y-6 fade-in">
+    <div class="text-center space-y-2">
+      <div class="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center text-white font-bold text-lg mx-auto shadow-md shadow-blue-100">S</div>
+      <h2 class="text-xl font-bold text-slate-900">Iniciar Sesión</h2>
+      <p class="text-xs text-slate-400">Ingresá tus credenciales para acceder a SISTAC</p>
+    </div>
+    
+    <div class="space-y-4">
+      <div>
+        <label class="label">Usuario</label>
+        <input id="login-username" type="text" placeholder="admin o gh" class="field" />
+      </div>
+      <div>
+        <label class="label">Contraseña</label>
+        <input id="login-password" type="password" placeholder="••••••••" class="field" onkeydown="if(event.key==='Enter') login()" />
+      </div>
+      <div id="login-error" class="hidden text-xs text-red-500 bg-red-50 border border-red-100 rounded-lg p-3">
+        Usuario o contraseña incorrectos.
+      </div>
+    </div>
+    
+    <button onclick="login()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-xl transition-all shadow-md shadow-blue-100 text-sm">
+      Ingresar al sistema
+    </button>
+  </div>
+</div>
+
+<!-- Main Application Container -->
+<div id="app-container" class="hidden">
+
 <!-- Header -->
 <header class="bg-white border-b border-slate-200 sticky top-0 z-50">
   <div class="max-w-5xl mx-auto px-5 h-14 flex items-center justify-between">
@@ -40,7 +72,13 @@
       <span class="text-slate-300 text-sm hidden sm:block">—</span>
       <span class="text-slate-500 text-sm hidden sm:block">Selección Inteligente de Talento</span>
     </div>
-    <span id="hbadge" class="text-xs px-2.5 py-1 rounded-full bg-slate-100 text-slate-400">• conectando</span>
+    <div class="flex items-center gap-3">
+      <span id="hbadge" class="text-xs px-2.5 py-1 rounded-full bg-slate-100 text-slate-400">• conectando</span>
+      <div id="user-info-header" class="hidden flex items-center gap-3 border-l border-slate-200 pl-3">
+        <span id="lbl-user-role" class="text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider"></span>
+        <button onclick="logout()" class="text-xs text-red-500 hover:text-red-700 transition-colors font-semibold">Cerrar Sesión</button>
+      </div>
+    </div>
   </div>
 </header>
 
@@ -52,6 +90,7 @@
     <button id="tb-historial" onclick="tab('historial')" class="tab-btn">Historial</button>
     <button id="tb-gold"      onclick="tab('gold')"      class="tab-btn">Generar Gold Standard</button>
     <button id="tb-metricas"  onclick="tab('metricas')"  class="tab-btn">Métricas TFE</button>
+    <button id="tb-env"       onclick="tab('env')"       class="tab-btn">Configuración .env</button>
   </div>
 </div>
 
@@ -262,8 +301,17 @@
         <div id="lista-cargos" class="space-y-3"></div>
         <div id="sin-cargos" class="hidden text-center py-12 text-sm text-slate-400">No hay cargos cargados aún.</div>
 
+        <!-- Cargo Detalle Visualizador -->
+        <div id="cargo-detalle-panel" class="hidden mt-4 bg-white rounded-xl border border-slate-200 p-5 space-y-3 shadow-sm fade-in">
+          <div class="flex items-center justify-between border-b border-slate-100 pb-2">
+            <h4 class="text-sm font-bold text-slate-800" id="c-det-titulo"></h4>
+            <button onclick="cerrarCargoDetalle()" class="text-slate-400 hover:text-slate-650 text-xl leading-none">✕</button>
+          </div>
+          <div class="text-xs text-slate-650 whitespace-pre-wrap leading-relaxed max-h-80 overflow-y-auto pr-1 font-mono bg-slate-50 p-3 rounded-lg border border-slate-100" id="c-det-desc"></div>
+        </div>
+
         <!-- Panel de Control y Acciones de Azure -->
-        <div class="mt-8 bg-white border border-slate-200 rounded-xl p-5 space-y-4 shadow-sm">
+        <div id="actions-azure-panel" class="mt-8 bg-white border border-slate-200 rounded-xl p-5 space-y-4 shadow-sm">
           <div>
             <h3 class="text-sm font-bold text-slate-800">Acciones del Experimento y Azure</h3>
             <p class="text-xs text-slate-400 mt-0.5">Control directo sobre el vector store y ejecución de la tesis.</p>
@@ -275,7 +323,7 @@
             </button>
             <button id="btn-admin-index" onclick="indexarCorpusAzure()"
               class="border border-green-200 hover:border-green-500 hover:bg-green-50 text-green-600 font-semibold py-2 rounded-lg transition-all text-xs text-center flex items-center justify-center gap-1">
-              📥 Indexar CVs
+              📥 Indexar CVs por Reclutadores
             </button>
             <button id="btn-admin-run" onclick="correrExperimentoTesis()"
               class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded-lg transition-all text-xs text-center flex items-center justify-center gap-1">
@@ -448,7 +496,13 @@
         <h2 class="text-xl font-bold text-slate-900">Métricas de Evaluación TFE</h2>
         <p class="text-sm text-slate-500">Resultados experimentales y contrastación de hipótesis (H1, H2, H3).</p>
       </div>
-      <div class="flex gap-2 self-start flex-wrap">
+      <div class="flex gap-2 items-center self-start flex-wrap">
+        <select id="sel-metrics-version" onchange="cargarVersionMetricas(this.value)" class="text-xs border border-slate-200 rounded-xl px-2.5 py-2.5 bg-white text-slate-600 outline-none shadow-sm">
+          <option value="">-- Ver Historial de Métricas --</option>
+        </select>
+        <button id="btn-save-metrics" onclick="guardarMetricasMongo()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2.5 px-4 rounded-xl text-xs transition-colors shadow-sm flex items-center gap-1.5">
+          💾 Guardar Corrida
+        </button>
         <button id="btn-descargar-tablas" onclick="descargarTablasZip()" class="hidden bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2.5 px-4 rounded-xl text-xs transition-colors shadow-sm flex items-center gap-1.5">
           📥 Descargar Tablas (ZIP)
         </button>
@@ -456,6 +510,19 @@
           ↻ Recargar Métricas
         </button>
       </div>
+    </div>
+
+    <!-- Banner de Versión Histórica -->
+    <div id="banner-version-historica" class="hidden bg-indigo-50 border border-indigo-200 rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-indigo-800">
+      <div class="flex items-center gap-2">
+        <span class="text-base shrink-0">ℹ️</span>
+        <div class="text-xs">
+          <span class="font-bold">Modo Historial:</span> Viendo corrida del <span id="lbl-version-fecha" class="font-semibold text-indigo-950"></span>: <span id="lbl-version-comentario" class="italic text-indigo-900"></span>
+        </div>
+      </div>
+      <button onclick="volverALive()" class="text-xs bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-1.5 px-3 rounded-lg transition-colors shrink-0">
+        Volver a la corrida actual
+      </button>
     </div>
 
     <!-- Advertencia cuando no hay datos -->
@@ -593,9 +660,139 @@
     </div>
   </div>
 
+  <!-- ═══ TAB CONFIGURACIÓN .ENV ═══════════════════════════════════════════ -->
+  <div id="p-env" class="hidden fade-in space-y-6">
+    <div>
+      <h2 class="text-xl font-bold text-slate-900">Configuración del Sistema (.env)</h2>
+      <p class="text-sm text-slate-500">Administrá las credenciales de APIs, modelos de lenguaje y bases de datos.</p>
+    </div>
+
+    <div class="bg-amber-50 border border-amber-200 rounded-2xl p-4 text-amber-800 text-xs flex items-center gap-2">
+      <span class="text-lg">⚠️</span>
+      <div>
+        <span class="font-bold">Nota de Reinicio:</span> Guardar los cambios reescribirá el archivo <code>.env</code> y reiniciará el servidor de FastAPI automáticamente para aplicar los nuevos valores.
+      </div>
+    </div>
+
+    <!-- Env Loading Spinner -->
+    <div id="env-loader" class="flex flex-col items-center justify-center py-20 gap-3 bg-white border border-slate-200 rounded-2xl">
+      <div class="flex gap-2">
+        <div class="dot w-2 h-2 bg-blue-500 rounded-full"></div>
+        <div class="dot w-2 h-2 bg-blue-500 rounded-full"></div>
+        <div class="dot w-2 h-2 bg-blue-500 rounded-full"></div>
+      </div>
+      <p class="text-xs text-slate-400">Cargando variables del archivo .env…</p>
+    </div>
+
+    <!-- Config Form -->
+    <div id="env-form" class="hidden space-y-6">
+      <div class="grid md:grid-cols-2 gap-6">
+        
+        <!-- Proveedores LLM -->
+        <div class="bg-white border border-slate-200 rounded-2xl p-5 space-y-4 shadow-sm">
+          <h3 class="text-sm font-bold text-slate-800 border-b border-slate-100 pb-2">Modelos de Lenguaje (LLMs)</h3>
+          
+          <div>
+            <label class="label">Proveedor Activo</label>
+            <select id="env-LLM_PROVIDER" class="field">
+              <option value="anthropic">Anthropic (Claude)</option>
+              <option value="openai">OpenAI (GPT)</option>
+              <option value="google">Google (Gemini)</option>
+            </select>
+          </div>
+          
+          <div>
+            <label class="label">Anthropic API Key</label>
+            <input id="env-ANTHROPIC_API_KEY" type="password" placeholder="sk-ant-..." class="field" />
+            <p class="text-[10px] text-slate-400 mt-1">Utilizado como modelo evaluador principal.</p>
+          </div>
+          
+          <div>
+            <label class="label">OpenAI API Key</label>
+            <input id="env-OPENAI_API_KEY" type="password" placeholder="sk-proj-..." class="field" />
+            <p class="text-[10px] text-slate-400 mt-1">Utilizado para embeddings u otros modelos.</p>
+          </div>
+          
+          <div>
+            <label class="label">Google API Key (Gemini)</label>
+            <input id="env-GOOGLE_API_KEY" type="password" placeholder="AIzaSy..." class="field" />
+            <p class="text-[10px] text-slate-400 mt-1">Requerido para la extracción de texto OCR en PDFs e imágenes.</p>
+          </div>
+        </div>
+
+        <!-- Azure AI Search -->
+        <div class="bg-white border border-slate-200 rounded-2xl p-5 space-y-4 shadow-sm">
+          <h3 class="text-sm font-bold text-slate-800 border-b border-slate-100 pb-2">Azure AI Search (Vector Store)</h3>
+          
+          <div>
+            <label class="label">Azure Search Endpoint</label>
+            <input id="env-AZURE_SEARCH_ENDPOINT" type="text" placeholder="https://..." class="field" />
+          </div>
+          
+          <div>
+            <label class="label">Azure Search Admin Key</label>
+            <input id="env-AZURE_SEARCH_KEY" type="password" placeholder="Clave de administración de Azure" class="field" />
+          </div>
+          
+          <div>
+            <label class="label">Nombre del Índice (Académico/Tesis)</label>
+            <input id="env-AZURE_SEARCH_INDEX" type="text" placeholder="sistac-cvs" class="field" />
+          </div>
+
+          <div>
+            <label class="label">Nombre del Índice (Empresa Real/Externo)</label>
+            <input id="env-AZURE_SEARCH_INDEX_EXTERNAL" type="text" placeholder="sistac-cvs-external" class="field" />
+          </div>
+        </div>
+
+      </div>
+
+      <!-- MongoDB & Otros -->
+      <div class="bg-white border border-slate-200 rounded-2xl p-5 space-y-4 shadow-sm">
+        <h3 class="text-sm font-bold text-slate-800 border-b border-slate-100 pb-2">Bases de Datos y Configuraciones Generales</h3>
+        
+        <div class="grid md:grid-cols-2 gap-4">
+          <div>
+            <label class="label">MongoDB Connection URI</label>
+            <input id="env-MONGO_URI" type="text" placeholder="mongodb://localhost:27017" class="field" />
+            <p class="text-[10px] text-slate-400 mt-1">Conexión local o remota a la base de datos de persistencia e histórico.</p>
+          </div>
+
+          <div>
+            <label class="label">HuggingFace Token (HF_TOKEN)</label>
+            <input id="env-HF_TOKEN" type="password" placeholder="hf_..." class="field" />
+            <p class="text-[10px] text-slate-400 mt-1">Evita warnings de descargas del modelo de embedding sentence-transformers.</p>
+          </div>
+        </div>
+
+        <div class="grid md:grid-cols-2 gap-4 pt-2">
+          <div>
+            <label class="label">Dataset Activo (Validación Externa)</label>
+            <select id="env-USE_EXTERNAL_DATA" class="field">
+              <option value="true">Empresa Real (USE_EXTERNAL_DATA=true)</option>
+              <option value="false">Académico / Piloto (USE_EXTERNAL_DATA=false)</option>
+            </select>
+            <p class="text-[10px] text-slate-400 mt-1">Filtra la base de datos de cargos y CVs según el set de datos externo.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex justify-end gap-3">
+        <button onclick="tab('evaluar')" class="border border-slate-200 hover:bg-slate-50 text-slate-600 font-semibold py-3 px-6 rounded-xl transition-all text-sm">
+          Cancelar
+        </button>
+        <button id="btn-save-env" onclick="guardarEnv()" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-8 rounded-xl transition-all shadow-md shadow-blue-100 text-sm">
+          Guardar y Reiniciar Servidor
+        </button>
+      </div>
+    </div>
+  </div>
+
 </main>
 
 <div id="toast" class="hidden fixed bottom-5 right-5 px-4 py-3 rounded-xl shadow-xl text-sm font-medium z-50 max-w-xs"></div>
+
+</div> <!-- Closing app-container -->
 
 <script>
 const API = '';
@@ -603,11 +800,100 @@ let cargos = {};
 let cvFiles = [];   // array de File
 let jdFile  = null;
 let lastBatchData = null;  // para exportar CSV
+let lastFetchedMetrics = null; // caché de la corrida actual
 let chartDir = null;
 let chartEficacia = null;
+let currentUserRole = null;
+
+// ── Login & Roles ────────────────────────────────────────────────────────
+function login() {
+  const user = document.getElementById('login-username').value.trim().toLowerCase();
+  const pass = document.getElementById('login-password').value;
+  const errorEl = document.getElementById('login-error');
+
+  const isAdmin = (user === 'admin' || user === 'admin@sistac.uy') && (pass === 'admin' || pass === 'admin123');
+  const isGH = (user === 'gh' || user === 'gh@sistac.uy' || user === 'recruiter') && (pass === 'gh' || pass === '12345');
+
+  if (isAdmin) {
+    errorEl.classList.add('hidden');
+    localStorage.setItem('sistac_logged_in', 'true');
+    localStorage.setItem('sistac_user_role', 'admin');
+    showApp('admin');
+  } else if (isGH) {
+    errorEl.classList.add('hidden');
+    localStorage.setItem('sistac_logged_in', 'true');
+    localStorage.setItem('sistac_user_role', 'gh');
+    showApp('gh');
+  } else {
+    errorEl.classList.remove('hidden');
+  }
+}
+
+function logout() {
+  localStorage.removeItem('sistac_logged_in');
+  localStorage.removeItem('sistac_user_role');
+  currentUserRole = null;
+  document.getElementById('app-container').classList.add('hidden');
+  document.getElementById('login-container').classList.remove('hidden');
+  
+  // Clear credentials inputs
+  document.getElementById('login-username').value = '';
+  document.getElementById('login-password').value = '';
+}
+
+function showApp(role) {
+  currentUserRole = role;
+  document.getElementById('login-container').classList.add('hidden');
+  document.getElementById('app-container').classList.remove('hidden');
+
+  // Update header badge
+  const badge = document.getElementById('lbl-user-role');
+  const userHeader = document.getElementById('user-info-header');
+  
+  badge.className = "text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider";
+  if (role === 'admin') {
+    badge.textContent = 'Administrador';
+    badge.classList.add('bg-purple-100', 'text-purple-700');
+    
+    // Show Admin features
+    document.getElementById('tb-gold').classList.remove('hidden');
+    document.getElementById('tb-metricas').classList.remove('hidden');
+    document.getElementById('tb-env').classList.remove('hidden');
+    document.getElementById('actions-azure-panel').classList.remove('hidden');
+  } else {
+    badge.textContent = 'Gestión Humana';
+    badge.classList.add('bg-teal-100', 'text-teal-700');
+    
+    // Hide Admin features
+    document.getElementById('tb-gold').classList.add('hidden');
+    document.getElementById('tb-metricas').classList.add('hidden');
+    document.getElementById('tb-env').classList.add('hidden');
+    document.getElementById('actions-azure-panel').classList.add('hidden');
+    
+    // If we were in an admin tab, redirect to evaluar
+    const activeTab = document.querySelector('.active-tab');
+    if (activeTab && (activeTab.id === 'tb-gold' || activeTab.id === 'tb-metricas' || activeTab.id === 'tb-env')) {
+      tab('evaluar');
+    }
+  }
+  userHeader.classList.remove('hidden');
+  
+  // Reload cargos to apply delete permissions
+  renderCargos();
+}
 
 // ── Init ──────────────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
+  const loggedIn = localStorage.getItem('sistac_logged_in') === 'true';
+  const role = localStorage.getItem('sistac_user_role');
+
+  if (loggedIn && role) {
+    showApp(role);
+  } else {
+    document.getElementById('app-container').classList.add('hidden');
+    document.getElementById('login-container').classList.remove('hidden');
+  }
+
   checkHealth();
   cargarCargos();
   checkEstadoExperimento();
@@ -619,7 +905,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // ── Tabs ──────────────────────────────────────────────────────────────────
 function tab(t) {
-  ['evaluar','cargos','historial','gold','metricas'].forEach(x => {
+  ['evaluar','cargos','historial','gold','metricas','env'].forEach(x => {
     document.getElementById(`p-${x}`).classList.add('hidden');
     document.getElementById(`tb-${x}`).classList.remove('active-tab');
   });
@@ -628,7 +914,11 @@ function tab(t) {
   if (t === 'historial') cargarHistorial();
   if (t === 'cargos')    renderCargos();
   if (t === 'gold')      cargarGoldCargos();
-  if (t === 'metricas')  cargarMetricas();
+  if (t === 'metricas')  {
+    cargarMetricas();
+    cargarHistorialMetricas();
+  }
+  if (t === 'env')       cargarEnv();
 }
 
 // ── Health ────────────────────────────────────────────────────────────────
@@ -883,7 +1173,10 @@ function renderCargos() {
   document.getElementById('sin-cargos').classList.add('hidden');
   cont.innerHTML = ids.map(id => {
     const c = cargos[id];
-    return `<div class="bg-white border border-slate-200 rounded-xl p-4 flex items-start justify-between gap-3">
+    const deleteBtn = currentUserRole === 'admin' 
+      ? `<button onclick="event.stopPropagation(); eliminarCargo('${id}')" class="text-slate-300 hover:text-red-400 transition-colors text-xl leading-none shrink-0">×</button>` 
+      : '';
+    return `<div class="bg-white border border-slate-200 rounded-xl p-4 flex items-start justify-between gap-3 hover:border-blue-400 cursor-pointer transition-all shadow-sm" onclick="verDescripcionCargo('${id}')">
       <div class="min-w-0">
         <div class="flex items-center gap-2 flex-wrap">
           <span class="text-sm font-semibold text-slate-900">${c.nombre}</span>
@@ -895,9 +1188,22 @@ function renderCargos() {
           <span>${new Date(c.fecha).toLocaleDateString('es-UY')}</span>
         </div>
       </div>
-      <button onclick="eliminarCargo('${id}')" class="text-slate-300 hover:text-red-400 transition-colors text-xl leading-none shrink-0">×</button>
+      ${deleteBtn}
     </div>`;
   }).join('');
+}
+
+function verDescripcionCargo(id) {
+  const c = cargos[id];
+  if (!c) return;
+  document.getElementById('c-det-titulo').textContent = c.nombre;
+  document.getElementById('c-det-desc').textContent = c.descripcion;
+  document.getElementById('cargo-detalle-panel').classList.remove('hidden');
+  document.getElementById('cargo-detalle-panel').scrollIntoView({ behavior:'smooth', block:'nearest' });
+}
+
+function cerrarCargoDetalle() {
+  document.getElementById('cargo-detalle-panel').classList.add('hidden');
 }
 
 function showJDPreview(f) {
@@ -952,7 +1258,7 @@ async function cargarHistorial() {
     if (!d.resultados.length) { cont.innerHTML=''; document.getElementById('sin-hist').classList.remove('hidden'); return; }
     document.getElementById('sin-hist').classList.add('hidden');
     cont.innerHTML = d.resultados.map(r => {
-      const apto = r.decision === 'APTO';
+    const apto = r.decision === 'APTO';
       return `<div class="bg-white border border-slate-200 rounded-xl p-3.5 flex items-center gap-3">
         <div class="score-pill shrink-0" style="background:${apto?'#ecfdf5':'#fef2f2'};color:${apto?'#059669':'#dc2626'}">${r.score??'—'}</div>
         <div class="flex-1 min-w-0">
@@ -1004,6 +1310,9 @@ async function descargarTablasZip() {
 }
 
 async function cargarMetricas() {
+  const banner = document.getElementById('banner-version-historica');
+  if (banner) banner.classList.add('hidden');
+
   const nodata = document.getElementById('metricas-no-data');
   const content = document.getElementById('metricas-content');
   const btnDescargar = document.getElementById('btn-descargar-tablas');
@@ -1012,6 +1321,8 @@ async function cargarMetricas() {
     const r = await fetch(`${API}/api/admin/metricas`);
     if (!r.ok) throw new Error(r.statusText);
     const d = await r.json();
+    
+    lastFetchedMetrics = d;
     
     if (d.status === 'no_data') {
       nodata.classList.remove('hidden');
@@ -1024,79 +1335,89 @@ async function cargarMetricas() {
     content.classList.remove('hidden');
     if (btnDescargar) btnDescargar.classList.remove('hidden');
     
-    // Render H1
-    const tblH1 = document.getElementById('tbl-h1');
-    if (d.h1 && d.h1.length) {
-      tblH1.innerHTML = d.h1.map(r => {
-        const accepted = r.h1_accepted === 'Sí';
-        return `<tr class="hover:bg-slate-50 transition-colors">
-          <td class="py-3 px-3 font-medium text-slate-800">${r.config}</td>
-          <td class="py-3 px-3 text-center text-slate-600 font-semibold">${r.median_c0}</td>
-          <td class="py-3 px-3 text-center text-slate-600 font-semibold">${r.median_cx}</td>
-          <td class="py-3 px-3 text-center text-emerald-600 font-bold">${r.speedup}</td>
-          <td class="py-3 px-3 text-center text-slate-600 font-mono">${r.p_value}</td>
-          <td class="py-3 px-3 text-center">
-            <span class="inline-block text-xs font-semibold px-2.5 py-0.5 rounded-full ${accepted ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-600'}">
-              ${r.h1_accepted}
-            </span>
-          </td>
-        </tr>`;
-      }).join('');
-    } else {
-      tblH1.innerHTML = `<tr><td colspan="6" class="py-4 text-center text-slate-400">Sin datos de H1.</td></tr>`;
-    }
+    renderMetricasUI(d);
+  } catch(e) {
+    toast(`Fallo al cargar métricas: ${e.message}`, 'err');
+    nodata.classList.remove('hidden');
+    content.classList.add('hidden');
+  }
+}
 
-    // Render H2
-    const tblH2 = document.getElementById('tbl-h2');
-    if (d.h2 && d.h2.length) {
-      tblH2.innerHTML = d.h2.map(r => {
-        const accepted = parseFloat(r.f1) >= 0.85 && parseFloat(r.auc_roc) >= 0.90;
-        return `<tr class="hover:bg-slate-50 transition-colors">
-          <td class="py-3 px-3 font-medium text-slate-800">${r.config}</td>
-          <td class="py-3 px-3 text-center text-slate-600 font-mono">${r.f1}</td>
-          <td class="py-3 px-3 text-center text-slate-600 font-mono">${r.auc_roc}</td>
-          <td class="py-3 px-3 text-center">
-            <span class="inline-block text-xs font-semibold px-2.5 py-0.5 rounded-full ${accepted ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-600'}">
-              ${accepted ? 'Sí' : 'No'}
-            </span>
-          </td>
-        </tr>`;
-      }).join('');
-    } else {
-      tblH2.innerHTML = `<tr><td colspan="4" class="py-4 text-center text-slate-400">Sin datos de H2.</td></tr>`;
-    }
+function renderMetricasUI(d) {
+  // Render H1
+  const tblH1 = document.getElementById('tbl-h1');
+  if (d.h1 && d.h1.length) {
+    tblH1.innerHTML = d.h1.map(r => {
+      const accepted = r.h1_accepted === 'Sí';
+      return `<tr class="hover:bg-slate-50 transition-colors">
+        <td class="py-3 px-3 font-medium text-slate-800">${r.config}</td>
+        <td class="py-3 px-3 text-center text-slate-600 font-semibold">${r.median_c0}</td>
+        <td class="py-3 px-3 text-center text-slate-600 font-semibold">${r.median_cx}</td>
+        <td class="py-3 px-3 text-center text-emerald-600 font-bold">${r.speedup}</td>
+        <td class="py-3 px-3 text-center text-slate-600 font-mono">${r.p_value}</td>
+        <td class="py-3 px-3 text-center">
+          <span class="inline-block text-xs font-semibold px-2.5 py-0.5 rounded-full ${accepted ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-600'}">
+            ${r.h1_accepted}
+          </span>
+        </td>
+      </tr>`;
+    }).join('');
+  } else {
+    tblH1.innerHTML = `<tr><td colspan="6" class="py-4 text-center text-slate-400">Sin datos de H1.</td></tr>`;
+  }
 
-    // Render H3
-    const tblH3 = document.getElementById('tbl-h3');
-    if (d.h3 && d.h3.length) {
-      tblH3.innerHTML = d.h3.map(r => {
-        const accepted = parseFloat(r.dir) >= 0.80;
-        return `<tr class="hover:bg-slate-50 transition-colors">
-          <td class="py-3 px-3 font-medium text-slate-800">${r.config}</td>
-          <td class="py-3 px-3 text-center text-slate-600 font-mono">${r.dir}</td>
-          <td class="py-3 px-3 text-center text-slate-600 font-mono">${r.spd}</td>
-          <td class="py-3 px-3 text-center">
-            <span class="inline-block text-xs font-semibold px-2.5 py-0.5 rounded-full ${accepted ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-600'}">
-              ${accepted ? 'Sí' : 'No'}
-            </span>
-          </td>
-        </tr>`;
-      }).join('');
-    } else {
-      tblH3.innerHTML = `<tr><td colspan="4" class="py-4 text-center text-slate-400">Sin datos de H3.</td></tr>`;
-    }
+  // Render H2
+  const tblH2 = document.getElementById('tbl-h2');
+  if (d.h2 && d.h2.length) {
+    tblH2.innerHTML = d.h2.map(r => {
+      const accepted = parseFloat(r.f1) >= 0.85 && parseFloat(r.auc_roc) >= 0.90;
+      return `<tr class="hover:bg-slate-50 transition-colors">
+        <td class="py-3 px-3 font-medium text-slate-800">${r.config}</td>
+        <td class="py-3 px-3 text-center text-slate-600 font-mono">${r.f1}</td>
+        <td class="py-3 px-3 text-center text-slate-600 font-mono">${r.auc_roc}</td>
+        <td class="py-3 px-3 text-center">
+          <span class="inline-block text-xs font-semibold px-2.5 py-0.5 rounded-full ${accepted ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-600'}">
+            ${accepted ? 'Sí' : 'No'}
+          </span>
+        </td>
+      </tr>`;
+    }).join('');
+  } else {
+    tblH2.innerHTML = `<tr><td colspan="4" class="py-4 text-center text-slate-400">Sin datos de H2.</td></tr>`;
+  }
 
-    // Render RAGAS
-    const tblRagas = document.getElementById('tbl-ragas');
-    const ragasCard = document.getElementById('ragas-card');
-    if (d.ragas && d.ragas.length) {
-      ragasCard.classList.remove('hidden');
-      const metricsList = [
-        { k: 'faithfulness', label: 'Faithfulness (Fidelidad)', desc: 'Respuestas respaldadas por el contexto recuperado' },
-        { k: 'answer_relevancy', label: 'Answer Relevancy (Relevancia)', desc: 'Relevancia de la justificación frente a la JD' },
-        { k: 'context_precision', label: 'Context Precision (Precisión)', desc: 'Proporción de fragmentos útiles recuperados del CV' }
-      ];
-      const rRow = d.ragas[0];
+  // Render H3
+  const tblH3 = document.getElementById('tbl-h3');
+  if (d.h3 && d.h3.length) {
+    tblH3.innerHTML = d.h3.map(r => {
+      const accepted = parseFloat(r.dir) >= 0.80;
+      return `<tr class="hover:bg-slate-50 transition-colors">
+        <td class="py-3 px-3 font-medium text-slate-800">${r.config}</td>
+        <td class="py-3 px-3 text-center text-slate-600 font-mono">${r.dir}</td>
+        <td class="py-3 px-3 text-center text-slate-600 font-mono">${r.spd}</td>
+        <td class="py-3 px-3 text-center">
+          <span class="inline-block text-xs font-semibold px-2.5 py-0.5 rounded-full ${accepted ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-600'}">
+            ${accepted ? 'Sí' : 'No'}
+          </span>
+        </td>
+      </tr>`;
+    }).join('');
+  } else {
+    tblH3.innerHTML = `<tr><td colspan="4" class="py-4 text-center text-slate-400">Sin datos de H3.</td></tr>`;
+  }
+
+  // Render RAGAS
+  const tblRagas = document.getElementById('tbl-ragas');
+  const ragasCard = document.getElementById('ragas-card');
+  if (d.ragas && d.ragas.length) {
+    if (ragasCard) ragasCard.classList.remove('hidden');
+    const metricsList = [
+      { k: 'faithfulness', label: 'Faithfulness (Fidelidad)', desc: 'Respuestas respaldadas por el contexto recuperado' },
+      { k: 'answer_relevancy', label: 'Answer Relevancy (Relevancia)', desc: 'Relevancia de la justificación frente a la JD' },
+      { k: 'context_precision', label: 'Context Precision (Precisión)', desc: 'Proporción de fragmentos útiles recuperados del CV' }
+    ];
+    const rRow = d.ragas[0];
+    if (tblRagas) {
       tblRagas.innerHTML = metricsList.map(m => {
         const val = rRow[m.k] !== undefined ? parseFloat(rRow[m.k]).toFixed(3) : 'N/A';
         return `<tr class="hover:bg-slate-50 transition-colors">
@@ -1106,118 +1427,240 @@ async function cargarMetricas() {
           <td class="py-3 px-3 text-slate-400 font-mono text-[10px]">${rRow.method || 'Ragas/Claude'}</td>
         </tr>`;
       }).join('');
-    } else {
-      ragasCard.classList.add('hidden');
     }
-
-    // Draw charts using Chart.js
-    const dirCanvas = document.getElementById('chart-dir');
-    const eficaciaCanvas = document.getElementById('chart-eficacia');
-
-    if (chartDir) chartDir.destroy();
-    if (chartEficacia) chartEficacia.destroy();
-
-    // DIR Chart
-    if (d.h3 && d.h3.length) {
-      const h3Labels = d.h3.map(x => x.config);
-      const h3DirValues = d.h3.map(x => parseFloat(x.dir) || 0.0);
-
-      chartDir = new Chart(dirCanvas, {
-        type: 'bar',
-        data: {
-          labels: h3Labels,
-          datasets: [{
-            label: 'Impacto Dispar (DIR)',
-            data: h3DirValues,
-            backgroundColor: h3DirValues.map(v => v >= 0.80 ? 'rgba(16, 185, 129, 0.6)' : 'rgba(239, 68, 68, 0.6)'),
-            borderColor: h3DirValues.map(v => v >= 0.80 ? '#10b981' : '#ef4444'),
-            borderWidth: 1.5,
-            barThickness: 40
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: { display: false }
-          },
-          scales: {
-            y: {
-              min: 0,
-              max: 1.2,
-              grid: { color: '#f1f5f9' },
-              ticks: { font: { size: 10 } }
-            },
-            x: {
-              grid: { display: false },
-              ticks: { font: { size: 10 } }
-            }
-          }
-        }
-      });
-    }
-
-    // Eficacia Chart
-    if (d.h2 && d.h2.length) {
-      const h2Labels = d.h2.map(x => x.config);
-      const h2F1Values = d.h2.map(x => parseFloat(x.f1) || 0.0);
-      const h2AucValues = d.h2.map(x => parseFloat(x.auc_roc) || 0.0);
-
-      chartEficacia = new Chart(eficaciaCanvas, {
-        type: 'bar',
-        data: {
-          labels: h2Labels,
-          datasets: [
-            {
-              label: 'F1-score',
-              data: h2F1Values,
-              backgroundColor: 'rgba(59, 130, 246, 0.6)',
-              borderColor: '#3b82f6',
-              borderWidth: 1.5,
-              barPercentage: 0.6,
-              categoryPercentage: 0.8
-            },
-            {
-              label: 'AUC-ROC',
-              data: h2AucValues,
-              backgroundColor: 'rgba(139, 92, 246, 0.6)',
-              borderColor: '#8b5cf6',
-              borderWidth: 1.5,
-              barPercentage: 0.6,
-              categoryPercentage: 0.8
-            }
-          ]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: {
-              position: 'top',
-              labels: { font: { size: 10 } }
-            }
-          },
-          scales: {
-            y: {
-              min: 0,
-              max: 1.0,
-              grid: { color: '#f1f5f9' },
-              ticks: { font: { size: 10 } }
-            },
-            x: {
-              grid: { display: false },
-              ticks: { font: { size: 10 } }
-            }
-          }
-        }
-      });
-    }
-
-  } catch(e) {
-    toast(`Fallo al cargar métricas: ${e.message}`, 'err');
-    nodata.classList.remove('hidden');
-    content.classList.add('hidden');
+  } else {
+    if (ragasCard) ragasCard.classList.add('hidden');
   }
+
+  // Draw charts using Chart.js
+  const dirCanvas = document.getElementById('chart-dir');
+  const eficaciaCanvas = document.getElementById('chart-eficacia');
+
+  if (chartDir) chartDir.destroy();
+  if (chartEficacia) chartEficacia.destroy();
+
+  // DIR Chart
+  if (d.h3 && d.h3.length) {
+    const h3Labels = d.h3.map(x => x.config);
+    const h3DirValues = d.h3.map(x => parseFloat(x.dir) || 0.0);
+
+    chartDir = new Chart(dirCanvas, {
+      type: 'bar',
+      data: {
+        labels: h3Labels,
+        datasets: [{
+          label: 'Impacto Dispar (DIR)',
+          data: h3DirValues,
+          backgroundColor: h3DirValues.map(v => v >= 0.80 ? 'rgba(16, 185, 129, 0.6)' : 'rgba(239, 68, 68, 0.6)'),
+          borderColor: h3DirValues.map(v => v >= 0.80 ? '#10b981' : '#ef4444'),
+          borderWidth: 1.5,
+          barThickness: 40
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false }
+        },
+        scales: {
+          y: {
+            min: 0,
+            max: 1.2,
+            grid: { color: '#f1f5f9' },
+            ticks: { font: { size: 10 } }
+          },
+          x: {
+            grid: { display: false },
+            ticks: { font: { size: 10 } }
+          }
+        }
+      }
+    });
+  }
+
+  // Eficacia Chart
+  if (d.h2 && d.h2.length) {
+    const h2Labels = d.h2.map(x => x.config);
+    const h2F1Values = d.h2.map(x => parseFloat(x.f1) || 0.0);
+    const h2AucValues = d.h2.map(x => parseFloat(x.auc_roc) || 0.0);
+
+    chartEficacia = new Chart(eficaciaCanvas, {
+      type: 'bar',
+      data: {
+        labels: h2Labels,
+        datasets: [
+          {
+            label: 'F1-score',
+            data: h2F1Values,
+            backgroundColor: 'rgba(59, 130, 246, 0.6)',
+            borderColor: '#3b82f6',
+            borderWidth: 1.5,
+            barPercentage: 0.6,
+            categoryPercentage: 0.8
+          },
+          {
+            label: 'AUC-ROC',
+            data: h2AucValues,
+            backgroundColor: 'rgba(139, 92, 246, 0.6)',
+            borderColor: '#8b5cf6',
+            borderWidth: 1.5,
+            barPercentage: 0.6,
+            categoryPercentage: 0.8
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: 'top',
+            labels: { font: { size: 10 } }
+          }
+        },
+        scales: {
+          y: {
+            min: 0,
+            max: 1.0,
+            grid: { color: '#f1f5f9' },
+            ticks: { font: { size: 10 } }
+          },
+          x: {
+            grid: { display: false },
+            ticks: { font: { size: 10 } }
+          }
+        }
+      }
+    });
+  }
+}
+
+async function cargarHistorialMetricas() {
+  const sel = document.getElementById('sel-metrics-version');
+  if (!sel) return;
+  try {
+    const r = await fetch(`${API}/api/admin/metricas/historial`);
+    if (!r.ok) throw new Error(r.statusText);
+    const d = await r.json();
+    if (d.status === 'success') {
+      const opciones = [
+        '<option value="">-- Ver Historial de Métricas --</option>'
+      ];
+      d.versiones.forEach(v => {
+        const fechaStr = new Date(v.fecha).toLocaleString('es-UY');
+        opciones.push(`<option value="${v.id}">${fechaStr} - ${v.comentario}</option>`);
+      });
+      sel.innerHTML = opciones.join('');
+    }
+  } catch(e) {
+    console.error("Error al cargar historial de métricas:", e);
+  }
+}
+
+async function guardarMetricasMongo() {
+  if (!lastFetchedMetrics || lastFetchedMetrics.status === 'no_data') {
+    toast("No hay métricas calculadas en la corrida actual para guardar. Corré el experimento de la tesis primero.", "err");
+    return;
+  }
+  let comentario = prompt("Ingrese un comentario o descripción para identificar esta corrida de métricas:");
+  if (comentario === null) return; // cancelado
+  
+  comentario = comentario.trim();
+  if (!comentario) {
+    comentario = "Corrida sin descripción";
+  }
+  
+  const btn = document.getElementById('btn-save-metrics');
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = 'Guardando…';
+  }
+  
+  try {
+    const r = await fetch(`${API}/api/admin/metricas/guardar`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        comentario: comentario,
+        datos_metricas: {
+          h1: lastFetchedMetrics.h1 || [],
+          h2: lastFetchedMetrics.h2 || [],
+          h3: lastFetchedMetrics.h3 || [],
+          ragas: lastFetchedMetrics.ragas || []
+        }
+      })
+    });
+    if (!r.ok) {
+      const errData = await r.json();
+      throw new Error(errData.detail || 'Error al guardar la corrida');
+    }
+    const d = await r.json();
+    toast("Métricas guardadas en MongoDB con éxito.", "ok");
+    
+    // Recargar historial y seleccionar la versión guardada
+    await cargarHistorialMetricas();
+    const sel = document.getElementById('sel-metrics-version');
+    if (sel && d.version_id) {
+      sel.value = d.version_id;
+      // Mostrar modo historial
+      await cargarVersionMetricas(d.version_id);
+    }
+  } catch(e) {
+    toast(`Error: ${e.message}`, 'err');
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = '💾 Guardar Corrida';
+    }
+  }
+}
+
+async function cargarVersionMetricas(versionId) {
+  const banner = document.getElementById('banner-version-historica');
+  const lblFecha = document.getElementById('lbl-version-fecha');
+  const lblComentario = document.getElementById('lbl-version-comentario');
+  const nodata = document.getElementById('metricas-no-data');
+  const content = document.getElementById('metricas-content');
+  const btnDescargar = document.getElementById('btn-descargar-tablas');
+  
+  if (!versionId) {
+    // Si se selecciona la opción vacía, volver al modo "live"
+    if (banner) banner.classList.add('hidden');
+    await cargarMetricas();
+    return;
+  }
+  
+  try {
+    const r = await fetch(`${API}/api/admin/metricas/version/${versionId}`);
+    if (!r.ok) throw new Error(r.statusText);
+    const d = await r.json();
+    
+    if (d.status === 'success') {
+      if (nodata) nodata.classList.add('hidden');
+      if (content) content.classList.remove('hidden');
+      if (btnDescargar) btnDescargar.classList.add('hidden'); // Ocultar descargar ZIP en historial
+      
+      if (banner) {
+        const fechaStr = new Date(d.fecha).toLocaleString('es-UY');
+        if (lblFecha) lblFecha.textContent = fechaStr;
+        if (lblComentario) lblComentario.textContent = `"${d.comentario}"`;
+        banner.classList.remove('hidden');
+      }
+      
+      renderMetricasUI(d);
+    }
+  } catch(e) {
+    toast(`Fallo al cargar versión de métricas: ${e.message}`, 'err');
+  }
+}
+
+async function volverALive() {
+  const sel = document.getElementById('sel-metrics-version');
+  if (sel) {
+    sel.value = "";
+  }
+  await cargarVersionMetricas("");
 }
 
 // ── Toast ──────────────────────────────────────────────────────────────────
@@ -1468,7 +1911,7 @@ async function checkEstadoIndexacion() {
         if (btn.disabled && btn.textContent === 'Indexando…') {
           toast('La indexación de CVs ha finalizado en Azure.', 'ok');
           btn.disabled = false;
-          btn.textContent = '📥 Indexar CVs';
+          btn.textContent = '📥 Indexar CVs por Reclutadores';
           if (resetBtn) resetBtn.disabled = false;
           if (runBtn) runBtn.disabled = false;
         }
@@ -1503,7 +1946,7 @@ async function indexarCorpusAzure() {
   } catch(e) {
     toast(`Error: ${e.message}`, 'err');
     btn.disabled = false;
-    btn.textContent = '📥 Indexar CVs';
+    btn.textContent = '📥 Indexar CVs por Reclutadores';
     if (resetBtn) resetBtn.disabled = false;
     if (runBtn) runBtn.disabled = false;
   }
@@ -1526,6 +1969,95 @@ async function correrExperimentoTesis() {
     toast(`Error: ${e.message}`, 'err');
     btn.disabled = false;
     btn.textContent = '🚀 Correr Tesis';
+  }
+}
+
+// ── Gestión de .env ──────────────────────────────────────────────────────
+async function cargarEnv() {
+  document.getElementById('env-loader').classList.remove('hidden');
+  document.getElementById('env-form').classList.add('hidden');
+  
+  try {
+    const r = await fetch(`${API}/api/admin/env`);
+    if (!r.ok) throw new Error((await r.json()).detail || r.statusText);
+    const d = await r.json();
+    
+    if (d.status === 'success') {
+      const vars = d.variables;
+      const keys = [
+        "LLM_PROVIDER", "ANTHROPIC_API_KEY", "OPENAI_API_KEY", "GOOGLE_API_KEY",
+        "AZURE_SEARCH_ENDPOINT", "AZURE_SEARCH_KEY", "AZURE_SEARCH_INDEX",
+        "HF_TOKEN", "USE_EXTERNAL_DATA", "AZURE_SEARCH_INDEX_EXTERNAL", "MONGO_URI"
+      ];
+      keys.forEach(k => {
+        const input = document.getElementById(`env-${k}`);
+        if (input) {
+          input.value = vars[k] || '';
+        }
+      });
+      document.getElementById('env-form').classList.remove('hidden');
+    }
+  } catch(e) {
+    toast(`Error al cargar .env: ${e.message}`, 'err');
+  } finally {
+    document.getElementById('env-loader').classList.add('hidden');
+  }
+}
+
+async function guardarEnv() {
+  if (!confirm("¿Guardar la configuración de variables de entorno? Esto reiniciará el servidor de FastAPI.")) return;
+  
+  const btn = document.getElementById('btn-save-env');
+  btn.disabled = true;
+  btn.textContent = 'Guardando y Reiniciando…';
+  
+  const keys = [
+    "LLM_PROVIDER", "ANTHROPIC_API_KEY", "OPENAI_API_KEY", "GOOGLE_API_KEY",
+    "AZURE_SEARCH_ENDPOINT", "AZURE_SEARCH_KEY", "AZURE_SEARCH_INDEX",
+    "HF_TOKEN", "USE_EXTERNAL_DATA", "AZURE_SEARCH_INDEX_EXTERNAL", "MONGO_URI"
+  ];
+  
+  const vars = {};
+  keys.forEach(k => {
+    const input = document.getElementById(`env-${k}`);
+    if (input) {
+      vars[k] = input.value.trim();
+    }
+  });
+  
+  try {
+    const r = await fetch(`${API}/api/admin/env`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ variables: vars })
+    });
+    if (!r.ok) throw new Error((await r.json()).detail || r.statusText);
+    const d = await r.json();
+    
+    toast("Configuración guardada. Reiniciando servidor...", "info");
+    
+    // Polling /health to wait for uvicorn to come back online
+    setTimeout(async function poll() {
+      try {
+        const res = await fetch(`${API}/health`);
+        if (res.ok) {
+          toast("¡Servidor reiniciado con éxito y online!", "ok");
+          btn.disabled = false;
+          btn.textContent = 'Guardar y Reiniciar Servidor';
+          // Force reload the page so the new config takes effect in static assets
+          location.reload();
+        } else {
+          setTimeout(poll, 1000);
+        }
+      } catch(e) {
+        setTimeout(poll, 1000);
+      }
+    }, 1500);
+    
+  } catch(e) {
+    toast(`Error al guardar configuración: ${e.message}`, 'err');
+    btn.disabled = false;
+    btn.textContent = 'Guardar y Reiniciar Servidor';
   }
 }
 </script>

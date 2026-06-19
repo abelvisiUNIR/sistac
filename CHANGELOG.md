@@ -4,6 +4,24 @@ All notable changes to the Clo-Author are documented here.
 
 ---
 
+## [4.2.0] — 2026-06-15 — Code Portability & Robustness
+
+Refactors key Python scripts to improve cross-platform compatibility, single source of truth routing, error resilience during large-scale factorial experiments, and robust local execution.
+
+### Portability and Path Safety
+- **Orchestrator Cache**: Replaced hardcoded Docker-specific absolute cache path `/app/data/eval_cache.json` in `orquestador_c0_c3.py` with portable project-root-relative path `PROJECT_ROOT / "data" / "eval_cache.json"`.
+- **Excel Report Paths**: Refactored `export_excel_report.py` to import directory paths directly from `config.py` rather than defining them statically. This ensures correct folder selection when running on external datasets (`USE_EXTERNAL_DATA=true`).
+
+### Error Resilience & Robustness
+- **RAG Local Fallback**: Updated Azure AI Search chunk retrieval (`_search_chunks`) in `pipeline.py` to catch network, quota, or authentication exceptions and gracefully fall back to local semantic search (`_search_chunks_fallback_local`). This mirrors the GCP fallback mechanism and guarantees zero-cost local execution.
+- **Fairness Metrics Stability**: Upgraded `disparate_impact_ratio` in `fairness_metrics.py` to handle edge cases where selection rate in the privileged group is 0% (`p_priv == 0`), raising a warning and returning `NaN` (or `1.0` if both rates are 0% for perfect parity) rather than throwing a blocking `ValueError` that stops the pipeline.
+
+### Bug Fixes
+- **RAGAS Fallback Crash**: Implemented the missing `_rouge_l` helper function in `ragas_eval.py` to compute token-based Longest Common Subsequence (LCS) overlap, resolving a silent `NameError` crash when the RAGAS package is not installed and proxy mode is used.
+- **Dependency Cleanup**: Removed unused `pandas` import from `fairness_metrics.py`.
+
+---
+
 ## [4.1.0] — 2026-04-09 — Enforcement Layer
 
 Adds hard mechanical enforcement underneath the existing creative orchestration. Agents still do judgment work; the new layer catches grep-able violations before judgment is even needed. Inspired by contract-driven, grep-verified patterns from defensive engineering.

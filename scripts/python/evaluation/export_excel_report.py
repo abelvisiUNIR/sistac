@@ -15,12 +15,21 @@ import openpyxl
 from openpyxl.styles import Font, Alignment, PatternFill, Border, Side
 from openpyxl.utils import get_column_letter
 
-# INV-16: rutas via PROJECT_ROOT
-SCRIPTS_DIR = Path(__file__).parent.parent.parent
-PROJECT_ROOT = SCRIPTS_DIR.parent
-TABLES_DIR = PROJECT_ROOT / "paper" / "tables"
-FIGURES_DIR = PROJECT_ROOT / "paper" / "figures" / "cap5"
-GOLD_STANDARD_DIR = PROJECT_ROOT / "data" / "raw" / "gold_standard"
+import sys
+
+# Setup python path to import config.py
+_SCRIPTS_DIR = Path(__file__).parent.parent
+if str(_SCRIPTS_DIR) not in sys.path:
+    sys.path.insert(0, str(_SCRIPTS_DIR))
+
+from config import (
+    PROJECT_ROOT,
+    TABLES_DIR,
+    FIGURES_DIR as CONFIG_FIGURES_DIR,
+    GOLD_STANDARD_DIR,
+)
+
+FIGURES_DIR = CONFIG_FIGURES_DIR / "cap5"
 
 def generate_excel_report():
     TABLES_DIR.mkdir(parents=True, exist_ok=True)

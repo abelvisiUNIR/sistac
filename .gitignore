@@ -23,4 +23,20 @@ paper/talks/
 scripts/R/
 master_supporting_docs/
 
+# Temporales de Word
+paper/~$*.docx
+paper/~WRL*.tmp
+paper/~WR*.tmp
+~$*.docx
 
+# Backups y desempaquetado de Word
+paper/backups/
+paper/unpacked_tmp/
+
+# Caché local y datos de validación externos/sensibles
+data/raw/cache_json/
+data/raw/translation_cache.json
+data/raw/cvs_external/
+data/raw/gold_standard_external/
+data/raw/job_descriptions_external/
+scripts/python/scratch/

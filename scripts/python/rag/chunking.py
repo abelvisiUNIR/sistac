@@ -96,9 +96,14 @@ def chunk_text_tokens(
     if separators is None:
         separators = ["\n\n", "\n", " ", ""]
 
+    # Aproximar tokens a caracteres (factor ~4 caracteres por token en español)
+    # 512 tokens ≈ 2048 caracteres. Esto reduce 4x el número de chunks generados.
+    chunk_size_chars = chunk_size * 4
+    chunk_overlap_chars = chunk_overlap * 4
+
     splitter = RecursiveCharacterTextSplitter(
-        chunk_size=chunk_size,
-        chunk_overlap=chunk_overlap,
+        chunk_size=chunk_size_chars,
+        chunk_overlap=chunk_overlap_chars,
         separators=separators,
         length_function=len,
     )

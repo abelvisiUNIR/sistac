@@ -23,6 +23,7 @@ Requiere:
 from __future__ import annotations
 
 import argparse
+import json
 import random
 import sys
 import time
@@ -45,11 +46,14 @@ from config import (
     AZURE_SEARCH_INDEX,
     CHUNK_SIZE,
     CHUNK_OVERLAP,
+    GOLD_STANDARD_DIR,
     check_azure_config,
+    VECTORSTORE_PROVIDER,
+    check_vectorstore_config,
 )
 from llm.provider import get_embedding
 from rag.chunking import chunk_text_tokens
-from rag.pipeline import _upload_to_azure, _azure_headers
+from rag.pipeline import _upload_to_azure, _azure_headers, _upload_to_gcp
 import requests
 
 
@@ -94,7 +98,7 @@ def index_corpus(
     batch_size: int = 50,
 ) -> None:
     """
-    Indexa los CVs y JDs en Azure AI Search.
+    Indexa los CVs y JDs en Azure AI Search con soporte para continuar (resumen).
 
     Args:
         cv_texts:   {cv_id: texto_cv}
@@ -120,8 +124,44 @@ def index_corpus(
     print(f"  Chunk size: {CHUNK_SIZE} tokens | Overlap: {CHUNK_OVERLAP}")
     print()
 
+    # Cargar progreso para permitir continuar si se corta la ejecución
+    progress_file = GOLD_STANDARD_DIR / "indexed_cvs_progress.json"
+    progress = {"c2": [], "c3": []}
+    if progress_file.exists():
+        try:
+            with open(progress_file, "r", encoding="utf-8") as f:
+                progress = json.load(f)
+                if "c2" not in progress: progress["c2"] = []
+                if "c3" not in progress: progress["c3"] = []
+        except Exception as e:
+            print(f"  [WARN] Error cargando progreso de indexación: {e}")
+
+    # Cargar parejas de ground truth (si existen) para indexar únicamente las necesarias
+    valid_pairs = set()
+    gt_path = GOLD_STANDARD_DIR / "ground_truth.csv"
+    if gt_path.exists():
+        try:
+            import csv
+            with open(gt_path, newline="", encoding="utf-8-sig") as f:
+                reader = csv.DictReader(f)
+                for row in reader:
+                    cid = row.get("cv_id")
+                    jid = row.get("jd_id")
+                    if cid and jid:
+                        valid_pairs.add((cid, jid))
+            print(f"  [INFO] Se encontraron {len(valid_pairs)} parejas en ground_truth.csv. Solo se indexarán estas parejas para el experimento.")
+        except Exception as e:
+            print(f"  [WARN] Error al cargar ground_truth.csv para filtrar: {e}")
+
+    indexed_cvs = set(progress.get(config, []))
+
     for cv_id, cv_text in cv_texts.items():
         cv_count += 1
+        progress_status = f"{cv_count}/{n_cvs}"
+
+        if cv_id in indexed_cvs and not dry_run:
+            print(f"  [{progress_status}] {cv_id} ya indexado en {config.upper()} previamente — omitiendo.")
+            continue
 
         # C3: anonimizar
         text_to_index = (
@@ -129,6 +169,8 @@ def index_corpus(
         )
 
         for jd_id, jd_text in jd_texts.items():
+            if valid_pairs and (cv_id, jd_id) not in valid_pairs:
+                continue
             combined = f"CV:\n{text_to_index}\n\nDESCRIPCIÓN DEL CARGO:\n{jd_text}"
             chunks = chunk_text_tokens(
                 combined,
@@ -164,42 +206,73 @@ def index_corpus(
                 # Subir en batches para no saturar la API
                 if len(batch_docs) >= batch_size and not dry_run:
                     try:
-                        _upload_to_azure(batch_docs)
+                        if VECTORSTORE_PROVIDER == "google":
+                            _upload_to_gcp(batch_docs)
+                        else:
+                            _upload_to_azure(batch_docs)
                         print(f"    Subidos {total_chunks} chunks... ({cv_id} procesado)")
                     except Exception as err:
-                        print(f"  [ERROR BATCH] Error crítico al subir batch a Azure: {err}. Continuando con los demás...")
+                        print(f"  [ERROR BATCH] Error crítico al subir batch: {err}. Continuando con los demás...")
                     batch_docs = []
-                    time.sleep(0.5)  # rate limit suave
+                    time.sleep(1.5)  # rate limit suave
 
-        progress = f"[{cv_count}/{n_cvs}]"
-        print(f"  {progress} {cv_id} — {len(chunks) * n_jds} chunks generados")
+        # Subir los chunks restantes del CV actual para asegurar atomicidad
+        if batch_docs and not dry_run:
+            try:
+                if VECTORSTORE_PROVIDER == "google":
+                    _upload_to_gcp(batch_docs)
+                else:
+                    _upload_to_azure(batch_docs)
+            except Exception as err:
+                print(f"  [ERROR BATCH] Error al subir el batch final para {cv_id}: {err}")
+                raise err
+            batch_docs = []
 
-    # Subir el batch restante
-    if batch_docs and not dry_run:
-        try:
-            _upload_to_azure(batch_docs)
-            print(f"  Subido batch final: {len(batch_docs)} chunks")
-        except Exception as err:
-            print(f"  [ERROR BATCH] Error crítico al subir el batch final a Azure: {err}.")
+        if not dry_run:
+            progress[config].append(cv_id)
+            try:
+                with open(progress_file, "w", encoding="utf-8") as f:
+                    json.dump(progress, f, ensure_ascii=False, indent=2)
+            except Exception as e:
+                print(f"  [WARN] No se pudo guardar el archivo de progreso: {e}")
 
-    print(f"\n  Total chunks: {total_chunks}")
+        print(f"  [{progress_status}] {cv_id} completado para {config.upper()} y guardado en progreso.")
+
+    print(f"\n  Total chunks procesados: {total_chunks}")
     if dry_run:
         print("  [DRY RUN] No se subió nada — usar sin --dry-run para indexar")
 
 
-
 def verify_index_count() -> None:
     """Verifica cuántos documentos hay en el índice."""
-    from config import AZURE_SEARCH_ENDPOINT
-    url = (
-        f"{AZURE_SEARCH_ENDPOINT}/indexes/{AZURE_SEARCH_INDEX}"
-        f"/docs/$count?api-version=2024-07-01"
-    )
-    response = requests.get(url, headers=_azure_headers())
-    if response.status_code == 200:
-        print(f"\n  Documentos en el índice: {response.text}")
+    if VECTORSTORE_PROVIDER == "google":
+        try:
+            from google.cloud import discoveryengine_v1beta as discoveryengine
+            client = discoveryengine.DocumentServiceClient()
+            parent = client.branch_path(
+                project=GCP_PROJECT_ID,
+                location=GCP_LOCATION,
+                data_store=GCP_DATA_STORE_ID,
+                branch="default_branch",
+            )
+            docs = list(client.list_documents(parent=parent))
+            print(f"\n  Documentos en el índice Google: {len(docs)}")
+        except Exception as e:
+            print(f"\n  No se pudo verificar el índice Google: {e}")
     else:
-        print(f"\n  No se pudo verificar el índice: {response.status_code}")
+        from config import AZURE_SEARCH_ENDPOINT
+        url = (
+            f"{AZURE_SEARCH_ENDPOINT}/indexes/{AZURE_SEARCH_INDEX}"
+            f"/docs/$count?api-version=2024-07-01"
+        )
+        try:
+            response = requests.get(url, headers=_azure_headers())
+            if response.status_code == 200:
+                print(f"\n  Documentos en el índice Azure: {response.text}")
+            else:
+                print(f"\n  No se pudo verificar el índice Azure: {response.status_code}")
+        except Exception as e:
+            print(f"\n  Error al verificar el índice Azure: {e}")
 
 
 # ── Main ──────────────────────────────────────────────────────────────────────
@@ -229,10 +302,10 @@ if __name__ == "__main__":
 
     print(f"=== SISTAC — Indexación del corpus (config={args.config.upper()}) ===\n")
 
-    # Verificar credenciales Azure
+    # Verificar credenciales del Vector Store
     if not args.dry_run:
         try:
-            check_azure_config()
+            check_vectorstore_config()
         except EnvironmentError as e:
             print(f"[ERROR] {e}")
             sys.exit(1)
