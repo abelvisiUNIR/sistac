@@ -1,0 +1,22 @@
+# Comparativa General de Desempeño por Modelo LLM
+
+Esta tabla compara el desempeño de los distintos modelos evaluados para las hipótesis H1 (Eficiencia), H2 (Eficacia) y H3 (Equidad).
+
+| Categoría | Métrica / Configuración | Claude 4.5 Sonnet (Anthropic) | Gemini 2.5 Flash (Google) |
+|---|---|---|---|
+| Eficiencia | Mediana T_cand (C1 - LLM Puro) | 4.5s | 21.6s |
+| Eficiencia | Mediana T_cand (C2 - LLM + RAG) | 6.8s | 24.6s |
+| Eficiencia | Mediana T_cand (C3 - RAG + PII) | 19.6s | 28.9s |
+| Eficiencia | Factor Speedup (C1 - LLM Puro) | 147.8x | 30.6x |
+| Eficiencia | Factor Speedup (C2 - LLM + RAG) | 96.7x | 26.9x |
+| Eficiencia | Factor Speedup (C3 - RAG + PII) | 33.7x | 22.9x |
+| Eficacia | F1-score macro (C1 - LLM Puro) | 0.565 | 0.567 |
+| Eficacia | F1-score macro (C2 - LLM + RAG) | 0.519 | 0.494 |
+| Eficacia | F1-score macro (C3 - RAG + PII) | 0.539 | 0.587 |
+| Eficacia | AUC-ROC (C1 - LLM Puro) | 0.732 | 0.665 |
+| Eficacia | AUC-ROC (C2 - LLM + RAG) | 0.735 | 0.629 |
+| Eficacia | AUC-ROC (C3 - RAG + PII) | 0.729 | 0.695 |
+| Equidad (Género) | Disparate Impact Ratio - DIR (C2) | 0.602 | 1.397 |
+| Equidad (Género) | Disparate Impact Ratio - DIR (C3) | 0.301 | 0.447 |
+| Equidad (Género) | Statistical Parity Diff - SPD (C2) | -0.078 | 0.084 |
+| Equidad (Género) | Statistical Parity Diff - SPD (C3) | -0.137 | -0.145 |

@@ -147,7 +147,7 @@ class SistacRAGPipeline:
                 )
 
                 for idx, chunk in enumerate(chunks, start=1):
-                    chunk_id = f"{cv_id}_{jd_id}_chunk_{idx:03d}"
+                    chunk_id = f"{self.config}_{cv_id}_{jd_id}_chunk_{idx:03d}"
                     print(f"  [index] Generando embedding: {chunk_id}")
                     embedding = get_embedding(chunk)
 
@@ -211,6 +211,7 @@ class SistacRAGPipeline:
                     jd_id=jd_id,
                     query_text=jd_text,
                     top_k=RETRIEVAL_TOP_K,
+                    anonymize=self.config == "c3",
                 )
             else:
                 chunks = _search_chunks(
@@ -218,6 +219,7 @@ class SistacRAGPipeline:
                     jd_id=jd_id,
                     query_text=jd_text,
                     top_k=RETRIEVAL_TOP_K,
+                    anonymize=self.config == "c3",
                 )
 
         # Scoring
@@ -339,6 +341,7 @@ def _search_chunks(
     jd_id: str,
     query_text: str,
     top_k: int = RETRIEVAL_TOP_K,
+    anonymize: bool = False,
 ) -> list[str]:
     """
     Recupera los top-k chunks más relevantes de Azure AI Search.
@@ -386,7 +389,8 @@ def _search_chunks(
         results = response.json().get("value", [])
 
         # Filtrar solo chunks del par (cv_id, jd_id)
-        pair_prefix = f"{cv_id}_{jd_id}_"
+        config_name = "c3" if anonymize else "c2"
+        pair_prefix = f"{config_name}_{cv_id}_{jd_id}_"
         filtered = [
             doc["chunk_text"]
             for doc in results
@@ -394,12 +398,12 @@ def _search_chunks(
         ]
 
         if not filtered:
-            return _search_chunks_fallback_local(cv_id, jd_id, query_text, top_k)
+            return _search_chunks_fallback_local(cv_id, jd_id, query_text, top_k, anonymize=anonymize)
 
         return filtered[:top_k]
     except Exception as exc:
         print(f"  [WARN] Falló la búsqueda en Azure AI Search: {exc}. Usando fallback local...")
-        return _search_chunks_fallback_local(cv_id, jd_id, query_text, top_k)
+        return _search_chunks_fallback_local(cv_id, jd_id, query_text, top_k, anonymize=anonymize)
 
 
 # ── Google Vertex AI Search & Fallback helpers ────────────────────────────────
@@ -444,6 +448,7 @@ def _search_chunks_gcp(
     jd_id: str,
     query_text: str,
     top_k: int = RETRIEVAL_TOP_K,
+    anonymize: bool = False,
 ) -> list[str]:
     """
     Recupera los top-k chunks más relevantes de Google Vertex AI Search.
@@ -453,26 +458,29 @@ def _search_chunks_gcp(
         from google.cloud import discoveryengine_v1beta as discoveryengine
         client = discoveryengine.SearchServiceClient()
         
-        serving_config = client.project_location_collection_data_store_serving_config_path(
-            project=GCP_PROJECT_ID,
-            location=GCP_LOCATION,
-            collection="default_collection",
-            data_store=GCP_SEARCH_APP_ID,
-            serving_config="default_serving_config",
+        serving_config = (
+            f"projects/{GCP_PROJECT_ID}/locations/{GCP_LOCATION}/"
+            f"collections/default_collection/engines/{GCP_SEARCH_APP_ID}/"
+            f"servingConfigs/default_serving_config"
         )
         
+        config_name = "c3" if anonymize else "c2"
         filter_str = f'cv_id: ANY("{cv_id}") AND jd_id: ANY("{jd_id}")'
         
         request = discoveryengine.SearchRequest(
             serving_config=serving_config,
             query=query_text,
             filter=filter_str,
-            page_size=top_k * 2,
+            page_size=top_k * 4,
         )
         
         response = client.search(request)
         chunks = []
+        pair_prefix = f"{config_name}_{cv_id}_{jd_id}_"
         for result in response.results:
+            doc_id = result.document.id
+            if doc_id and not doc_id.startswith(pair_prefix):
+                continue
             doc_data = result.document.derived_struct_data
             if "chunk_text" in doc_data:
                 chunks.append(doc_data["chunk_text"])
@@ -482,12 +490,12 @@ def _search_chunks_gcp(
                     
         if not chunks:
             # Si Vertex AI no retorna resultados, intentar fallback local
-            return _search_chunks_fallback_local(cv_id, jd_id, query_text, top_k)
+            return _search_chunks_fallback_local(cv_id, jd_id, query_text, top_k, anonymize=anonymize)
             
         return chunks[:top_k]
     except Exception as exc:
         print(f"  [WARN] Falló la búsqueda en Google Vertex AI Search: {exc}. Usando fallback local...")
-        return _search_chunks_fallback_local(cv_id, jd_id, query_text, top_k)
+        return _search_chunks_fallback_local(cv_id, jd_id, query_text, top_k, anonymize=anonymize)
 
 
 def _search_chunks_fallback_local(
@@ -495,6 +503,7 @@ def _search_chunks_fallback_local(
     jd_id: str,
     query_text: str,
     top_k: int = 5,
+    anonymize: bool = False,
 ) -> list[str]:
     """
     Fallback local: Realiza búsqueda vectorial en memoria para el par (cv_id, jd_id).
@@ -510,6 +519,9 @@ def _search_chunks_fallback_local(
                 return []
         
         cv_text = cv_path.read_text(encoding="utf-8")
+        if anonymize:
+            from pii.anonymizer import SistacAnonymizer
+            cv_text = SistacAnonymizer().anonymize(cv_text)
         combined = f"CV:\n{cv_text}\n\nDESCRIPCIÓN DEL CARGO:\n{query_text}"
         
         chunks = chunk_text_tokens(

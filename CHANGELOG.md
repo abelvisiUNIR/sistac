@@ -4,6 +4,21 @@ All notable changes to the Clo-Author are documented here.
 
 ---
 
+## [4.3.0] — 2026-06-20 — Multi-LLM Evaluation & GCP Integration
+
+Introduces full Google Cloud Platform (GCP) integration and supports multi-provider evaluations for robust comparisons between Anthropic, Google, and OpenAI LLMs.
+
+### GCP & Google Integration
+- **Google GenAI Support**: Added Google as a core provider (`LLM_PROVIDER=google`) in `scripts/python/llm/provider.py` using `gemini-2.5-flash` via the new Google GenAI SDK.
+- **GCP Vector Search**: Configured Google Vertex AI Search as an alternative vector store in `scripts/python/config.py` and `scripts/python/rag/pipeline.py` (switched via `VECTORSTORE_PROVIDER=google` in `.env`).
+- **OCR Engine**: Standardized Gemini 2.5 Flash as the default high-performance engine for scanned PDF and image OCR in `utils/doc_extractor.py`.
+
+### Analysis & Metrics Consolidation
+- **Robustness Comparison**: Added `scripts/python/evaluation/consolidate_comparison.py` to compile experimental results (efficiency, efficacy, equity) across Anthropic Claude, Google Gemini, and OpenAI GPT into unified CSV, Markdown, and Word tables.
+- **Chapter Structure Reorganization**: Organized `paper/sections/` to align with the actual chapters of the thesis: `Capitulo_0` to `Capitulo_5` and the comparison appendix (`Anexo_comparativa_modelos_llm.md`).
+
+---
+
 ## [4.2.0] — 2026-06-15 — Code Portability & Robustness
 
 Refactors key Python scripts to improve cross-platform compatibility, single source of truth routing, error resilience during large-scale factorial experiments, and robust local execution.

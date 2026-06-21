@@ -1,0 +1,4 @@
+﻿config,median_c0,median_cx,speedup,p_value,h1_accepted
+C1 (LLM puro),661.8,21.6,30.6x,0.0000,Sí
+C2 (LLM + RAG),661.8,24.6,26.9x,0.0000,Sí
+C3 (LLM + RAG + PII),661.8,28.9,22.9x,0.0000,Sí

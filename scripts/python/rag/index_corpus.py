@@ -179,7 +179,7 @@ def index_corpus(
             )
 
             for idx, chunk in enumerate(chunks, start=1):
-                chunk_id = f"{cv_id}_{jd_id}_chunk_{idx:03d}"
+                chunk_id = f"{config}_{cv_id}_{jd_id}_chunk_{idx:03d}"
 
                 if not dry_run:
                     try:
@@ -246,6 +246,7 @@ def index_corpus(
 def verify_index_count() -> None:
     """Verifica cuántos documentos hay en el índice."""
     if VECTORSTORE_PROVIDER == "google":
+        from config import GCP_PROJECT_ID, GCP_LOCATION, GCP_DATA_STORE_ID
         try:
             from google.cloud import discoveryengine_v1beta as discoveryengine
             client = discoveryengine.DocumentServiceClient()

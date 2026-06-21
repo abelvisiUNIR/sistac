@@ -58,7 +58,8 @@ clo-author/
 │   │   ├── efficiency_metrics.py        # Calcula diferencias de tiempo H1 (prueba Mann-Whitney U, Speedup, mediana)
 │   │   ├── efficacy_metrics.py          # Evalúa concordancia H2 vs Gold Standard (F1-score macro y AUC-ROC)
 │   │   ├── fairness_metrics.py          # Analiza impacto dispar H3 (DIR y SPD para evitar sesgo de género/edad)
-│   │   └── export_excel_report.py       # Compila el reporte consolidado multimétrico y las gráficas en Excel
+│   │   ├── export_excel_report.py       # Compila el reporte consolidado multimétrico y las gráficas en Excel
+│   │   └── consolidate_comparison.py    # Consolida métricas de proveedores Claude/Gemini/GPT para el anexo
 │   │
 │   ├── experiments/                     # Orquestación del experimento científico
 │   │   └── orquestador_c0_c3.py         # Corre el experimento de forma masiva evaluando las configuraciones C0, C1, C2 y C3
@@ -79,11 +80,19 @@ clo-author/
 │
 ├── paper/                               # Memoria oficial y artefactos de resultados del TFE
 │   ├── SISTAC_TFE.docx                  # Documento principal Word de la tesis
-│   ├── sections/                        # Redacción de secciones del paper en markdown
-│   │   ├── contribuciones_y_diseno_sistac.md # Detalle metodológico del capítulo 5
-│   │   └── framework_validacion_experimental.md # Resultados de las hipótesis del capítulo 6
-│   ├── tables/                          # Reporte Excel unificado generado por el sistema
-│   │   └── reporte_completo_sistac.xlsx # Reporte unificado que contiene las pestañas H1, H2, H3, RAGAS y Raw
+│   ├── sections/                        # Redacción de capítulos del paper en markdown
+│   │   ├── Capitulo_0_Organizacion_trabajo_grupo.md
+│   │   ├── Capitulo_1_Introduccion.md
+│   │   ├── Capitulo_2_Estado_del_arte.md
+│   │   ├── Capitulo_3_Objetivos_metodologia.md
+│   │   ├── Capitulo_4_arquitectura_implementacion.md # Detalle metodológico del capítulo 4
+│   │   ├── Capitulo_5_validacion_experimental_resultados.md # Resultados y validación del capítulo 5
+│   │   ├── Anexo_comparativa_modelos_llm.md  # Comparativa de robustez Claude vs Gemini vs GPT
+│   │   └── formulas_metricas.md              # Fórmulas en LaTeX para H1, H2, H3 (para Word)
+│   ├── tables/                          # Tablas estadísticas y comparativas en CSV, MD y DOCX
+│   │   ├── reporte_completo_sistac.xlsx # Reporte unificado que contiene las pestañas H1, H2, H3, RAGAS y Raw
+│   │   ├── tab_comparativa_modelos.csv  # CSV de comparación integrada de LLMs
+│   │   └── comparativa_modelos.md       # Tabla Markdown de comparación Claude vs Gemini vs GPT
 │   └── figures/                         # Archivos PNG de gráficos a alta resolución (300 DPI) para la memoria
 │       ├── cap5/                        # Diagramas del sistema
 │       └── cap6/                        # Gráficos de resultados (ROC, Boxplot de tiempos, DIR)

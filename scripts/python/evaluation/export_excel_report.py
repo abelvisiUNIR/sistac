@@ -32,8 +32,11 @@ from config import (
 FIGURES_DIR = CONFIG_FIGURES_DIR / "cap5"
 
 def generate_excel_report():
-    TABLES_DIR.mkdir(parents=True, exist_ok=True)
-    excel_path = TABLES_DIR / "reporte_completo_sistac.xlsx"
+    import os
+    llm_provider = os.getenv("LLM_PROVIDER", "anthropic").lower()
+    provider_tables_dir = TABLES_DIR / llm_provider
+    provider_tables_dir.mkdir(parents=True, exist_ok=True)
+    excel_path = provider_tables_dir / "reporte_completo_sistac.xlsx"
     
     # Crear un nuevo libro Excel
     wb = openpyxl.Workbook()
@@ -113,25 +116,25 @@ def generate_excel_report():
             "H1 - Eficiencia", 
             "Métricas de Eficiencia (H1)", 
             "Objetivo: Comparar el tiempo de procesamiento por candidato en segundos (Mann-Whitney U y Speedup).", 
-            TABLES_DIR / "tab_resultados_h1.csv"
+            provider_tables_dir / "tab_resultados_h1.csv"
         ),
         (
             "H2 - Eficacia", 
             "Métricas de Eficacia (H2)", 
             "Objetivo: Evaluar la precisión global F1-Score y AUC-ROC frente al Gold Standard (umbral F1 >= 0.85).", 
-            TABLES_DIR / "tab_resultados_h2.csv"
+            provider_tables_dir / "tab_resultados_h2.csv"
         ),
         (
             "H3 - Equidad", 
             "Métricas de Equidad (H3)", 
             "Objetivo: Verificar el impacto dispar (DIR) y diferencia de paridad estadística (SPD) por género (umbral DIR >= 0.80).", 
-            TABLES_DIR / "tab_resultados_h3.csv"
+            provider_tables_dir / "tab_resultados_h3.csv"
         ),
         (
             "RAGAS - Calidad", 
             "Métricas RAGAS de Calidad RAG", 
             "Objetivo: Analizar la fidelidad y precisión del contexto recuperado de Azure Search.", 
-            TABLES_DIR / "tab_ragas_c2.csv"
+            provider_tables_dir / "tab_ragas_c2.csv"
         )
     ]
     

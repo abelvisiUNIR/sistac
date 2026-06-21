@@ -87,18 +87,25 @@ def _google_chat(prompt: str, system: Optional[str] = None, max_tokens: int = 10
     from google import genai
     from google.genai import types
 
-    api_key = os.getenv("GOOGLE_API_KEY", "")
-    if not api_key:
-        raise ValueError(
-            "GOOGLE_API_KEY no está configurada.\n"
-            "Agregala al archivo .env:\n"
-            "  GOOGLE_API_KEY=AIza..."
-        )
-
-    client = genai.Client(api_key=api_key)
+    # Si hay credenciales de cuenta de servicio de GCP, usar Vertex AI
+    if os.getenv("GOOGLE_APPLICATION_CREDENTIALS"):
+        project = os.getenv("GCP_PROJECT_ID", "bps-process-gen")
+        location = os.getenv("GCP_LOCATION", "us-central1")
+        if location == "global":
+            location = "us-central1"
+        client = genai.Client(vertexai=True, project=project, location=location)
+    else:
+        api_key = os.getenv("GOOGLE_API_KEY", "")
+        if not api_key:
+            raise ValueError(
+                "GOOGLE_API_KEY no está configurada.\n"
+                "Agregala al archivo .env:\n"
+                "  GOOGLE_API_KEY=AIza..."
+            )
+        client = genai.Client(api_key=api_key)
     
     config = types.GenerateContentConfig(
-        max_output_tokens=max_tokens,
+        max_output_tokens=max(max_tokens or 1024, 4096),
         temperature=0.0
     )
     if system:
@@ -109,7 +116,13 @@ def _google_chat(prompt: str, system: Optional[str] = None, max_tokens: int = 10
         contents=prompt,
         config=config
     )
-    return response.text.strip()
+    if response.text:
+        return response.text.strip()
+    if response.candidates and response.candidates[0].content.parts:
+        t = response.candidates[0].content.parts[0].text
+        if t:
+            return t.strip()
+    return ""
 
 
 def get_chat_completion(
@@ -216,7 +229,7 @@ if __name__ == "__main__":
     reply = get_chat_completion(
         prompt="Responde solo 'OK' si me escuchas.",
         system="Eres un asistente de prueba.",
-        max_tokens=10,
+        max_tokens=100,
     )
     print(f"Respuesta: {reply}")
 

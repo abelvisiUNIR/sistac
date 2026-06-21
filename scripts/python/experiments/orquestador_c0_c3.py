@@ -40,6 +40,8 @@ import csv
 import json
 import random
 import sys
+import threading
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 import numpy as np
@@ -105,7 +107,14 @@ def run_c0_baseline() -> list[dict]:
 
 # ── C1, C2, C3: Sistemas automáticos ─────────────────────────────────────────
 
-CACHE_FILE = PROJECT_ROOT / "data" / "eval_cache.json"
+import os
+LLM_PROVIDER = os.getenv("LLM_PROVIDER", "anthropic").lower()
+CACHE_FILE = PROJECT_ROOT / "data" / f"eval_cache_{LLM_PROVIDER}.json"
+
+# Redirigir TABLES_DIR a una subcarpeta por proveedor para evitar sobreescritura
+TABLES_DIR = TABLES_DIR / LLM_PROVIDER
+TABLES_DIR.mkdir(parents=True, exist_ok=True)
+
 
 def load_cache() -> dict:
     if CACHE_FILE.exists():
@@ -125,6 +134,8 @@ def save_cache(cache: dict) -> None:
         print(f"  [WARN] Error guardando caché de evaluaciones: {e}")
 
 
+_cache_lock = threading.Lock()
+
 def _run_pipeline(config: str, eval_pairs: list[dict]) -> list[dict]:
     """
     Ejecuta el pipeline RAG para una configuración experimental.
@@ -137,42 +148,65 @@ def _run_pipeline(config: str, eval_pairs: list[dict]) -> list[dict]:
         Lista de dicts con resultados de evaluate() más expected_label y group.
     """
     pipeline = SistacRAGPipeline(config=config)
-    results = []
+    results = [None] * len(eval_pairs)
 
-    cache = load_cache()
+    with _cache_lock:
+        cache = load_cache()
 
-    for pair in eval_pairs:
+    def process_pair(idx: int, pair: dict):
         cache_key = f"{config}_{pair['cv_id']}_{pair['jd_id']}"
-
-        # Si ya existe en la caché local, recuperamos el resultado
-        if cache_key in cache:
-            result = cache[cache_key]
-            # Nos aseguramos de inyectar la metadata actual del Gold Standard
-            result["expected_label"] = pair.get("expected_label", "")
-            result["expected_score"] = pair.get("expected_score", None)
-            result["group_gender"]   = pair.get("group_gender", "")
-            result["group_age"]      = pair.get("group_age", "")
-            results.append(result)
-            continue
-
-        print(f"  [{config.upper()}] Evaluando {pair['cv_id']} ↔ {pair['jd_id']}...")
-        result = pipeline.evaluate(
-            cv_id=pair["cv_id"],
-            cv_text=pair["cv_text"],
-            jd_id=pair["jd_id"],
-            jd_text=pair["jd_text"],
-        )
-        # Agregar metadata del Gold Standard para cálculo de métricas
-        result["expected_label"] = pair.get("expected_label", "")
-        result["expected_score"] = pair.get("expected_score", None)
-        result["group_gender"]   = pair.get("group_gender", "")
-        result["group_age"]      = pair.get("group_age", "")
         
-        # Guardamos en caché y en disco de inmediato
-        cache[cache_key] = result
-        save_cache(cache)
+        with _cache_lock:
+            cached_val = cache.get(cache_key)
+            
+        if cached_val is not None:
+            res = dict(cached_val)
+            res["expected_label"] = pair.get("expected_label", "")
+            res["expected_score"] = pair.get("expected_score", None)
+            res["group_gender"]   = pair.get("group_gender", "")
+            res["group_age"]      = pair.get("group_age", "")
+            results[idx] = res
+            return
+
+        print(f"  [{config.upper()}] Evaluando {pair['cv_id']} -> {pair['jd_id']}...")
+        try:
+            res = pipeline.evaluate(
+                cv_id=pair["cv_id"],
+                cv_text=pair["cv_text"],
+                jd_id=pair["jd_id"],
+                jd_text=pair["jd_text"],
+            )
+        except Exception as e:
+            print(f"  [{config.upper()}][ERROR] Error evaluando {pair['cv_id']}: {e}")
+            res = {
+                "cv_id": pair["cv_id"],
+                "jd_id": pair["jd_id"],
+                "config": config,
+                "score": 50,
+                "decision": "NO_APTO",
+                "justification": f"[ERROR] {e}",
+                "dimensions": {},
+                "chunks_used": 0,
+                "chunks": [],
+                "anonymized": config == "c3",
+                "time_seconds": 0.0,
+            }
+            
+        res["expected_label"] = pair.get("expected_label", "")
+        res["expected_score"] = pair.get("expected_score", None)
+        res["group_gender"]   = pair.get("group_gender", "")
+        res["group_age"]      = pair.get("group_age", "")
         
-        results.append(result)
+        with _cache_lock:
+            current_cache = load_cache()
+            current_cache[cache_key] = res
+            save_cache(current_cache)
+            cache[cache_key] = res
+            
+        results[idx] = res
+
+    with ThreadPoolExecutor(max_workers=10) as executor:
+        executor.map(lambda p: process_pair(p[0], p[1]), enumerate(eval_pairs))
 
     print(f"  [{config.upper()}] {len(results)} evaluaciones completadas.")
     return results
@@ -305,7 +339,7 @@ def save_csv(data: list[dict], filename: str) -> None:
         writer = csv.DictWriter(f, fieldnames=data[0].keys())
         writer.writeheader()
         writer.writerows(data)
-    print(f"  → CSV: {path}")
+    print(f"  -> CSV: {path}")
 
 
 def save_word_table(
@@ -362,7 +396,7 @@ def save_word_table(
 
     path = TABLES_DIR / filename
     doc.save(str(path))
-    print(f"  → DOCX: {path}")
+    print(f"  -> DOCX: {path}")
 
 
 # ── Main ──────────────────────────────────────────────────────────────────────

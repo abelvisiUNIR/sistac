@@ -43,10 +43,12 @@ sistac/
 │
 ├── paper/                           <- Documento TFE (fuente de verdad)
 │   ├── SISTAC_TFE.docx              <- Documento principal Word
+│   ├── sections/                    <- Capítulos redactados en Markdown (Cap 0 a 5 + Anexo)
 │   ├── figures/                     <- Figuras generadas por scripts (.png 300 dpi)
-│   │   └── cap5/                    <- Figuras del Capitulo 5
-│   ├── tables/                      <- Tablas exportadas por scripts (.csv / .docx)
-│   └── backups/                     <- Copias de seguridad automaticas del .docx
+│   │   ├── cap5/                    <- Diagramas de arquitectura del Capítulo 4
+│   │   └── cap6/                    <- Gráficos de resultados del Capítulo 5
+│   ├── tables/                      <- Tablas estadísticas (.csv / .docx / .xlsx)
+│   └── backups/                     <- Copias de seguridad automáticas del .docx
 │
 ├── data/
 │   ├── raw/
@@ -129,12 +131,11 @@ py -3 scripts/python/data/split_corpus.py
 
 #### `provider.py`
 
-**Abstraccion del proveedor LLM.** Permite cambiar entre Anthropic y OpenAI modificando
-una variable de entorno (`LLM_PROVIDER`), sin cambiar el codigo de los modulos que lo usan.
+**Abstración del proveedor LLM.** Permite cambiar entre Anthropic, Google (Gemini) y OpenAI modificando la variable de entorno `LLM_PROVIDER` en el archivo `.env`.
 
 Funciones expuestas:
-- `get_chat_completion(messages, temperature, max_tokens)` → `str`
-- `get_embedding(text)` → `list[float]` (768 dims, modelo `paraphrase-multilingual-mpnet-base-v2`)
+- `get_chat_completion(prompt, system, max_tokens)` → `str` (soporta Claude, Gemini y GPT)
+- `get_embedding(text)` → `list[float]` (local sentence-transformers de 768 dimensiones para Anthropic/Google; API de OpenAI para GPT)
 
 ---
 
@@ -289,10 +290,14 @@ del sistema contra el Gold Standard de expertos. Compara C1 vs C2 para aislar el
 
 #### `fairness_metrics.py`  *(H3)*
 
-Metricas de equidad algorítmica:
+Métricas de equidad algorítmica:
 - `compute_dir()` — Disparate Impact Ratio: `P(APTO|F) / P(APTO|M)` (umbral EEOC: >= 0.80)
 - `compute_spd()` — Statistical Parity Difference: `P(APTO|F) - P(APTO|M)` (ideal: 0)
 - `fairness_report()` — reporte completo exportado a `paper/tables/`
+
+#### `consolidate_comparison.py`
+
+Consolida los resultados experimentales de las hipótesis H1, H2 y H3 de todos los proveedores activos (Claude, Gemini, GPT) en una única tabla unificada de comparación de robustez, exportando los resultados a `paper/tables/` en formatos CSV, Markdown y Word (.docx).
 
 ---
 
@@ -382,12 +387,25 @@ py -3 -X utf8 scripts/python/figures/insert_cap5_docx.py
 Copiar `.env.example` a `.env` y completar:
 
 ```
+# Proveedor y Modelo LLM
+LLM_PROVIDER=anthropic         # anthropic | google | openai
 ANTHROPIC_API_KEY=...          # Claude Sonnet (LLM principal)
-GOOGLE_API_KEY=...             # Gemini 2.5 Flash (OCR de documentos)
+GOOGLE_API_KEY=...             # Gemini 2.5 Flash (extracción de documentos y LLM de Google)
+
+# Vector Store Activo (azure | google)
+VECTORSTORE_PROVIDER=azure     # azure | google
+
+# Azure AI Search (si VECTORSTORE_PROVIDER=azure)
 AZURE_SEARCH_ENDPOINT=...      # https://xxx.search.windows.net
 AZURE_SEARCH_KEY=...           # API Key de Azure AI Search
-AZURE_SEARCH_INDEX=sistac-cvs  # Nombre del indice vectorial
-LLM_PROVIDER=anthropic         # anthropic | openai
+AZURE_SEARCH_INDEX=sistac-cvs  # Nombre del índice vectorial
+
+# Google Vertex AI Search (si VECTORSTORE_PROVIDER=google)
+GCP_PROJECT_ID=...
+GCP_LOCATION=global
+GCP_DATA_STORE_ID=sistac-cvs-datastore
+GCP_SEARCH_APP_ID=sistac-search-app
+GOOGLE_APPLICATION_CREDENTIALS=...  # Ruta absoluta al archivo json de cuenta de servicio
 ```
 
 ---

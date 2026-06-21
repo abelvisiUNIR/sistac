@@ -4,7 +4,9 @@ El cribado automatizado de candidatos ocupa hoy un lugar central en la agenda de
 
 ```mermaid
 mindmap
-  root((Estado del Arte\nCribado Curricular\ncon IA))
+  root((Estado del Arte
+  Cribado Curricular
+  con IA))
     Proceso de selección
       Limitaciones operativas
       Sesgo cognitivo del evaluador

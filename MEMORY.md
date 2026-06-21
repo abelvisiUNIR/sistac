@@ -18,7 +18,7 @@ Append `[LEARN:category]` entries below. Most recent at bottom.
 
 ## SISTAC — Stack técnico
 
-[LEARN:stack] Stack activo: Python + LangChain + Azure AI Search + spaCy + Presidio + sentence-transformers + scikit-learn (solo métricas clasificación) + python-docx. NO R, Julia, LaTeX. Documento principal: `paper/SISTAC_TFE.docx` (Word, fuente de verdad).
+[LEARN:stack] Stack activo: Python + LangChain + Azure AI Search + Google Vertex AI Search + Google GenAI SDK + spaCy + Presidio + sentence-transformers + scikit-learn (solo métricas clasificación) + python-docx. NO R, Julia, LaTeX. Documento principal: `paper/SISTAC_TFE.docx` (Word, fuente de verdad).
 
 [LEARN:stack] Extracción de texto en `utils/doc_extractor.py`: pdfplumber para PDF nativo (gratis); Gemini 2.5 Flash para PDF escaneado e imágenes. Necesita `GOOGLE_API_KEY` en .env para imágenes/PDFs escaneados.
 
@@ -30,7 +30,7 @@ Append `[LEARN:category]` entries below. Most recent at bottom.
 
 [LEARN:llm] Anthropic cambió la convención de nombres en modelos 2025+: usar `claude-haiku-4-5`, `claude-sonnet-4-5`, `claude-opus-4-5` (sin fecha, sin "3-5"). Los nombres estilo `claude-3-5-haiku-20241022` retornan 404. Actualizado en `provider.py` y `config.py`.
 
-[LEARN:llm] Proveedor activo: Anthropic (LLM_PROVIDER=anthropic en .env). Embeddings: sentence-transformers local (no API externa). `provider.py` detecta automáticamente el proveedor y usa el backend correcto.
+[LEARN:llm] Proveedores soportados: Anthropic (LLM_PROVIDER=anthropic), Google (LLM_PROVIDER=google) y OpenAI (LLM_PROVIDER=openai). Embeddings: sentence-transformers local (no API externa) para Anthropic/Google; text-embedding-3-small para OpenAI. `provider.py` detecta automáticamente el proveedor y usa el backend correcto.
 
 ---
 
@@ -84,7 +84,7 @@ Append `[LEARN:category]` entries below. Most recent at bottom.
 
 ## SISTAC — Decisiones de infraestructura (Cap. 5)
 
-[LEARN:infra] Vector store: Azure AI Search (Semantic Ranker nativo reemplaza cross-encoder). Embeddings: `paraphrase-multilingual-mpnet-base-v2` cuando LLM_PROVIDER=anthropic; `text-embedding-3-small` (OpenAI) cuando LLM_PROVIDER=openai. Score threshold unificado: 70 (calibrado con piloto C2, 5 CVs). Piloto David en `rag/` conservado como referencia.
+[LEARN:infra] Vector stores soportados: Azure AI Search y Google Vertex AI Search (conmutables mediante `VECTORSTORE_PROVIDER` en .env). Embeddings: `paraphrase-multilingual-mpnet-base-v2` cuando LLM_PROVIDER=anthropic/google; `text-embedding-3-small` (OpenAI) cuando LLM_PROVIDER=openai. Score threshold unificado: 70 (calibrado con piloto C2, 5 CVs). Piloto David en `rag/` conservado como referencia.
 
 [LEARN:infra] RAGAS configurado con Claude Haiku como LLM juez (via LangchainLLMWrapper / ChatAnthropic). Si falla: fallback a métricas proxy (ROUGE-L para faithfulness, coseno para context precision).
 
