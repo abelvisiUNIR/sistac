@@ -52,3 +52,5 @@ Bibliography_base.bib
 # Changelog personal
 CHANGELOG.md
 
+# Credenciales de Google Cloud
+gcp-credentials.json
