@@ -67,6 +67,8 @@ La modularidad de esta arquitectura tiene una implicación metodológica directa
 
 ## 4.2. Estrategia de datos
 
+El sistema opera sobre dos corpus con roles diferenciados que responden a distintas necesidades del proceso de desarrollo. El primero, de naturaleza sintética, sirvió como banco de pruebas durante la construcción y calibración del pipeline; el segundo, de origen público con validación experta, constituye el conjunto sobre el que se ejecuta el experimento formal. Esta distinción no es accidental: trabajar con datos sintéticos durante el desarrollo permitió iterar sobre los parámetros del sistema sin restricciones normativas, mientras que la adopción de un corpus público con adecuación validada por el panel experto de la organización garantiza que los resultados del experimento sean trazables y reproducibles. A ambos corpus se suman las descripciones de cargo reales de Matriz Uruguay, que proveen el criterio de evaluación efectivamente vigente en la organización para cada uno de los cinco perfiles cubiertos.
+
 ### 4.2.1. Corpus de desarrollo: dataset sintético calibrado
 
 Durante la fase de construcción y calibración del pipeline, el sistema operó sobre un corpus sintético generado con garantías de privacidad diferencial mediante la biblioteca PrivBayes del *Synthetic Data Vault* (SDV). Este corpus fue calibrado a partir de las distribuciones estadísticas observadas en el Kaggle Resume Dataset (962 registros en 25 categorías profesionales, disponible bajo licencia CC0) y complementado con generación de variables secundarias mediante Faker en español. La decisión de no utilizar directamente los documentos de Kaggle responde a dos razones complementarias: los currículums del dataset están en inglés y corresponden al mercado laboral anglosajón, lo que introduce un sesgo de distribución geográfica y cultural incompatible con el objetivo del sistema orientado al contexto hispanohablante rioplatense; y la naturaleza sintética del corpus garantizó el cumplimiento de la Ley 18.331 durante la etapa de desarrollo sin necesidad de gestionar autorizaciones sobre datos personales reales.
@@ -101,17 +103,17 @@ La Tabla 4.1 sintetiza las características del corpus de evaluación.
 
 **Tabla 4.1.** *Caracterización del corpus de evaluación de SISTAC.*
 
-| Característica | Detalle |
-|---|---|
-| Fuente de los currículums | Dataset público `netsol/resume-score-details` (Hugging Face) |
-| Idioma | Inglés, traducido a español rioplatense mediante el modelo configurado |
-| Tamaño | [PENDIENTE: N currículums evaluados] (diseño base: 75 APTO / 75 NO_APTO) |
-| Descripciones de cargo | Ofertas reales de Matriz Uruguay (sección 4.2.3) |
-| Etiqueta APTO / NO_APTO | Validada por el panel experto de Matriz (Gold Standard) |
-| Género | Inferido del nombre de pila por el modelo (imputado) |
-| Rango de edad | Imputado y balanceado en 3 rangos |
-| Tiempos de control manual | Imputados por distribución uniforme diferenciada por etiqueta |
-| Almacenamiento | `data/raw/cvs_external`, `job_descriptions`, `gold_standard` en MongoDB |
+| Característica            | Detalle                                                                  |
+| ---------------------------| --------------------------------------------------------------------------|
+| Fuente de los currículums | Dataset público `netsol/resume-score-details` (Hugging Face)             |
+| Idioma                    | Inglés, traducido a español rioplatense mediante el modelo configurado   |
+| Tamaño                    | [PENDIENTE: N currículums evaluados] (diseño base: 75 APTO / 75 NO_APTO) |
+| Descripciones de cargo    | Ofertas reales de Matriz Uruguay (sección 4.2.3)                         |
+| Etiqueta APTO / NO_APTO   | Validada por el panel experto de Matriz (Gold Standard)                  |
+| Género                    | Inferido del nombre de pila por el modelo (imputado)                     |
+| Rango de edad             | Imputado y balanceado en 3 rangos                                        |
+| Tiempos de control manual | Imputados por distribución uniforme diferenciada por etiqueta            |
+| Almacenamiento            | `data/raw/cvs_external`, `job_descriptions`, `gold_standard` en MongoDB  |
 
 *Nota.* Elaboración propia.
 
