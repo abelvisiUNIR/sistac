@@ -44,3 +44,8 @@ scripts/python/scratch/
 # Asistente de desarrollo Claude (configuraciones e instrucciones)
 .claude/
 CLAUDE.md
+
+# Documentación interna y bibliografía (excluidas en la rama main)
+ESTRUCTURA_PROYECTO.md
+MEMORY.md
+Bibliography_base.bib
