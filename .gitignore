@@ -40,3 +40,7 @@ data/raw/cvs_external/
 data/raw/gold_standard_external/
 data/raw/job_descriptions_external/
 scripts/python/scratch/
+
+# Asistente de desarrollo Claude (configuraciones e instrucciones)
+.claude/
+CLAUDE.md
