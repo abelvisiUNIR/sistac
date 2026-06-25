@@ -61,7 +61,7 @@ jobs:
         service: ${{ env.SERVICE }}
         region: ${{ env.REGION }}
         image: ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.GAR_REPO }}/${{ env.SERVICE }}:${{ github.sha }}
-        flags: '--allow-unauthenticated --memory=4Gi --cpu=2'
+        flags: '--allow-unauthenticated --memory=4Gi --cpu=2 --port=8000'
         env_vars: |
           PYTHONPATH=/app/scripts/python
           LLM_PROVIDER=${{ secrets.LLM_PROVIDER || 'anthropic' }}
