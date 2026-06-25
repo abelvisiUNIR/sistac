@@ -1,0 +1,77 @@
+name: Deploy to Google Cloud Run
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'scripts/python/**'
+      - 'app/**'
+      - 'Dockerfile'
+      - '.github/workflows/deploy-gcp.yml'
+
+env:
+  PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+  REGION: us-central1                     # Región de despliegue en GCP
+  SERVICE: sistac-app                     # Nombre del servicio en Cloud Run
+  GAR_REPO: sistac-repo                   # Repositorio en Artifact Registry
+
+jobs:
+  deploy:
+    name: Build & Deploy to Cloud Run
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Google Auth
+      id: auth
+      uses: google-github-actions/auth@v2
+      with:
+        credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+    - name: Set up Cloud SDK
+      uses: google-github-actions/setup-gcloud@v2
+
+    - name: Create Artifact Registry Repository (if not exists)
+      run: |
+        gcloud artifacts repositories describe ${{ env.GAR_REPO }} --location=${{ env.REGION }} --quiet || \
+        gcloud artifacts repositories create ${{ env.GAR_REPO }} \
+          --repository-format=docker \
+          --location=${{ env.REGION }} \
+          --description="Repositorio Docker de SISTAC creado automáticamente por CI/CD" \
+          --quiet
+
+    - name: Configure Docker authentication
+      run: |
+        gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev --quiet
+
+    - name: Build and Push Docker Image
+      run: |
+        docker build --platform linux/amd64 -t ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.GAR_REPO }}/${{ env.SERVICE }}:${{ github.sha }} .
+        docker push ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.GAR_REPO }}/${{ env.SERVICE }}:${{ github.sha }}
+
+    - name: Deploy to Google Cloud Run
+      id: deploy
+      uses: google-github-actions/deploy-cloudrun@v2
+      with:
+        service: ${{ env.SERVICE }}
+        region: ${{ env.REGION }}
+        image: ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.GAR_REPO }}/${{ env.SERVICE }}:${{ github.sha }}
+        flags: '--allow-unauthenticated --memory=4Gi --cpu=2'
+        env_vars: |
+          PYTHONPATH=/app/scripts/python
+          LLM_PROVIDER=${{ secrets.LLM_PROVIDER || 'anthropic' }}
+          VECTORSTORE_PROVIDER=${{ secrets.VECTORSTORE_PROVIDER || 'google' }}
+          MONGO_URI=${{ secrets.MONGO_URI }}
+          ANTHROPIC_API_KEY=${{ secrets.ANTHROPIC_API_KEY }}
+          GOOGLE_API_KEY=${{ secrets.GOOGLE_API_KEY }}
+          AZURE_SEARCH_ENDPOINT=${{ secrets.AZURE_SEARCH_ENDPOINT }}
+          AZURE_SEARCH_KEY=${{ secrets.AZURE_SEARCH_KEY }}
+          AZURE_SEARCH_INDEX=${{ secrets.AZURE_SEARCH_INDEX }}
+
+    - name: Show Deploy URL
+      run: |
+        echo "¡Despliegue completado con éxito!"
+        echo "URL de la aplicación: ${{ steps.deploy.outputs.url }}"
