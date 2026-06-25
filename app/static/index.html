@@ -1,43 +1,229 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" class="light">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>SISTAC — Screening Inteligente de CVs</title>
+  
+  <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Chart.js CDN -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  
+  <!-- Google Fonts: Inter & Outfit -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <script>
+    // Configuración del CDN de Tailwind
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#f0f4ff',
+              100: '#dbe5ff',
+              200: '#bfd0ff',
+              300: '#93b0ff',
+              400: '#6086fe',
+              500: '#3b5efc',
+              600: '#253ef8',
+              700: '#1d2eeb',
+              800: '#1926c0',
+              900: '#1b2698',
+              950: '#10155b',
+            },
+            slate: {
+              950: '#0b0f19',
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+            heading: ['Outfit', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+  
   <style>
-    body { font-family: 'Inter', system-ui, sans-serif; }
-    .drop-zone { transition: all 0.2s; }
-    .drop-zone.over { border-color: #3b82f6 !important; background: #eff6ff !important; }
-    .fade-in { animation: fi 0.25s ease; }
-    @keyframes fi { from { opacity:0; transform:translateY(5px); } to { opacity:1; transform:none; } }
-    .dot { animation: blink 1.2s infinite; }
-    .dot:nth-child(2) { animation-delay:.2s; }
-    .dot:nth-child(3) { animation-delay:.4s; }
-    @keyframes blink { 0%,80%,100%{transform:scale(1);opacity:.35} 40%{transform:scale(1.35);opacity:1} }
-    .bar { transition: width .7s cubic-bezier(.4,0,.2,1); }
-    .tab-btn { padding:.875rem 1rem; font-size:.875rem; border-bottom:2px solid transparent; color:#64748b; transition:all .15s; white-space:nowrap; }
-    .tab-btn:hover { color:#1e293b; }
-    .active-tab { border-bottom-color:#2563eb !important; color:#2563eb !important; font-weight:600; }
-    .label { display:block; font-size:.8125rem; font-weight:500; color:#374151; margin-bottom:.3rem; }
-    .field { width:100%; border:1px solid #d1d5db; border-radius:.625rem; padding:.6rem .75rem; font-size:.875rem; outline:none; transition:box-shadow .15s,border-color .15s; }
-    .field:focus { border-color:#3b82f6; box-shadow:0 0 0 3px rgba(59,130,246,.15); }
-    input[type=file] { display:none; }
-    .cv-item-enter { animation: slideIn .2s ease; }
-    @keyframes slideIn { from { opacity:0; transform:translateX(-8px); } to { opacity:1; transform:none; } }
-    .score-pill { width:2.5rem; height:2.5rem; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:.8125rem; flex-shrink:0; }
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      transition: background-color 0.3s, color 0.3s;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      font-family: 'Outfit', sans-serif;
+    }
+    .drop-zone {
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .drop-zone.over {
+      border-color: #3b5efc !important;
+      background-color: rgba(59, 94, 252, 0.08) !important;
+      transform: scale(1.02);
+    }
+    .fade-in {
+      animation: fi 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    @keyframes fi {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: none; }
+    }
+    .dot {
+      animation: blink 1.2s infinite;
+    }
+    .dot:nth-child(2) { animation-delay: .2s; }
+    .dot:nth-child(3) { animation-delay: .4s; }
+    @keyframes blink {
+      0%, 80%, 100% { transform: scale(1); opacity: .35 }
+      40% { transform: scale(1.35); opacity: 1 }
+    }
+    .bar {
+      transition: width .8s cubic-bezier(.4,0,.2,1);
+    }
+    .tab-btn {
+      position: relative;
+      padding: 1rem 1.25rem;
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: #64748b;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+    }
+    .dark .tab-btn {
+      color: #94a3b8;
+    }
+    .tab-btn:hover {
+      color: #1e293b;
+    }
+    .dark .tab-btn:hover {
+      color: #f1f5f9;
+    }
+    .active-tab {
+      color: #3b5efc !important;
+      font-weight: 600;
+    }
+    .dark .active-tab {
+      color: #6086fe !important;
+    }
+    .active-tab::after {
+      content: '';
+      position: absolute;
+      bottom: -1px;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background-color: #3b5efc;
+      border-radius: 9999px;
+    }
+    .dark .active-tab::after {
+      background-color: #6086fe;
+    }
+    .label {
+      display: block;
+      font-size: 0.8125rem;
+      font-weight: 600;
+      color: #475569;
+      margin-bottom: 0.35rem;
+    }
+    .dark .label {
+      color: #cbd5e1;
+    }
+    .field {
+      width: 100%;
+      border: 1px solid #cbd5e1;
+      background-color: #ffffff;
+      color: #1e293b;
+      border-radius: 0.75rem;
+      padding: 0.65rem 0.85rem;
+      font-size: 0.875rem;
+      outline: none;
+      transition: all 0.15s ease;
+    }
+    .dark .field {
+      border-color: #334155;
+      background-color: #0f172a;
+      color: #f1f5f9;
+    }
+    .field:focus {
+      border-color: #3b5efc;
+      box-shadow: 0 0 0 3px rgba(59, 94, 252, 0.15);
+    }
+    .dark .field:focus {
+      border-color: #6086fe;
+      box-shadow: 0 0 0 3px rgba(96, 134, 254, 0.18);
+    }
+    input[type=file] {
+      display: none;
+    }
+    .cv-item-enter {
+      animation: slideIn 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateX(-12px); }
+      to { opacity: 1; transform: none; }
+    }
+    .score-pill {
+      width: 2.75rem;
+      height: 2.75rem;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 0.875rem;
+      flex-shrink: 0;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+    }
+    /* Efecto Glassmorphism */
+    .glass {
+      background: rgba(255, 255, 255, 0.75);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.6);
+    }
+    .dark .glass {
+      background: rgba(15, 23, 42, 0.8);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    /* Estilo del scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 9999px;
+    }
+    .dark ::-webkit-scrollbar-thumb {
+      background: #334155;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
   </style>
 </head>
-<body class="bg-slate-50 min-h-screen">
+<body class="bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 min-h-screen flex flex-col">
 
 <!-- Login Screen -->
-<div id="login-container" class="min-h-screen flex items-center justify-center px-4">
-  <div class="bg-white border border-slate-200 rounded-2xl p-8 shadow-xl max-w-md w-full space-y-6 fade-in">
-    <div class="text-center space-y-2">
-      <div class="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center text-white font-bold text-lg mx-auto shadow-md shadow-blue-100">S</div>
-      <h2 class="text-xl font-bold text-slate-900">Iniciar Sesión</h2>
-      <p class="text-xs text-slate-400">Ingresá tus credenciales para acceder a SISTAC</p>
+<div id="login-container" class="min-h-screen flex flex-col items-center justify-center px-4 relative overflow-hidden bg-gradient-to-br from-brand-50 via-slate-50 to-indigo-50 dark:from-slate-950 dark:via-slate-900 dark:to-brand-950">
+  
+  <!-- Círculos de fondo con desenfoque decorativo -->
+  <div class="absolute -top-40 -left-40 w-96 h-96 bg-brand-200 dark:bg-brand-950 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-pulse"></div>
+  <div class="absolute -bottom-40 -right-40 w-96 h-96 bg-indigo-200 dark:bg-indigo-950 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-pulse" style="animation-delay: 2s;"></div>
+
+  <div class="bg-white/80 dark:bg-slate-900/80 border border-slate-200/50 dark:border-slate-800/50 rounded-3xl p-8 md:p-10 shadow-2xl max-w-md w-full space-y-6 backdrop-blur-xl relative z-10">
+    <div class="text-center space-y-3">
+      <div class="w-14 h-14 bg-gradient-to-br from-brand-500 to-indigo-600 rounded-2xl flex items-center justify-center text-white font-extrabold text-2xl mx-auto shadow-lg shadow-brand-500/20">S</div>
+      <h1 class="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">Iniciar Sesión</h1>
+      <p class="text-xs text-slate-500 dark:text-slate-400">Ingresá al Sistema de Screening Inteligente de CVs</p>
     </div>
     
     <div class="space-y-4">
@@ -49,751 +235,798 @@
         <label class="label">Contraseña</label>
         <input id="login-password" type="password" placeholder="••••••••" class="field" onkeydown="if(event.key==='Enter') login()" />
       </div>
-      <div id="login-error" class="hidden text-xs text-red-500 bg-red-50 border border-red-100 rounded-lg p-3">
+      <div id="login-error" class="hidden text-xs text-red-650 dark:text-red-400 bg-red-50 dark:bg-red-950/30 border border-red-100 dark:border-red-900/50 rounded-xl p-3.5">
         Usuario o contraseña incorrectos.
       </div>
     </div>
     
-    <button onclick="login()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-xl transition-all shadow-md shadow-blue-100 text-sm">
+    <button onclick="login()" class="w-full bg-brand-600 hover:bg-brand-700 dark:bg-brand-500 dark:hover:bg-brand-600 text-white font-bold py-3.5 rounded-xl transition-all shadow-lg shadow-brand-500/10 hover:shadow-brand-500/20 text-sm">
       Ingresar al sistema
     </button>
   </div>
 </div>
 
 <!-- Main Application Container -->
-<div id="app-container" class="hidden">
+<div id="app-container" class="hidden flex-1 flex flex-col">
 
-<!-- Header -->
-<header class="bg-white border-b border-slate-200 sticky top-0 z-50">
-  <div class="max-w-5xl mx-auto px-5 h-14 flex items-center justify-between">
-    <div class="flex items-center gap-2.5">
-      <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold text-sm">S</div>
-      <span class="font-semibold text-slate-800">SISTAC</span>
-      <span class="text-slate-300 text-sm hidden sm:block">—</span>
-      <span class="text-slate-500 text-sm hidden sm:block">Selección Inteligente de Talento</span>
-    </div>
-    <div class="flex items-center gap-3">
-      <span id="hbadge" class="text-xs px-2.5 py-1 rounded-full bg-slate-100 text-slate-400">• conectando</span>
-      <div id="user-info-header" class="hidden flex items-center gap-3 border-l border-slate-200 pl-3">
-        <span id="lbl-user-role" class="text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider"></span>
-        <button onclick="logout()" class="text-xs text-red-500 hover:text-red-700 transition-colors font-semibold">Cerrar Sesión</button>
+  <!-- Header -->
+  <header class="bg-white/90 dark:bg-slate-900/90 border-b border-slate-200 dark:border-slate-800 sticky top-0 z-50 backdrop-blur-md">
+    <div class="max-w-6xl mx-auto px-5 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 bg-gradient-to-br from-brand-500 to-indigo-600 rounded-xl flex items-center justify-center text-white font-black text-lg shadow-md shadow-brand-500/10">S</div>
+        <div>
+          <span class="font-extrabold text-slate-900 dark:text-white tracking-tight">SISTAC</span>
+          <span class="text-slate-300 dark:text-slate-700 text-sm mx-1.5 hidden sm:inline">|</span>
+          <span class="text-slate-500 dark:text-slate-400 text-xs hidden sm:inline font-medium">Selección Inteligente de Talento</span>
+        </div>
       </div>
-    </div>
-  </div>
-</header>
-
-<!-- Tabs -->
-<div class="bg-white border-b border-slate-200">
-  <div class="max-w-5xl mx-auto px-5 flex overflow-x-auto">
-    <button id="tb-evaluar"   onclick="tab('evaluar')"   class="tab-btn active-tab">Evaluar candidatos</button>
-    <button id="tb-cargos"    onclick="tab('cargos')"    class="tab-btn">Gestionar cargos</button>
-    <button id="tb-historial" onclick="tab('historial')" class="tab-btn">Historial</button>
-    <button id="tb-gold"      onclick="tab('gold')"      class="tab-btn">Generar Gold Standard</button>
-    <button id="tb-metricas"  onclick="tab('metricas')"  class="tab-btn">Métricas TFE</button>
-    <button id="tb-env"       onclick="tab('env')"       class="tab-btn">Configuración .env</button>
-  </div>
-</div>
-
-<main class="max-w-5xl mx-auto px-5 py-7">
-
-  <!-- ═══ TAB EVALUAR ═══════════════════════════════════════════════════════ -->
-  <div id="p-evaluar" class="fade-in">
-    <div class="grid lg:grid-cols-5 gap-7">
-
-      <!-- Columna izquierda: formulario (2/5) -->
-      <div class="lg:col-span-2 space-y-5">
-        <div>
-          <h2 class="text-lg font-bold text-slate-900">Evaluar candidatos</h2>
-          <p class="text-sm text-slate-500 mt-0.5">Seleccioná el cargo y subí uno o varios CVs.</p>
-        </div>
-
-        <!-- Cargo -->
-        <div>
-          <label class="label">Cargo</label>
-          <select id="sel-cargo" class="field">
-            <option value="">Cargando cargos…</option>
-          </select>
-        </div>
-
-        <!-- Pipeline -->
-        <div>
-          <label class="label">Pipeline</label>
-          <div class="grid grid-cols-3 gap-1.5">
-            <label class="cursor-pointer"><input type="radio" name="cfg" value="c1" class="sr-only peer"/>
-              <div class="border rounded-lg p-2 text-center peer-checked:border-blue-500 peer-checked:bg-blue-50 border-slate-200 transition-all">
-                <p class="text-xs font-semibold text-slate-700">C1</p><p class="text-xs text-slate-400">LLM puro</p>
-              </div></label>
-            <label class="cursor-pointer"><input type="radio" name="cfg" value="c2" checked class="sr-only peer"/>
-              <div class="border rounded-lg p-2 text-center peer-checked:border-blue-500 peer-checked:bg-blue-50 border-blue-500 bg-blue-50 transition-all">
-                <p class="text-xs font-semibold text-blue-700">C2 ✓</p><p class="text-xs text-blue-500">RAG</p>
-              </div></label>
-            <label class="cursor-pointer"><input type="radio" name="cfg" value="c3" class="sr-only peer"/>
-              <div class="border rounded-lg p-2 text-center peer-checked:border-blue-500 peer-checked:bg-blue-50 border-slate-200 transition-all">
-                <p class="text-xs font-semibold text-slate-700">C3</p><p class="text-xs text-slate-400">RAG+PII</p>
-              </div></label>
-          </div>
-        </div>
-
-        <!-- Drop zone multi-CV -->
-        <div>
-          <label class="label">CVs <span class="text-slate-400 font-normal">(PDF · DOCX · JPG · PNG)</span></label>
-          <div id="dz-cvs" onclick="document.getElementById('file-cvs').click()"
-            class="drop-zone border-2 border-dashed border-slate-300 rounded-xl p-6 text-center cursor-pointer hover:border-blue-400 hover:bg-blue-50/40">
-            <input type="file" id="file-cvs" multiple
-              accept=".pdf,.docx,.txt,.png,.jpg,.jpeg,.webp"
-              onchange="onFilesCV(this)" />
-            <svg class="w-8 h-8 text-slate-300 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
-                d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
-            </svg>
-            <p class="text-sm text-slate-500 font-medium">Arrastrá o hacé click para seleccionar</p>
-            <p class="text-xs text-slate-400 mt-1">Podés seleccionar varios archivos a la vez</p>
-          </div>
-        </div>
-
-        <!-- Lista de archivos seleccionados -->
-        <div id="cv-queue-wrap" class="hidden">
-          <div class="flex items-center justify-between mb-2">
-            <span class="text-xs font-semibold text-slate-600" id="cv-queue-count"></span>
-            <button onclick="clearQueue()" class="text-xs text-slate-400 hover:text-red-500 transition-colors">Limpiar todo</button>
-          </div>
-          <div id="cv-queue" class="space-y-1.5 max-h-48 overflow-y-auto pr-1"></div>
-        </div>
-
-        <!-- Botón evaluar -->
-        <button id="btn-eval" onclick="evaluarBatch()"
-          class="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300 disabled:cursor-not-allowed text-white font-semibold py-3 rounded-xl transition-colors text-sm">
-          Evaluar todos los CVs
+      
+      <div class="flex items-center gap-4">
+        <span id="hbadge" class="text-[10px] font-bold px-2.5 py-1 rounded-full bg-slate-100 text-slate-400 dark:bg-slate-800 dark:text-slate-500 transition-colors uppercase tracking-wider">• conectando</span>
+        
+        <!-- Toggle de Tema (Claro / Oscuro) -->
+        <button onclick="toggleTheme()" class="p-2 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors" title="Cambiar tema">
+          <svg id="theme-icon-sun" class="w-4 h-4 hidden" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m0-12.728l.707.707m12.728 12.728l.707-.707M12 8a4 4 0 100 8 4 4 0 000-8z"/>
+          </svg>
+          <svg id="theme-icon-moon" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
+          </svg>
         </button>
+
+        <div id="user-info-header" class="hidden flex items-center gap-3 border-l border-slate-200 dark:border-slate-800 pl-3">
+          <span id="lbl-user-role" class="text-[9px] font-extrabold px-2.5 py-1 rounded-md uppercase tracking-wider"></span>
+          <button onclick="logout()" class="text-xs text-red-500 hover:text-red-650 dark:text-red-400 dark:hover:text-red-300 transition-colors font-bold">Salir</button>
+        </div>
       </div>
+    </div>
+  </header>
 
-      <!-- Columna derecha: resultados (3/5) -->
-      <div class="lg:col-span-3">
+  <!-- Tabs Navigation -->
+  <div class="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 sticky top-16 z-40 transition-colors">
+    <div class="max-w-6xl mx-auto px-5 flex overflow-x-auto">
+      <button id="tb-evaluar"   onclick="tab('evaluar')"   class="tab-btn active-tab">Evaluar Candidatos</button>
+      <button id="tb-cargos"    onclick="tab('cargos')"    class="tab-btn">Gestionar Cargos</button>
+      <button id="tb-historial" onclick="tab('historial')" class="tab-btn">Historial</button>
+      <button id="tb-gold"      onclick="tab('gold')"      class="tab-btn">Generar Gold Standard</button>
+      <button id="tb-metricas"  onclick="tab('metricas')"  class="tab-btn">Métricas TFE</button>
+      <button id="tb-env"       onclick="tab('env')"       class="tab-btn">Configuración</button>
+    </div>
+  </div>
 
-        <!-- Placeholder -->
-        <div id="ph-eval" class="flex flex-col items-center justify-center text-center py-20 h-full">
-          <div class="w-14 h-14 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto mb-3">
-            <svg class="w-7 h-7 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
-                d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
-            </svg>
-          </div>
-          <p class="text-sm font-medium text-slate-500">El ranking de candidatos aparecerá aquí</p>
-          <p class="text-xs text-slate-400 mt-1">Seleccioná los CVs y presioná Evaluar</p>
-        </div>
+  <!-- Main Content Area -->
+  <main class="max-w-6xl w-full mx-auto px-5 py-8 flex-1">
 
-        <!-- Loader -->
-        <div id="ld-eval" class="hidden flex flex-col items-center justify-center py-20 gap-4">
-          <div class="flex gap-2">
-            <div class="dot w-2.5 h-2.5 bg-blue-500 rounded-full"></div>
-            <div class="dot w-2.5 h-2.5 bg-blue-500 rounded-full"></div>
-            <div class="dot w-2.5 h-2.5 bg-blue-500 rounded-full"></div>
-          </div>
-          <div class="text-center">
-            <p class="text-sm font-medium text-slate-700" id="ld-title">Evaluando CVs…</p>
-            <p class="text-xs text-slate-400 mt-1" id="ld-sub">Esto puede tardar unos segundos por CV</p>
-          </div>
-          <!-- Barra de progreso indeterminada -->
-          <div class="w-48 h-1.5 bg-slate-200 rounded-full overflow-hidden">
-            <div class="h-full bg-blue-500 rounded-full animate-pulse w-full"></div>
-          </div>
-        </div>
+    <!-- ═══ TAB EVALUAR ═══════════════════════════════════════════════════════ -->
+    <div id="p-evaluar" class="fade-in">
+      <div class="grid lg:grid-cols-5 gap-8">
 
-        <!-- Resultados batch -->
-        <div id="res-batch" class="hidden fade-in space-y-4">
-
-          <!-- Resumen -->
-          <div class="bg-white rounded-2xl border border-slate-200 p-4">
-            <div class="flex items-center justify-between mb-3">
-              <p class="text-sm font-bold text-slate-800" id="rb-cargo"></p>
-              <span class="text-xs text-slate-400" id="rb-config"></span>
-            </div>
-            <div class="grid grid-cols-3 gap-3">
-              <div class="bg-emerald-50 rounded-xl p-3 text-center">
-                <p class="text-2xl font-bold text-emerald-600" id="rb-aptos">0</p>
-                <p class="text-xs text-emerald-600 mt-0.5">APTOS</p>
-              </div>
-              <div class="bg-red-50 rounded-xl p-3 text-center">
-                <p class="text-2xl font-bold text-red-500" id="rb-no-aptos">0</p>
-                <p class="text-xs text-red-500 mt-0.5">NO APTOS</p>
-              </div>
-              <div class="bg-slate-50 rounded-xl p-3 text-center">
-                <p class="text-2xl font-bold text-slate-600" id="rb-total">0</p>
-                <p class="text-xs text-slate-500 mt-0.5">TOTAL</p>
-              </div>
-            </div>
-          </div>
-
-          <!-- Ranking -->
-          <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden">
-            <div class="px-4 py-3 border-b border-slate-100 flex items-center justify-between">
-              <p class="text-xs font-semibold text-slate-500 uppercase tracking-wide">Ranking de candidatos</p>
-              <button onclick="exportCSV()" class="text-xs text-blue-600 hover:text-blue-700 flex items-center gap-1">
-                ↓ Exportar CSV
-              </button>
-            </div>
-            <div id="ranking-list" class="divide-y divide-slate-100"></div>
-          </div>
-
-        </div>
-
-        <!-- Detalle de un candidato (expandido) -->
-        <div id="detalle-panel" class="hidden fade-in mt-4 bg-white rounded-2xl border border-slate-200 p-5 space-y-4">
-          <div class="flex items-center justify-between">
-            <p class="text-sm font-bold text-slate-800" id="det-nombre"></p>
-            <button onclick="cerrarDetalle()" class="text-slate-300 hover:text-slate-500 text-xl leading-none">×</button>
-          </div>
-          <div id="det-dims" class="space-y-2.5"></div>
+        <!-- Columna izquierda: formulario de configuración y carga (2/5) -->
+        <div class="lg:col-span-2 space-y-6">
           <div>
-            <p class="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1.5">Justificación</p>
-            <p id="det-just" class="text-sm text-slate-600 leading-relaxed"></p>
+            <h2 class="text-xl font-extrabold text-slate-950 dark:text-white tracking-tight">Evaluar candidatos</h2>
+            <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Seleccioná un perfil o cargo e introducí los currículums a auditar.</p>
           </div>
-          <!-- Evidencia RAG Chunks -->
-          <div id="det-chunks-section" class="hidden border-t border-slate-100 pt-3">
-            <p class="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1.5">Evidencia RAG (Fragmentos recuperados)</p>
-            <div id="det-chunks-list" class="space-y-2 max-h-60 overflow-y-auto pr-1"></div>
-          </div>
-        </div>
 
-      </div>
-    </div>
-  </div>
+          <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800/80 rounded-2xl p-5 space-y-5 shadow-sm">
+            <!-- Cargo Selector -->
+            <div>
+              <label class="label">Cargo de Referencia</label>
+              <select id="sel-cargo" class="field"></select>
+            </div>
 
-  <!-- ═══ TAB CARGOS ════════════════════════════════════════════════════════ -->
-  <div id="p-cargos" class="hidden fade-in">
-    <div class="grid lg:grid-cols-2 gap-7">
-      <div class="space-y-5">
-        <div>
-          <h2 class="text-lg font-bold text-slate-900">Nuevo cargo</h2>
-          <p class="text-sm text-slate-500 mt-0.5">Subí el PDF o DOCX con la descripción del puesto.</p>
-        </div>
-        <div>
-          <label class="label">Nombre del cargo</label>
-          <input id="c-nombre" type="text" placeholder="Ej: Analista de Datos Senior" class="field" />
-        </div>
-        <div>
-          <label class="label">Descripción del cargo</label>
-          <div id="dz-jd" onclick="document.getElementById('file-jd').click()"
-            class="drop-zone border-2 border-dashed border-slate-300 rounded-xl p-8 text-center cursor-pointer hover:border-blue-400 hover:bg-blue-50/40">
-            <input type="file" id="file-jd" accept=".pdf,.docx,.txt" onchange="onFileJD(this)" />
-            <svg class="w-8 h-8 text-slate-300 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
-                d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
-            </svg>
-            <p class="text-sm text-slate-500 font-medium">PDF · DOCX · TXT</p>
-          </div>
-          <div id="jd-preview" class="hidden mt-2 flex items-center gap-2 bg-blue-50 border border-blue-200 rounded-lg px-3 py-2">
-            <span id="jd-filename" class="text-sm text-blue-700 truncate flex-1"></span>
-            <button onclick="clearJD()" class="text-blue-400 hover:text-blue-600">✕</button>
-          </div>
-        </div>
-        <button id="btn-cargo" onclick="crearCargo()"
-          class="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300 text-white font-semibold py-3 rounded-xl transition-colors text-sm">
-          Crear cargo
-        </button>
-      </div>
+            <!-- Pipeline Mode Radio Tiles -->
+            <div>
+              <label class="label">Configuración del Experimento (Pipeline)</label>
+              <div class="grid grid-cols-3 gap-2">
+                <label class="cursor-pointer">
+                  <input type="radio" name="cfg" value="c1" class="sr-only peer"/>
+                  <div class="border rounded-xl p-3 text-center bg-white dark:bg-slate-800 hover:border-brand-500 dark:hover:border-brand-400 peer-checked:border-brand-500 peer-checked:bg-brand-50/50 dark:peer-checked:border-brand-500 dark:peer-checked:bg-brand-950/20 border-slate-200 dark:border-slate-700 transition-all">
+                    <p class="text-sm font-bold text-slate-850 dark:text-slate-200">C1</p>
+                    <p class="text-[10px] text-slate-400 dark:text-slate-500 mt-0.5 font-medium">LLM Puro</p>
+                  </div>
+                </label>
+                
+                <label class="cursor-pointer">
+                  <input type="radio" name="cfg" value="c2" checked class="sr-only peer"/>
+                  <div class="border rounded-xl p-3 text-center bg-white dark:bg-slate-800 hover:border-brand-500 dark:hover:border-brand-400 peer-checked:border-brand-500 peer-checked:bg-brand-50/50 dark:peer-checked:border-brand-500 dark:peer-checked:bg-brand-950/20 border-slate-200 dark:border-slate-700 transition-all">
+                    <p class="text-sm font-bold text-slate-850 dark:text-slate-200">C2</p>
+                    <p class="text-[10px] text-slate-400 dark:text-slate-500 mt-0.5 font-medium">RAG</p>
+                  </div>
+                </label>
+                
+                <label class="cursor-pointer">
+                  <input type="radio" name="cfg" value="c3" class="sr-only peer"/>
+                  <div class="border rounded-xl p-3 text-center bg-white dark:bg-slate-800 hover:border-brand-500 dark:hover:border-brand-400 peer-checked:border-brand-500 peer-checked:bg-brand-50/50 dark:peer-checked:border-brand-500 dark:peer-checked:bg-brand-950/20 border-slate-200 dark:border-slate-700 transition-all">
+                    <p class="text-sm font-bold text-slate-850 dark:text-slate-200">C3</p>
+                    <p class="text-[10px] text-slate-400 dark:text-slate-500 mt-0.5 font-medium">RAG + PII</p>
+                  </div>
+                </label>
+              </div>
+            </div>
 
-      <div>
-        <div class="flex items-center justify-between mb-4">
-          <p class="text-sm font-semibold text-slate-800">Cargos activos</p>
-          <span id="c-count" class="text-xs text-slate-400"></span>
-        </div>
-        <div id="lista-cargos" class="space-y-3"></div>
-        <div id="sin-cargos" class="hidden text-center py-12 text-sm text-slate-400">No hay cargos cargados aún.</div>
+            <!-- Drop Zone -->
+            <div>
+              <label class="label font-bold">Documentos de Candidatos (CVs)</label>
+              <div id="dz-cvs" onclick="document.getElementById('file-cvs').click()"
+                class="drop-zone border-2 border-dashed border-slate-350 dark:border-slate-700 rounded-xl p-6 text-center cursor-pointer hover:border-brand-500 dark:hover:border-brand-400 hover:bg-brand-50/10">
+                <input type="file" id="file-cvs" multiple
+                  accept=".pdf,.docx,.txt,.png,.jpg,.jpeg,.webp"
+                  onchange="onFilesCV(this)" />
+                <svg class="w-10 h-10 text-slate-400 dark:text-slate-600 mx-auto mb-2.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                    d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+                </svg>
+                <p class="text-sm text-slate-650 dark:text-slate-350 font-semibold">Arrastrá tus archivos o buscalos aquí</p>
+                <p class="text-[10px] text-slate-400 dark:text-slate-500 mt-1">Formatos admitidos: PDF, DOCX, TXT, PNG, JPG</p>
+              </div>
+            </div>
 
-        <!-- Cargo Detalle Visualizador -->
-        <div id="cargo-detalle-panel" class="hidden mt-4 bg-white rounded-xl border border-slate-200 p-5 space-y-3 shadow-sm fade-in">
-          <div class="flex items-center justify-between border-b border-slate-100 pb-2">
-            <h4 class="text-sm font-bold text-slate-800" id="c-det-titulo"></h4>
-            <button onclick="cerrarCargoDetalle()" class="text-slate-400 hover:text-slate-650 text-xl leading-none">✕</button>
-          </div>
-          <div class="text-xs text-slate-650 whitespace-pre-wrap leading-relaxed max-h-80 overflow-y-auto pr-1 font-mono bg-slate-50 p-3 rounded-lg border border-slate-100" id="c-det-desc"></div>
-        </div>
+            <!-- Queue wrapper -->
+            <div id="cv-queue-wrap" class="hidden bg-slate-50 dark:bg-slate-950 p-3.5 border border-slate-200 dark:border-slate-800/80 rounded-xl space-y-2">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-bold text-slate-500 dark:text-slate-400" id="cv-queue-count"></span>
+                <button onclick="clearQueue()" class="text-xs font-bold text-red-500 hover:text-red-650 transition-colors">Limpiar todo</button>
+              </div>
+              <div id="cv-queue" class="space-y-1.5 max-h-44 overflow-y-auto pr-1"></div>
+            </div>
 
-        <!-- Panel de Control y Acciones de Azure -->
-        <div id="actions-azure-panel" class="mt-8 bg-white border border-slate-200 rounded-xl p-5 space-y-4 shadow-sm">
-          <div>
-            <h3 class="text-sm font-bold text-slate-800">Acciones del Experimento y Azure</h3>
-            <p class="text-xs text-slate-400 mt-0.5">Control directo sobre el vector store y ejecución de la tesis.</p>
-          </div>
-          <div class="grid grid-cols-3 gap-2">
-            <button id="btn-admin-reset" onclick="resetIndiceAzure()"
-              class="border border-red-200 hover:border-red-500 hover:bg-red-50 text-red-600 font-semibold py-2 rounded-lg transition-all text-xs text-center flex items-center justify-center gap-1">
-              🗑 Resetear
-            </button>
-            <button id="btn-admin-index" onclick="indexarCorpusAzure()"
-              class="border border-green-200 hover:border-green-500 hover:bg-green-50 text-green-600 font-semibold py-2 rounded-lg transition-all text-xs text-center flex items-center justify-center gap-1">
-              📥 Indexar CVs por Reclutadores
-            </button>
-            <button id="btn-admin-run" onclick="correrExperimentoTesis()"
-              class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded-lg transition-all text-xs text-center flex items-center justify-center gap-1">
-              🚀 Correr Tesis
+            <!-- Submit Button -->
+            <button id="btn-eval" onclick="evaluarBatch()"
+              class="w-full bg-brand-600 hover:bg-brand-700 dark:bg-brand-500 dark:hover:bg-brand-600 disabled:bg-slate-200 dark:disabled:bg-slate-800 disabled:text-slate-400 disabled:cursor-not-allowed text-white font-bold py-3.5 rounded-xl transition-all shadow-md shadow-brand-500/10 hover:shadow-brand-500/20 text-sm">
+              Ejecutar Evaluación
             </button>
           </div>
         </div>
-      </div>
-    </div>
-  </div>
 
-  <!-- ═══ TAB HISTORIAL ════════════════════════════════════════════════════ -->
-  <div id="p-historial" class="hidden fade-in">
-    <div class="flex items-center justify-between mb-5">
-      <div>
-        <h2 class="text-lg font-bold text-slate-900">Historial</h2>
-        <p class="text-sm text-slate-500" id="hist-count"></p>
-      </div>
-      <button onclick="cargarHistorial()" class="text-sm text-blue-600 hover:text-blue-700">↻ Actualizar</button>
-    </div>
-    <div id="t-hist" class="space-y-2"></div>
-    <div id="sin-hist" class="hidden text-center py-14 text-sm text-slate-400">No hay evaluaciones aún.</div>
-  </div>
-
-  <!-- ═══ TAB GENERAR GOLD STANDARD (MATRIZ) ═══════════════════════════════ -->
-  <div id="p-gold" class="hidden fade-in">
-    <div class="grid lg:grid-cols-5 gap-7">
-
-      <!-- Columna izquierda: formulario de generación (2/5) -->
-      <div class="lg:col-span-2 space-y-5">
-        <div>
-          <h2 class="text-lg font-bold text-slate-900">Simulador de Candidatos</h2>
-          <p class="text-sm text-slate-500 mt-0.5">Generá perfiles aleatorios basados en tu JD, evaluálos y agregalos al Gold Standard.</p>
-        </div>
-
-        <!-- Cargo -->
-        <div>
-          <label class="label">Cargo (JD)</label>
-          <select id="sel-gold-cargo" class="field">
-            <option value="">Cargando cargos…</option>
-          </select>
-        </div>
-
-        <!-- Filtros Demográficos Opcionales (Tesis) -->
-        <div class="space-y-3 bg-slate-50 p-4 border border-slate-200 rounded-xl">
-          <p class="text-xs font-bold text-slate-500 uppercase tracking-wide">Filtros de Simulación (Auditoría)</p>
+        <!-- Columna derecha: visualización de resultados (3/5) -->
+        <div class="lg:col-span-3 flex flex-col">
           
-          <div>
-            <label class="label text-slate-600">Género</label>
-            <select id="sel-gold-gender" class="field bg-white">
-              <option value="">Aleatorio</option>
-              <option value="F">Femenino (F)</option>
-              <option value="M">Masculino (M)</option>
-            </select>
+          <!-- Placeholder de espera -->
+          <div id="ph-eval" class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800/80 rounded-3xl p-10 text-center flex-1 flex flex-col items-center justify-center min-h-[400px]">
+            <div class="w-16 h-16 bg-slate-50 dark:bg-slate-800 rounded-2xl flex items-center justify-center mb-4 border border-slate-100 dark:border-slate-700">
+              <svg class="w-8 h-8 text-slate-400 dark:text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                  d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
+              </svg>
+            </div>
+            <h3 class="text-base font-bold text-slate-850 dark:text-slate-200">Panel de Resultados vacío</h3>
+            <p class="text-xs text-slate-450 dark:text-slate-400 mt-1 max-w-xs mx-auto">Seleccioná un cargo, subí los currículums de los candidatos y presioná "Ejecutar Evaluación".</p>
           </div>
 
-          <div>
-            <label class="label text-slate-600">Grupo de Edad</label>
-            <select id="sel-gold-age" class="field bg-white">
-              <option value="">Aleatorio</option>
-              <option value="23-35">Joven (23-35)</option>
-              <option value="36-45">Medio (36-45)</option>
-              <option value="46-58">Senior (46-58)</option>
-            </select>
+          <!-- Loading Screen -->
+          <div id="ld-eval" class="hidden bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800/80 rounded-3xl p-10 text-center flex-1 flex flex-col items-center justify-center gap-5 min-h-[400px]">
+            <div class="flex gap-2">
+              <div class="dot w-3 h-3 bg-brand-500 rounded-full"></div>
+              <div class="dot w-3 h-3 bg-brand-500 rounded-full"></div>
+              <div class="dot w-3 h-3 bg-brand-500 rounded-full"></div>
+            </div>
+            <div>
+              <p class="text-base font-extrabold text-slate-900 dark:text-white" id="ld-title">Evaluando candidatos…</p>
+              <p class="text-xs text-slate-455 dark:text-slate-400 mt-1 max-w-xs mx-auto" id="ld-sub">Analizando perfiles a través del modelo de lenguaje y comparando con los requisitos del puesto.</p>
+            </div>
+            <div class="w-52 h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+              <div class="h-full bg-brand-500 rounded-full animate-pulse w-full"></div>
+            </div>
           </div>
 
-          <div>
-            <label class="label text-slate-600">Afinación del CV</label>
-            <select id="sel-gold-afinidad" class="field bg-white">
-              <option value="">Aleatorio</option>
-              <option value="alto">Alto (Muy Calificado)</option>
-              <option value="medio">Medio (Aceptable/Brechas)</option>
-              <option value="bajo">Bajo (No Apto)</option>
-            </select>
+          <!-- Resultados Batch Panel -->
+          <div id="res-batch" class="hidden fade-in space-y-5">
+            
+            <!-- Summary stats card -->
+            <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800/80 rounded-2xl p-5 shadow-sm">
+              <div class="flex items-center justify-between mb-4 flex-wrap gap-2">
+                <div>
+                  <p class="text-xs font-bold text-slate-400 uppercase tracking-wide">Resultados de la corrida</p>
+                  <h3 class="text-base font-extrabold text-slate-900 dark:text-white mt-0.5" id="rb-cargo"></h3>
+                </div>
+                <span class="text-xs font-bold px-3 py-1 rounded-full bg-brand-50 text-brand-600 dark:bg-brand-950/20 dark:text-brand-400 border border-brand-100 dark:border-brand-900/50" id="rb-config"></span>
+              </div>
+              
+              <div class="grid grid-cols-3 gap-4">
+                <div class="bg-emerald-50/50 dark:bg-emerald-950/10 border border-emerald-100/50 dark:border-emerald-900/30 rounded-xl p-3.5 text-center">
+                  <p class="text-2xl font-black text-emerald-600 dark:text-emerald-500" id="rb-aptos">0</p>
+                  <p class="text-[10px] font-bold text-emerald-600 dark:text-emerald-500 mt-0.5 uppercase tracking-wide">Aptos</p>
+                </div>
+                <div class="bg-red-50/50 dark:bg-red-950/10 border border-red-100/50 dark:border-red-900/30 rounded-xl p-3.5 text-center">
+                  <p class="text-2xl font-black text-red-500 dark:text-red-400" id="rb-no-aptos">0</p>
+                  <p class="text-[10px] font-bold text-red-500 dark:text-red-400 mt-0.5 uppercase tracking-wide">No Aptos</p>
+                </div>
+                <div class="bg-slate-50 dark:bg-slate-800/50 border border-slate-200/50 dark:border-slate-700/50 rounded-xl p-3.5 text-center">
+                  <p class="text-2xl font-black text-slate-700 dark:text-slate-300" id="rb-total">0</p>
+                  <p class="text-[10px] font-bold text-slate-500 dark:text-slate-400 mt-0.5 uppercase tracking-wide">Total</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Listado/Ranking -->
+            <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800/80 rounded-2xl overflow-hidden shadow-sm">
+              <div class="px-5 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between flex-wrap gap-2">
+                <p class="text-xs font-bold text-slate-450 dark:text-slate-400 uppercase tracking-wide">Ranking final de adecuación</p>
+                <button onclick="exportCSV()" class="text-xs font-bold text-brand-500 dark:text-brand-400 hover:text-brand-650 flex items-center gap-1">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                  Exportar CSV
+                </button>
+              </div>
+              <div id="ranking-list" class="divide-y divide-slate-100 dark:divide-slate-800"></div>
+            </div>
+
+            <!-- Detalle extendido de candidato -->
+            <div id="detalle-panel" class="hidden fade-in bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800/80 rounded-2xl p-6 shadow-md space-y-5">
+              <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+                <div>
+                  <span class="text-[10px] font-bold text-brand-500 dark:text-brand-400 uppercase tracking-wider">Reporte Detallado</span>
+                  <h4 class="text-base font-extrabold text-slate-900 dark:text-white mt-0.5" id="det-nombre"></h4>
+                </div>
+                <button onclick="cerrarDetalle()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 text-2xl leading-none">✕</button>
+              </div>
+              
+              <!-- Dimensions Bar Charts -->
+              <div id="det-dims" class="space-y-3.5"></div>
+              
+              <!-- Justification -->
+              <div class="space-y-1.5">
+                <p class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wide">Justificación de la adecuación</p>
+                <p id="det-just" class="text-sm text-slate-650 dark:text-slate-300 leading-relaxed bg-slate-50 dark:bg-slate-950 p-4 rounded-xl border border-slate-200/50 dark:border-slate-800/50"></p>
+              </div>
+
+              <!-- RAG Source Evidence -->
+              <div id="det-chunks-section" class="hidden space-y-2 border-t border-slate-100 dark:border-slate-800 pt-4">
+                <p class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wide">Evidencia RAG (Fragmentos de CV consultados)</p>
+                <div id="det-chunks-list" class="space-y-2.5 max-h-64 overflow-y-auto pr-1"></div>
+              </div>
+            </div>
+
           </div>
         </div>
 
-        <!-- Botón generar -->
-        <button id="btn-gold-generar" onclick="generarCandidato()"
-          class="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300 text-white font-semibold py-3 rounded-xl transition-colors text-sm">
-          Simular Candidato Parametrizado
+      </div>
+    </div>
+
+    <!-- ═══ TAB CARGOS ════════════════════════════════════════════════════════ -->
+    <div id="p-cargos" class="hidden fade-in">
+      <div class="grid lg:grid-cols-2 gap-8">
+        
+        <!-- Formulario crear cargo -->
+        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800/80 rounded-3xl p-6 space-y-6 shadow-sm">
+          <div>
+            <h2 class="text-lg font-bold text-slate-900 dark:text-white">Nuevo puesto o cargo</h2>
+            <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Cargá una nueva Descripción de Puesto (JD) en el sistema.</p>
+          </div>
+          
+          <div class="space-y-4">
+            <div>
+              <label class="label">Nombre del puesto</label>
+              <input id="c-nombre" type="text" placeholder="Ej: DevOps Engineer Senior" class="field" />
+            </div>
+            
+            <div>
+              <label class="label">Documento del Puesto</label>
+              <div id="dz-jd" onclick="document.getElementById('file-jd').click()"
+                class="drop-zone border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-xl p-8 text-center cursor-pointer hover:border-brand-500 dark:hover:border-brand-400 hover:bg-brand-50/10">
+                <input type="file" id="file-jd" accept=".pdf,.docx,.txt" onchange="onFileJD(this)" />
+                <svg class="w-9 h-9 text-slate-400 dark:text-slate-600 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                </svg>
+                <p class="text-sm text-slate-650 dark:text-slate-350 font-semibold">Subí la descripción en formato PDF, DOCX o TXT</p>
+              </div>
+              
+              <div id="jd-preview" class="hidden mt-3 flex items-center justify-between bg-brand-50 dark:bg-brand-950/20 border border-brand-200 dark:border-brand-900/50 rounded-xl px-4 py-3">
+                <span id="jd-filename" class="text-sm font-semibold text-brand-700 dark:text-brand-450 truncate"></span>
+                <button onclick="clearJD()" class="text-brand-400 hover:text-brand-650 font-bold">✕</button>
+              </div>
+            </div>
+          </div>
+
+          <button id="btn-cargo" onclick="crearCargo()"
+            class="w-full bg-brand-600 hover:bg-brand-700 dark:bg-brand-500 dark:hover:bg-brand-600 text-white font-bold py-3.5 rounded-xl transition-all shadow-md text-sm">
+            Crear cargo
+          </button>
+        </div>
+
+        <!-- Lista de cargos -->
+        <div class="space-y-5">
+          <div class="flex items-center justify-between">
+            <h3 class="text-base font-bold text-slate-900 dark:text-white">Puestos y cargos cargados</h3>
+            <span id="c-count" class="text-xs font-bold text-slate-400 dark:text-slate-500 bg-slate-100 dark:bg-slate-900 px-2 py-0.5 rounded"></span>
+          </div>
+
+          <div id="lista-cargos" class="space-y-3.5 max-h-[450px] overflow-y-auto pr-1"></div>
+          <div id="sin-cargos" class="hidden text-center py-14 text-sm text-slate-400">No hay cargos registrados.</div>
+
+          <!-- Cargo detalle visualizer panel -->
+          <div id="cargo-detalle-panel" class="hidden bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800/80 rounded-2xl p-5 space-y-3 shadow-md fade-in">
+            <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2">
+              <h4 class="text-sm font-bold text-slate-850 dark:text-slate-200" id="c-det-titulo"></h4>
+              <button onclick="cerrarCargoDetalle()" class="text-slate-400 hover:text-slate-600">✕</button>
+            </div>
+            <div class="text-xs text-slate-650 dark:text-slate-350 whitespace-pre-wrap leading-relaxed max-h-64 overflow-y-auto pr-1 font-mono bg-slate-50 dark:bg-slate-950 p-4 rounded-xl border border-slate-200/50 dark:border-slate-800/50" id="c-det-desc"></div>
+          </div>
+
+          <!-- Admin GCP/Azure pipeline options panel -->
+          <div id="actions-azure-panel" class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800/80 rounded-3xl p-5 space-y-4 shadow-sm">
+            <div>
+              <h3 class="text-sm font-bold text-slate-850 dark:text-white">Panel de Administración de Tesis</h3>
+              <p class="text-xs text-slate-400 dark:text-slate-500 mt-0.5">Controla la base de datos vectorial y ejecuta simulaciones de datos masivos.</p>
+            </div>
+            <div class="grid grid-cols-3 gap-2">
+              <button id="btn-admin-reset" onclick="resetIndiceAzure()"
+                class="border border-red-200 hover:border-red-500 dark:border-red-900 hover:bg-red-50/50 dark:hover:bg-red-950/20 text-red-600 dark:text-red-400 font-bold py-3 rounded-xl transition-all text-xs flex items-center justify-center gap-1 shadow-sm">
+                🗑 Resetear
+              </button>
+              <button id="btn-admin-index" onclick="indexarCorpusAzure()"
+                class="border border-emerald-200 hover:border-emerald-500 dark:border-emerald-900 hover:bg-emerald-50/50 dark:hover:bg-emerald-950/20 text-emerald-600 dark:text-emerald-450 font-bold py-3 rounded-xl transition-all text-xs flex items-center justify-center gap-1 shadow-sm">
+                📥 Indexar
+              </button>
+              <button id="btn-admin-run" onclick="correrExperimentoTesis()"
+                class="bg-brand-600 hover:bg-brand-700 dark:bg-brand-500 dark:hover:bg-brand-600 text-white font-bold py-3 rounded-xl transition-all text-xs flex items-center justify-center gap-1 shadow-md">
+                🚀 Correr Tesis
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ═══ TAB HISTORIAL ════════════════════════════════════════════════════ -->
+    <div id="p-historial" class="hidden fade-in space-y-5">
+      <div class="flex items-center justify-between">
+        <div>
+          <h2 class="text-xl font-extrabold text-slate-900 dark:text-white tracking-tight">Historial de Evaluaciones</h2>
+          <p class="text-sm text-slate-500 dark:text-slate-400 mt-0.5" id="hist-count"></p>
+        </div>
+        <button onclick="cargarHistorial()" class="text-xs font-bold bg-white dark:bg-slate-900 hover:bg-slate-50 border border-slate-200 dark:border-slate-800 px-3 py-2 rounded-xl text-brand-500 dark:text-brand-400 shadow-sm transition-colors">
+          ↻ Actualizar
         </button>
+      </div>
+      <div id="t-hist" class="space-y-3.5"></div>
+      <div id="sin-hist" class="hidden text-center py-20 text-sm text-slate-400">Ningún candidato evaluado aún. Las auditorías aparecerán aquí.</div>
+    </div>
 
-        <hr class="border-slate-200" />
+    <!-- ═══ TAB GENERAR GOLD STANDARD (MATRIZ) ═══════════════════════════════ -->
+    <div id="p-gold" class="hidden fade-in">
+      <div class="grid lg:grid-cols-5 gap-8">
 
-        <!-- Panel de Decisión y Metadatos (se muestra una vez generado) -->
-        <div id="gold-decision-panel" class="hidden space-y-4 fade-in">
+        <!-- Columna izquierda: formulario de generación (2/5) -->
+        <div class="lg:col-span-2 space-y-6">
           <div>
-            <span class="text-xs font-semibold text-slate-400 uppercase tracking-wide">Datos Demográficos Ficticios</span>
-            <div class="grid grid-cols-2 gap-3 mt-1.5">
-              <div class="bg-slate-100 rounded-lg p-2.5">
-                <p class="text-xs text-slate-400">Género</p>
-                <p class="text-sm font-semibold text-slate-700" id="gold-meta-genero">—</p>
+            <h2 class="text-xl font-extrabold text-slate-900 dark:text-white tracking-tight">Simulador de Candidatos</h2>
+            <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Generá perfiles aleatorios basados en tu JD, evalúalos manualmente y agregalos al Gold Standard.</p>
+          </div>
+
+          <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800/80 rounded-3xl p-5 space-y-5 shadow-sm">
+            <div>
+              <label class="label">Puesto Objetivo (JD)</label>
+              <select id="sel-gold-cargo" class="field"></select>
+            </div>
+
+            <!-- Filtros demográficos opcionales -->
+            <div class="space-y-4 bg-slate-50 dark:bg-slate-950 p-4 border border-slate-200 dark:border-slate-800 rounded-2xl">
+              <p class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Filtros de Simulación</p>
+              
+              <div>
+                <label class="label text-xs text-slate-600 dark:text-slate-400">Género Sugerido</label>
+                <select id="sel-gold-gender" class="field bg-white dark:bg-slate-900">
+                  <option value="">Aleatorio</option>
+                  <option value="F">Femenino (F)</option>
+                  <option value="M">Masculino (M)</option>
+                </select>
               </div>
-              <div class="bg-slate-100 rounded-lg p-2.5">
-                <p class="text-xs text-slate-400">Edad</p>
-                <p class="text-sm font-semibold text-slate-700" id="gold-meta-edad">—</p>
+
+              <div>
+                <label class="label text-xs text-slate-600 dark:text-slate-400">Rango de Edad</label>
+                <select id="sel-gold-age" class="field bg-white dark:bg-slate-900">
+                  <option value="">Aleatorio</option>
+                  <option value="23-35">Joven (23-35)</option>
+                  <option value="36-45">Medio (36-45)</option>
+                  <option value="46-58">Senior (46-58)</option>
+                </select>
+              </div>
+
+              <div>
+                <label class="label text-xs text-slate-600 dark:text-slate-400">Afinidad del Perfil</label>
+                <select id="sel-gold-afinidad" class="field bg-white dark:bg-slate-900">
+                  <option value="">Aleatorio</option>
+                  <option value="alto">Alto (Altamente calificado)</option>
+                  <option value="medio">Medio (Cumple básico / brechas)</option>
+                  <option value="bajo">Bajo (No apto / descarta)</option>
+                </select>
               </div>
             </div>
-          </div>
 
-          <div>
-            <label class="label">Afinidad Simulación (Referencia)</label>
-            <span id="gold-meta-afinidad" class="inline-block text-xs font-semibold px-2.5 py-1 rounded-full uppercase">—</span>
-          </div>
+            <button id="btn-gold-generar" onclick="generarCandidato()"
+              class="w-full bg-brand-600 hover:bg-brand-700 dark:bg-brand-500 dark:hover:bg-brand-600 text-white font-bold py-3.5 rounded-xl transition-all shadow-md text-sm">
+              Simular Candidato
+            </button>
 
-          <div class="space-y-2">
-            <label class="label">Evaluación Manual (Tu Decisión de Experto)</label>
-            <div class="grid grid-cols-2 gap-3">
-              <button id="btn-dec-apto" onclick="setDecision('APTO')"
-                class="border border-slate-200 hover:border-emerald-500 hover:bg-emerald-50 text-slate-600 font-semibold py-3 rounded-xl transition-all text-sm flex items-center justify-center gap-1.5">
-                <span class="text-lg">✓</span> APTO
-              </button>
-              <button id="btn-dec-noapto" onclick="setDecision('NO_APTO')"
-                class="border border-slate-200 hover:border-red-500 hover:bg-red-50 text-slate-600 font-semibold py-3 rounded-xl transition-all text-sm flex items-center justify-center gap-1.5">
-                <span class="text-lg">✕</span> NO APTO
+            <hr class="border-slate-200 dark:border-slate-800" />
+
+            <!-- Decision card panel -->
+            <div id="gold-decision-panel" class="hidden space-y-5 fade-in">
+              <div>
+                <span class="text-[10px] font-bold text-slate-450 dark:text-slate-500 uppercase tracking-wider">Demográficos Generados</span>
+                <div class="grid grid-cols-2 gap-3 mt-1.5">
+                  <div class="bg-slate-100/50 dark:bg-slate-800/50 border border-slate-200/50 dark:border-slate-700/50 rounded-xl p-3">
+                    <p class="text-[10px] text-slate-400 uppercase font-semibold">Género</p>
+                    <p class="text-xs font-bold text-slate-700 dark:text-slate-300 mt-0.5" id="gold-meta-genero">—</p>
+                  </div>
+                  <div class="bg-slate-100/50 dark:bg-slate-800/50 border border-slate-200/50 dark:border-slate-700/50 rounded-xl p-3">
+                    <p class="text-[10px] text-slate-400 uppercase font-semibold">Edad</p>
+                    <p class="text-xs font-bold text-slate-700 dark:text-slate-300 mt-0.5" id="gold-meta-edad">—</p>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <label class="label">Nivel de Afinidad (Referencia)</label>
+                <span id="gold-meta-afinidad" class="inline-block text-xs font-bold px-3 py-1 rounded-full uppercase">—</span>
+              </div>
+
+              <div class="space-y-2">
+                <label class="label">Evaluación de Experto (Tu Decisión)</label>
+                <div class="grid grid-cols-2 gap-3">
+                  <button id="btn-dec-apto" onclick="setDecision('APTO')"
+                    class="border border-slate-200 dark:border-slate-700 hover:border-emerald-500 hover:bg-emerald-50/50 dark:hover:bg-emerald-950/20 text-slate-600 dark:text-slate-300 font-bold py-3.5 rounded-xl transition-all text-sm flex items-center justify-center gap-1.5 shadow-sm">
+                    ✓ APTO
+                  </button>
+                  <button id="btn-dec-noapto" onclick="setDecision('NO_APTO')"
+                    class="border border-slate-200 dark:border-slate-700 hover:border-red-500 hover:bg-red-50/50 dark:hover:bg-red-950/20 text-slate-600 dark:text-slate-300 font-bold py-3.5 rounded-xl transition-all text-sm flex items-center justify-center gap-1.5 shadow-sm">
+                    ✕ NO APTO
+                  </button>
+                </div>
+              </div>
+
+              <!-- Cronometro -->
+              <div class="flex items-center justify-between bg-brand-50 dark:bg-brand-950/20 border border-brand-200 dark:border-brand-900/50 rounded-xl p-3.5 text-sm">
+                <span class="text-brand-700 dark:text-brand-400 font-bold">Tiempo de Análisis:</span>
+                <span id="gold-timer" class="font-mono font-black text-brand-700 dark:text-brand-400">00:00</span>
+              </div>
+
+              <button id="btn-gold-guardar" onclick="guardarDecisionGold()" disabled
+                class="w-full bg-emerald-600 hover:bg-emerald-700 dark:bg-emerald-500 dark:hover:bg-emerald-600 disabled:bg-slate-200 dark:disabled:bg-slate-800 disabled:text-slate-400 disabled:cursor-not-allowed text-white font-bold py-3.5 rounded-xl transition-all text-sm">
+                Confirmar y Guardar en Gold Standard
               </button>
             </div>
           </div>
+        </div>
 
-          <!-- Cronómetro visible del reclutador -->
-          <div class="flex items-center justify-between bg-blue-50 border border-blue-200 rounded-xl p-3 text-sm">
-            <span class="text-blue-700 font-medium">Tiempo de Lectura:</span>
-            <span id="gold-timer" class="font-mono font-bold text-blue-700">00:00</span>
+        <!-- Columna derecha: visualización del CV simulado (3/5) -->
+        <div class="lg:col-span-3 space-y-4">
+          <div class="flex items-center justify-between flex-wrap gap-2">
+            <label class="label uppercase tracking-wide text-xs font-semibold text-slate-450">Texto del CV Simulado</label>
+            <span class="text-[10px] text-slate-400">Podes editar el texto libremente antes de guardarlo.</span>
           </div>
 
-          <button id="btn-gold-guardar" onclick="guardarDecisionGold()" disabled
-            class="w-full bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-300 disabled:cursor-not-allowed text-white font-semibold py-3 rounded-xl transition-colors text-sm">
-            Confirmar y Guardar en Gold Standard
+          <div id="gold-cv-placeholder" class="border-2 border-dashed border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 rounded-3xl p-10 text-center flex flex-col items-center justify-center min-h-[500px]">
+            <svg class="w-12 h-12 text-slate-300 dark:text-slate-700 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+            </svg>
+            <p class="text-sm font-semibold text-slate-500 dark:text-slate-400">Ningún candidato generado aún</p>
+            <p class="text-xs text-slate-400 dark:text-slate-500 mt-1">Presioná en "Simular Candidato" en el panel izquierdo.</p>
+          </div>
+
+          <div id="gold-cv-loading" class="hidden bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-10 text-center flex flex-col items-center justify-center gap-3 min-h-[500px]">
+            <div class="flex gap-2">
+              <div class="dot w-3 h-3 bg-brand-500 rounded-full"></div>
+              <div class="dot w-3 h-3 bg-brand-500 rounded-full"></div>
+              <div class="dot w-3 h-3 bg-brand-500 rounded-full"></div>
+            </div>
+            <p class="text-sm font-semibold text-slate-650 dark:text-slate-350">Generando perfil simulado en español de acuerdo a las pautas de la tesis...</p>
+          </div>
+
+          <textarea id="gold-cv-text" class="hidden w-full h-[550px] border border-slate-200 dark:border-slate-800 rounded-3xl p-5 font-mono text-sm leading-relaxed outline-none focus:border-brand-500 dark:focus:border-brand-400 bg-white dark:bg-slate-900 dark:text-slate-100 transition-colors shadow-sm" placeholder="Contenido del currículum simulado..."></textarea>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ═══ TAB MÉTRICAS TFE ════════════════════════════════════════════════ -->
+    <div id="p-metricas" class="hidden fade-in space-y-6">
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+          <h2 class="text-xl font-extrabold text-slate-900 dark:text-white tracking-tight">Métricas del Experimento TFE</h2>
+          <p class="text-sm text-slate-500 dark:text-slate-400">Validación de hipótesis de eficiencia (H1), eficacia (H2), equidad (H3) y calidad RAG.</p>
+        </div>
+        
+        <div class="flex gap-2 items-center flex-wrap self-start">
+          <select id="sel-metrics-version" onchange="cargarVersionMetricas(this.value)" class="text-xs border border-slate-250 dark:border-slate-800 rounded-xl px-3 py-2.5 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 outline-none shadow-sm"></select>
+          <button id="btn-save-metrics" onclick="guardarMetricasMongo()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 px-4 rounded-xl text-xs transition-all shadow-sm flex items-center gap-1.5">
+            💾 Guardar Corrida
+          </button>
+          <button id="btn-descargar-tablas" onclick="descargarTablasZip()" class="hidden bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 px-4 rounded-xl text-xs transition-all shadow-sm flex items-center gap-1.5">
+            📥 Descargar ZIP
+          </button>
+          <button onclick="cargarMetricas()" class="bg-brand-600 hover:bg-brand-700 text-white font-bold py-2.5 px-4 rounded-xl text-xs transition-all shadow-sm flex items-center gap-1.5">
+            ↻ Recargar
           </button>
         </div>
       </div>
 
-      <!-- Columna derecha: visualización y edición del CV generado (3/5) -->
-      <div class="lg:col-span-3 space-y-4">
-        <div class="flex items-center justify-between">
-          <label class="label uppercase tracking-wide text-xs font-semibold text-slate-400">Texto del CV Ficticio Generado</label>
-          <span class="text-xs text-slate-400">Podés editar el texto directamente si detectás algún error</span>
-        </div>
-
-        <!-- Textarea o Placeholder -->
-        <div id="gold-cv-placeholder" class="border-2 border-dashed border-slate-200 bg-white rounded-2xl p-10 text-center flex flex-col items-center justify-center h-[500px]">
-          <svg class="w-12 h-12 text-slate-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
-              d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-          </svg>
-          <p class="text-sm font-medium text-slate-500">Ningún candidato generado aún</p>
-          <p class="text-xs text-slate-400 mt-1">Hacé click en "Simular Candidato Aleatorio" para comenzar.</p>
-        </div>
-
-        <div id="gold-cv-loading" class="hidden border border-slate-200 bg-white rounded-2xl p-10 text-center flex flex-col items-center justify-center gap-3 h-[500px]">
-          <div class="flex gap-2">
-            <div class="dot w-2.5 h-2.5 bg-blue-500 rounded-full"></div>
-            <div class="dot w-2.5 h-2.5 bg-blue-500 rounded-full"></div>
-            <div class="dot w-2.5 h-2.5 bg-blue-500 rounded-full"></div>
+      <!-- Banner Histórico -->
+      <div id="banner-version-historica" class="hidden bg-indigo-50 dark:bg-indigo-950/20 border border-indigo-200 dark:border-indigo-900/50 rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-indigo-800 dark:text-indigo-350">
+        <div class="flex items-center gap-2">
+          <span class="text-base shrink-0">📊</span>
+          <div class="text-xs">
+            <span class="font-bold">Modo de Consulta Histórica:</span> Viendo datos guardados el <span id="lbl-version-fecha" class="font-bold text-slate-900 dark:text-white"></span>: <span id="lbl-version-comentario" class="italic font-medium"></span>
           </div>
-          <p class="text-sm font-medium text-slate-600">Claude está redactando un CV rioplatense a medida…</p>
         </div>
-
-        <textarea id="gold-cv-text" class="hidden w-full h-[500px] border border-slate-200 rounded-2xl p-5 font-mono text-sm leading-relaxed outline-none focus:border-blue-500 bg-white" placeholder="Currículum…"></textarea>
+        <button onclick="volverALive()" class="text-xs bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-550 dark:hover:bg-indigo-600 text-white font-bold py-1.5 px-3 rounded-lg transition-colors shrink-0">
+          Volver a la corrida activa
+        </button>
       </div>
 
-    </div>
-  </div>
+      <!-- Advertencia cuando no hay datos -->
+      <div id="metricas-no-data" class="hidden bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900/50 rounded-3xl p-8 text-center space-y-4">
+        <div class="w-14 h-14 bg-amber-100 dark:bg-amber-900/20 rounded-full flex items-center justify-center mx-auto text-amber-600 dark:text-amber-400 font-extrabold text-xl">!</div>
+        <div>
+          <p class="text-base font-extrabold text-amber-800 dark:text-amber-400">Sin datos de la Tesis actualmente</p>
+          <p class="text-xs text-amber-600 dark:text-amber-550 max-w-md mx-auto mt-1">
+            Para graficar las hipótesis del TFE, debés correr el experimento completo de los 300 candidatos. 
+            Podés iniciarlo desde la pestaña <strong>Gestionar Cargos</strong> presionando en <strong>Correr Tesis</strong>.
+          </p>
+        </div>
+      </div>
 
-  <!-- ═══ TAB MÉTRICAS TFE ════════════════════════════════════════════════ -->
-  <div id="p-metricas" class="hidden fade-in space-y-6">
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <!-- Contenido visualizado -->
+      <div id="metricas-content" class="hidden space-y-6">
+        
+        <!-- H1 Card -->
+        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800/80 rounded-3xl p-6 space-y-4 shadow-sm">
+          <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3 flex-wrap gap-2">
+            <div>
+              <h3 class="text-sm font-bold text-slate-850 dark:text-white font-semibold">Hipótesis H1 — Eficiencia de Procesamiento</h3>
+              <p class="text-xs text-slate-400 dark:text-slate-500">Objetivo: Reducir el tiempo de lectura por candidato ($T_{cand}$) en comparación con la línea base manual (C0).</p>
+            </div>
+            <span class="text-[9px] font-bold px-2 py-0.5 rounded bg-brand-50 text-brand-700 dark:bg-brand-950/30 dark:text-brand-400 uppercase tracking-wider">U-Test Mann-Whitney</span>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs border-collapse">
+              <thead>
+                <tr class="bg-slate-50 dark:bg-slate-950 text-slate-450 dark:text-slate-400 font-bold border-b border-slate-100 dark:border-slate-800">
+                  <th class="py-3 px-4">Configuración</th>
+                  <th class="py-3 px-4 text-center">Mediana C0 (s)</th>
+                  <th class="py-3 px-4 text-center">Mediana Cx (s)</th>
+                  <th class="py-3 px-4 text-center">Speedup multiplicador</th>
+                  <th class="py-3 px-4 text-center">p-valor</th>
+                  <th class="py-3 px-4 text-center">H1 Aceptada</th>
+                </tr>
+              </thead>
+              <tbody id="tbl-h1" class="divide-y divide-slate-100 dark:divide-slate-800"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- H2 Card -->
+        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800/80 rounded-3xl p-6 space-y-4 shadow-sm">
+          <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3 flex-wrap gap-2">
+            <div>
+              <h3 class="text-sm font-bold text-slate-850 dark:text-white font-semibold">Hipótesis H2 — Eficacia en el Screening</h3>
+              <p class="text-xs text-slate-400 dark:text-slate-500">Objetivo: Mantener una correspondencia de alto desempeño con el Gold Standard de los reclutadores (F1 Macro ≥ 0.85, AUC-ROC ≥ 0.90).</p>
+            </div>
+            <span class="text-[9px] font-bold px-2 py-0.5 rounded bg-brand-50 text-brand-700 dark:bg-brand-950/30 dark:text-brand-400 uppercase tracking-wider">F1 / AUC-ROC</span>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs border-collapse">
+              <thead>
+                <tr class="bg-slate-50 dark:bg-slate-950 text-slate-450 dark:text-slate-400 font-bold border-b border-slate-100 dark:border-slate-800">
+                  <th class="py-3 px-4">Configuración</th>
+                  <th class="py-3 px-4 text-center">F1-score (Macro)</th>
+                  <th class="py-3 px-4 text-center">AUC-ROC</th>
+                  <th class="py-3 px-4 text-center">H2 Aceptada</th>
+                </tr>
+              </thead>
+              <tbody id="tbl-h2" class="divide-y divide-slate-100 dark:divide-slate-800"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- H3 Card -->
+        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800/80 rounded-3xl p-6 space-y-4 shadow-sm">
+          <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3 flex-wrap gap-2">
+            <div>
+              <h3 class="text-sm font-bold text-slate-850 dark:text-white font-semibold">Hipótesis H3 — Mitigación de Sesgos de Género</h3>
+              <p class="text-xs text-slate-400 dark:text-slate-500">Objetivo: Ausencia de impacto adverso en C3 aplicando anonimización. El ratio DIR debe cumplir la regla de los 4/5 de la EEOC (DIR ≥ 0.80).</p>
+            </div>
+            <span class="text-[9px] font-bold px-2 py-0.5 rounded bg-brand-50 text-brand-700 dark:bg-brand-950/30 dark:text-brand-400 uppercase tracking-wider">EEOC 4/5 Rule</span>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs border-collapse">
+              <thead>
+                <tr class="bg-slate-50 dark:bg-slate-950 text-slate-450 dark:text-slate-400 font-bold border-b border-slate-100 dark:border-slate-800">
+                  <th class="py-3 px-4">Configuración</th>
+                  <th class="py-3 px-4 text-center">Impacto Dispar (DIR)</th>
+                  <th class="py-3 px-4 text-center">Diferencia de Paridad Demográfica (SPD)</th>
+                  <th class="py-3 px-4 text-center">H3 Aceptada (DIR ≥ 0.80)</th>
+                </tr>
+              </thead>
+              <tbody id="tbl-h3" class="divide-y divide-slate-100 dark:divide-slate-800"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- RAGAS Card -->
+        <div id="ragas-card" class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800/80 rounded-3xl p-6 space-y-4 shadow-sm">
+          <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3 flex-wrap gap-2">
+            <div>
+              <h3 class="text-sm font-bold text-slate-850 dark:text-white font-semibold">Evaluación de Calidad RAG (Ragas Framework)</h3>
+              <p class="text-xs text-slate-400 dark:text-slate-500">Evaluación de fidelidad y precisión del recuperador semántico de información sobre el pipeline RAG (C2).</p>
+            </div>
+            <span class="text-[9px] font-bold px-2 py-0.5 rounded bg-brand-50 text-brand-700 dark:bg-brand-950/30 dark:text-brand-400 uppercase tracking-wider">Ragas Metrics</span>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs border-collapse">
+              <thead>
+                <tr class="bg-slate-50 dark:bg-slate-950 text-slate-450 dark:text-slate-400 font-bold border-b border-slate-100 dark:border-slate-800">
+                  <th class="py-3 px-4">Dimensión Ragas</th>
+                  <th class="py-3 px-4 text-center">Puntuación</th>
+                  <th class="py-3 px-4">Significado en el sistema</th>
+                  <th class="py-3 px-4">Método de Evaluación</th>
+                </tr>
+              </thead>
+              <tbody id="tbl-ragas" class="divide-y divide-slate-100 dark:divide-slate-800"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Charts grid -->
+        <div class="grid md:grid-cols-2 gap-6">
+          <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-5 shadow-sm space-y-4">
+            <h4 class="text-sm font-bold text-slate-850 dark:text-white">Mitigación de Sesgo por Género (Impacto Dispar - DIR)</h4>
+            <div class="relative h-64 w-full">
+              <canvas id="chart-dir"></canvas>
+            </div>
+          </div>
+          <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-5 shadow-sm space-y-4">
+            <h4 class="text-sm font-bold text-slate-850 dark:text-white">Comparativa de Desempeño (F1-score y AUC-ROC)</h4>
+            <div class="relative h-64 w-full">
+              <canvas id="chart-eficacia"></canvas>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ═══ TAB CONFIGURACIÓN .ENV ═══════════════════════════════════════════ -->
+    <div id="p-env" class="hidden fade-in space-y-6">
       <div>
-        <h2 class="text-xl font-bold text-slate-900">Métricas de Evaluación TFE</h2>
-        <p class="text-sm text-slate-500">Resultados experimentales y contrastación de hipótesis (H1, H2, H3).</p>
+        <h2 class="text-xl font-extrabold text-slate-900 dark:text-white tracking-tight">Configuración del Entorno (.env)</h2>
+        <p class="text-sm text-slate-500 dark:text-slate-400">Modifica en caliente las claves de API, bases de datos y configuraciones globales.</p>
       </div>
-      <div class="flex gap-2 items-center self-start flex-wrap">
-        <select id="sel-metrics-version" onchange="cargarVersionMetricas(this.value)" class="text-xs border border-slate-200 rounded-xl px-2.5 py-2.5 bg-white text-slate-600 outline-none shadow-sm">
-          <option value="">-- Ver Historial de Métricas --</option>
-        </select>
-        <button id="btn-save-metrics" onclick="guardarMetricasMongo()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2.5 px-4 rounded-xl text-xs transition-colors shadow-sm flex items-center gap-1.5">
-          💾 Guardar Corrida
-        </button>
-        <button id="btn-descargar-tablas" onclick="descargarTablasZip()" class="hidden bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2.5 px-4 rounded-xl text-xs transition-colors shadow-sm flex items-center gap-1.5">
-          📥 Descargar Tablas (ZIP)
-        </button>
-        <button onclick="cargarMetricas()" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 px-4 rounded-xl text-xs transition-colors shadow-sm flex items-center gap-1.5">
-          ↻ Recargar Métricas
-        </button>
-      </div>
-    </div>
 
-    <!-- Banner de Versión Histórica -->
-    <div id="banner-version-historica" class="hidden bg-indigo-50 border border-indigo-200 rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-indigo-800">
-      <div class="flex items-center gap-2">
-        <span class="text-base shrink-0">ℹ️</span>
-        <div class="text-xs">
-          <span class="font-bold">Modo Historial:</span> Viendo corrida del <span id="lbl-version-fecha" class="font-semibold text-indigo-950"></span>: <span id="lbl-version-comentario" class="italic text-indigo-900"></span>
-        </div>
-      </div>
-      <button onclick="volverALive()" class="text-xs bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-1.5 px-3 rounded-lg transition-colors shrink-0">
-        Volver a la corrida actual
-      </button>
-    </div>
-
-    <!-- Advertencia cuando no hay datos -->
-    <div id="metricas-no-data" class="hidden bg-amber-50 border border-amber-200 rounded-2xl p-6 text-center space-y-3">
-      <div class="w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center mx-auto text-amber-600 font-bold text-lg">!</div>
-      <p class="text-sm font-semibold text-amber-800">No se detectaron métricas procesadas</p>
-      <p class="text-xs text-amber-600 max-w-md mx-auto">
-        Para ver la evaluación comparativa, debés ejecutar el experimento factorial completo de los 300 CVs. 
-        Podés iniciarlo desde la pestaña <strong>Gestionar cargos</strong> haciendo click en <strong>Correr Experimento (300 CVs)</strong>.
-      </p>
-    </div>
-
-    <!-- Contenido con datos -->
-    <div id="metricas-content" class="hidden space-y-6">
-      
-      <!-- H1 Card -->
-      <div class="bg-white border border-slate-200 rounded-2xl p-5 space-y-4 shadow-sm">
-        <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-          <div>
-            <h3 class="text-sm font-bold text-slate-800 font-semibold">H1: Hipótesis de Eficiencia</h3>
-            <p class="text-xs text-slate-400">Objetivo: Reducir significativamente el tiempo de procesamiento por candidato ($T_{cand}$) frente al screening manual (C0).</p>
-          </div>
-          <span class="text-xs font-semibold px-2 py-0.5 rounded bg-blue-50 text-blue-700">Mann-Whitney U</span>
-        </div>
-        <div class="overflow-x-auto">
-          <table class="w-full text-left text-xs border-collapse">
-            <thead>
-              <tr class="bg-slate-50 text-slate-500 font-semibold border-b border-slate-100">
-                <th class="py-2.5 px-3">Configuración</th>
-                <th class="py-2.5 px-3 text-center">Mediana C0 (s)</th>
-                <th class="py-2.5 px-3 text-center">Mediana Cx (s)</th>
-                <th class="py-2.5 px-3 text-center">Speedup</th>
-                <th class="py-2.5 px-3 text-center">p-valor</th>
-                <th class="py-2.5 px-3 text-center">Aceptada</th>
-              </tr>
-            </thead>
-            <tbody id="tbl-h1" class="divide-y divide-slate-100"></tbody>
-          </table>
+      <div class="bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900/50 rounded-2xl p-4 text-amber-800 dark:text-amber-400 text-xs flex items-center gap-2">
+        <span class="text-lg">⚠️</span>
+        <div>
+          <span class="font-bold">Aviso de reinicio:</span> Guardar los cambios rescribirá el archivo local <code>.env</code> y forzará un reinicio controlado del servidor Uvicorn en menos de 10 segundos.
         </div>
       </div>
 
-      <!-- H2 Card -->
-      <div class="bg-white border border-slate-200 rounded-2xl p-5 space-y-4 shadow-sm">
-        <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-          <div>
-            <h3 class="text-sm font-bold text-slate-800 font-semibold">H2: Hipótesis de Eficacia</h3>
-            <p class="text-xs text-slate-400">Objetivo: Lograr un desempeño comparable al Gold Standard (F1-score macro ≥ 0.85 y AUC-ROC ≥ 0.90).</p>
-          </div>
-          <span class="text-xs font-semibold px-2 py-0.5 rounded bg-blue-50 text-blue-700">F1 / AUC-ROC</span>
+      <div id="env-loader" class="flex flex-col items-center justify-center py-20 gap-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl">
+        <div class="flex gap-2">
+          <div class="dot w-2.5 h-2.5 bg-brand-500 rounded-full"></div>
+          <div class="dot w-2.5 h-2.5 bg-brand-500 rounded-full"></div>
+          <div class="dot w-2.5 h-2.5 bg-brand-500 rounded-full"></div>
         </div>
-        <div class="overflow-x-auto">
-          <table class="w-full text-left text-xs border-collapse">
-            <thead>
-              <tr class="bg-slate-50 text-slate-500 font-semibold border-b border-slate-100">
-                <th class="py-2.5 px-3">Configuración</th>
-                <th class="py-2.5 px-3 text-center">F1-score (macro)</th>
-                <th class="py-2.5 px-3 text-center">AUC-ROC</th>
-                <th class="py-2.5 px-3 text-center">Aceptada</th>
-              </tr>
-            </thead>
-            <tbody id="tbl-h2" class="divide-y divide-slate-100"></tbody>
-          </table>
-        </div>
+        <p class="text-xs text-slate-450 dark:text-slate-450 font-medium">Recuperando variables del servidor…</p>
       </div>
 
-      <!-- H3 Card -->
-      <div class="bg-white border border-slate-200 rounded-2xl p-5 space-y-4 shadow-sm">
-        <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-          <div>
-            <h3 class="text-sm font-bold text-slate-800 font-semibold">H3: Hipótesis de Equidad</h3>
-            <p class="text-xs text-slate-400">Objetivo: Garantizar ausencia de sesgo por género (DIR ≥ 0.80 según regla de los 4/5 de la EEOC, SPD cercano a 0) en C3 (con anonimización).</p>
-          </div>
-          <span class="text-xs font-semibold px-2 py-0.5 rounded bg-blue-50 text-blue-700">DIR / SPD</span>
-        </div>
-        <div class="overflow-x-auto">
-          <table class="w-full text-left text-xs border-collapse">
-            <thead>
-              <tr class="bg-slate-50 text-slate-500 font-semibold border-b border-slate-100">
-                <th class="py-2.5 px-3">Configuración</th>
-                <th class="py-2.5 px-3 text-center">DIR (género)</th>
-                <th class="py-2.5 px-3 text-center">SPD (género)</th>
-                <th class="py-2.5 px-3 text-center">Aceptada (DIR ≥ 0.80)</th>
-              </tr>
-            </thead>
-            <tbody id="tbl-h3" class="divide-y divide-slate-100"></tbody>
-          </table>
-        </div>
-      </div>
-
-      <!-- RAGAS Card -->
-      <div id="ragas-card" class="bg-white border border-slate-200 rounded-2xl p-5 space-y-4 shadow-sm">
-        <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-          <div>
-            <h3 class="text-sm font-bold text-slate-800 font-semibold">Evaluación Técnica RAG (Métricas RAGAS)</h3>
-            <p class="text-xs text-slate-400">Objetivo: Evaluar la fidelidad de la justificación (Faithfulness) y relevancia del contexto (Context Precision) del pipeline C2.</p>
-          </div>
-          <span class="text-xs font-semibold px-2 py-0.5 rounded bg-blue-50 text-blue-700">RAG Quality</span>
-        </div>
-        <div class="overflow-x-auto">
-          <table class="w-full text-left text-xs border-collapse">
-            <thead>
-              <tr class="bg-slate-50 text-slate-500 font-semibold border-b border-slate-100">
-                <th class="py-2.5 px-3">Métrica</th>
-                <th class="py-2.5 px-3 text-center">Valor</th>
-                <th class="py-2.5 px-3">Interpretación</th>
-                <th class="py-2.5 px-3">Método</th>
-              </tr>
-            </thead>
-            <tbody id="tbl-ragas" class="divide-y divide-slate-100"></tbody>
-          </table>
-        </div>
-      </div>
-
-      <!-- Gráficos de Análisis Visual -->
-      <div class="grid md:grid-cols-2 gap-6">
-        <!-- Gráfico 1: Equidad -->
-        <div class="bg-white border border-slate-200 rounded-2xl p-5 space-y-4 shadow-sm">
-          <h3 class="text-sm font-bold text-slate-800 font-semibold">Comparativa de Sesgo de Género (DIR)</h3>
-          <p class="text-xs text-slate-400 font-medium">Disparate Impact Ratio (DIR) para C2 vs C3. El umbral regulatorio de la EEOC es ≥ 0.80.</p>
-          <div class="relative w-full h-64">
-            <canvas id="chart-dir"></canvas>
-          </div>
-        </div>
+      <!-- Env Form -->
+      <div id="env-form" class="hidden space-y-6">
         
-        <!-- Gráfico 2: Eficacia -->
-        <div class="bg-white border border-slate-200 rounded-2xl p-5 space-y-4 shadow-sm">
-          <h3 class="text-sm font-bold text-slate-800 font-semibold">Comparativa de Eficacia (F1 y AUC-ROC)</h3>
-          <p class="text-xs text-slate-400 font-medium">Precisión global vs el Gold Standard manual para cada configuración.</p>
-          <div class="relative w-full h-64">
-            <canvas id="chart-eficacia"></canvas>
-          </div>
-        </div>
-      </div>
-
-    </div>
-  </div>
-
-  <!-- ═══ TAB CONFIGURACIÓN .ENV ═══════════════════════════════════════════ -->
-  <div id="p-env" class="hidden fade-in space-y-6">
-    <div>
-      <h2 class="text-xl font-bold text-slate-900">Configuración del Sistema (.env)</h2>
-      <p class="text-sm text-slate-500">Administrá las credenciales de APIs, modelos de lenguaje y bases de datos.</p>
-    </div>
-
-    <div class="bg-amber-50 border border-amber-200 rounded-2xl p-4 text-amber-800 text-xs flex items-center gap-2">
-      <span class="text-lg">⚠️</span>
-      <div>
-        <span class="font-bold">Nota de Reinicio:</span> Guardar los cambios reescribirá el archivo <code>.env</code> y reiniciará el servidor de FastAPI automáticamente para aplicar los nuevos valores.
-      </div>
-    </div>
-
-    <!-- Env Loading Spinner -->
-    <div id="env-loader" class="flex flex-col items-center justify-center py-20 gap-3 bg-white border border-slate-200 rounded-2xl">
-      <div class="flex gap-2">
-        <div class="dot w-2 h-2 bg-blue-500 rounded-full"></div>
-        <div class="dot w-2 h-2 bg-blue-500 rounded-full"></div>
-        <div class="dot w-2 h-2 bg-blue-500 rounded-full"></div>
-      </div>
-      <p class="text-xs text-slate-400">Cargando variables del archivo .env…</p>
-    </div>
-
-    <!-- Config Form -->
-    <div id="env-form" class="hidden space-y-6">
-      <div class="grid md:grid-cols-2 gap-6">
-        
-        <!-- Proveedores LLM -->
-        <div class="bg-white border border-slate-200 rounded-2xl p-5 space-y-4 shadow-sm">
-          <h3 class="text-sm font-bold text-slate-800 border-b border-slate-100 pb-2">Modelos de Lenguaje (LLMs)</h3>
+        <div class="grid md:grid-cols-2 gap-6">
           
-          <div>
-            <label class="label">Proveedor Activo</label>
-            <select id="env-LLM_PROVIDER" class="field">
-              <option value="anthropic">Anthropic (Claude)</option>
-              <option value="openai">OpenAI (GPT)</option>
-              <option value="google">Google (Gemini)</option>
-            </select>
+          <!-- LLM Section -->
+          <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 space-y-4 shadow-sm">
+            <h3 class="text-sm font-bold text-slate-850 dark:text-white border-b border-slate-100 dark:border-slate-800 pb-2">Proveedores e Inteligencia Artificial (LLM)</h3>
+            
+            <div>
+              <label class="label">Proveedor de LLM Activo</label>
+              <select id="env-LLM_PROVIDER" class="field">
+                <option value="anthropic">Anthropic (Claude Sonnet)</option>
+                <option value="openai">OpenAI (GPT-4)</option>
+                <option value="google">Google Cloud (Gemini)</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="label">Anthropic API Key</label>
+              <input id="env-ANTHROPIC_API_KEY" type="password" placeholder="sk-ant-..." class="field" />
+            </div>
+
+            <div>
+              <label class="label">OpenAI API Key</label>
+              <input id="env-OPENAI_API_KEY" type="password" placeholder="sk-proj-..." class="field" />
+            </div>
+
+            <div>
+              <label class="label">Google API Key (Gemini Developer)</label>
+              <input id="env-GOOGLE_API_KEY" type="password" placeholder="AIzaSy..." class="field" />
+            </div>
           </div>
-          
-          <div>
-            <label class="label">Anthropic API Key</label>
-            <input id="env-ANTHROPIC_API_KEY" type="password" placeholder="sk-ant-..." class="field" />
-            <p class="text-[10px] text-slate-400 mt-1">Utilizado como modelo evaluador principal.</p>
+
+          <!-- Vector Store Section -->
+          <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 space-y-4 shadow-sm">
+            <h3 class="text-sm font-bold text-slate-850 dark:text-white border-b border-slate-100 dark:border-slate-800 pb-2">Azure AI Search (Base de Datos Vectorial)</h3>
+            
+            <div>
+              <label class="label">Azure Search Endpoint</label>
+              <input id="env-AZURE_SEARCH_ENDPOINT" type="text" placeholder="https://..." class="field" />
+            </div>
+
+            <div>
+              <label class="label">Azure Search Admin Key</label>
+              <input id="env-AZURE_SEARCH_KEY" type="password" class="field" />
+            </div>
+
+            <div>
+              <label class="label">Índice Académico (Tesis)</label>
+              <input id="env-AZURE_SEARCH_INDEX" type="text" placeholder="sistac-cvs" class="field" />
+            </div>
+
+            <div>
+              <label class="label">Índice Validación Externa (Empresa)</label>
+              <input id="env-AZURE_SEARCH_INDEX_EXTERNAL" type="text" placeholder="sistac-cvs-external" class="field" />
+            </div>
           </div>
-          
-          <div>
-            <label class="label">OpenAI API Key</label>
-            <input id="env-OPENAI_API_KEY" type="password" placeholder="sk-proj-..." class="field" />
-            <p class="text-[10px] text-slate-400 mt-1">Utilizado para embeddings u otros modelos.</p>
-          </div>
-          
-          <div>
-            <label class="label">Google API Key (Gemini)</label>
-            <input id="env-GOOGLE_API_KEY" type="password" placeholder="AIzaSy..." class="field" />
-            <p class="text-[10px] text-slate-400 mt-1">Requerido para la extracción de texto OCR en PDFs e imágenes.</p>
-          </div>
+
         </div>
 
-        <!-- Azure AI Search -->
-        <div class="bg-white border border-slate-200 rounded-2xl p-5 space-y-4 shadow-sm">
-          <h3 class="text-sm font-bold text-slate-800 border-b border-slate-100 pb-2">Azure AI Search (Vector Store)</h3>
+        <!-- Database & Other Section -->
+        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 space-y-5 shadow-sm">
+          <h3 class="text-sm font-bold text-slate-850 dark:text-white border-b border-slate-100 dark:border-slate-800 pb-2">Persistencia y Modelos Adicionales</h3>
           
-          <div>
-            <label class="label">Azure Search Endpoint</label>
-            <input id="env-AZURE_SEARCH_ENDPOINT" type="text" placeholder="https://..." class="field" />
-          </div>
-          
-          <div>
-            <label class="label">Azure Search Admin Key</label>
-            <input id="env-AZURE_SEARCH_KEY" type="password" placeholder="Clave de administración de Azure" class="field" />
-          </div>
-          
-          <div>
-            <label class="label">Nombre del Índice (Académico/Tesis)</label>
-            <input id="env-AZURE_SEARCH_INDEX" type="text" placeholder="sistac-cvs" class="field" />
+          <div class="grid md:grid-cols-2 gap-4">
+            <div>
+              <label class="label">MongoDB Connection String (MONGO_URI)</label>
+              <input id="env-MONGO_URI" type="text" placeholder="mongodb://..." class="field" />
+            </div>
+            
+            <div>
+              <label class="label">HuggingFace Hub Token (HF_TOKEN)</label>
+              <input id="env-HF_TOKEN" type="password" placeholder="hf_..." class="field" />
+            </div>
           </div>
 
-          <div>
-            <label class="label">Nombre del Índice (Empresa Real/Externo)</label>
-            <input id="env-AZURE_SEARCH_INDEX_EXTERNAL" type="text" placeholder="sistac-cvs-external" class="field" />
+          <div class="grid md:grid-cols-2 gap-4">
+            <div>
+              <label class="label">Dataset de Trabajo Activo</label>
+              <select id="env-USE_EXTERNAL_DATA" class="field">
+                <option value="true">Empresa Real (Validación Externa)</option>
+                <option value="false">Piloto / Académico (Simulado)</option>
+              </select>
+            </div>
           </div>
         </div>
 
-      </div>
-
-      <!-- MongoDB & Otros -->
-      <div class="bg-white border border-slate-200 rounded-2xl p-5 space-y-4 shadow-sm">
-        <h3 class="text-sm font-bold text-slate-800 border-b border-slate-100 pb-2">Bases de Datos y Configuraciones Generales</h3>
-        
-        <div class="grid md:grid-cols-2 gap-4">
-          <div>
-            <label class="label">MongoDB Connection URI</label>
-            <input id="env-MONGO_URI" type="text" placeholder="mongodb://localhost:27017" class="field" />
-            <p class="text-[10px] text-slate-400 mt-1">Conexión local o remota a la base de datos de persistencia e histórico.</p>
-          </div>
-
-          <div>
-            <label class="label">HuggingFace Token (HF_TOKEN)</label>
-            <input id="env-HF_TOKEN" type="password" placeholder="hf_..." class="field" />
-            <p class="text-[10px] text-slate-400 mt-1">Evita warnings de descargas del modelo de embedding sentence-transformers.</p>
-          </div>
+        <div class="flex justify-end gap-3.5">
+          <button onclick="tab('evaluar')" class="border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400 font-bold py-3 px-6 rounded-xl transition-all text-sm shadow-sm">
+            Cancelar
+          </button>
+          <button id="btn-save-env" onclick="guardarEnv()" class="bg-brand-600 hover:bg-brand-700 text-white font-bold py-3 px-8 rounded-xl transition-all shadow-md text-sm">
+            Guardar y Reiniciar Servidor
+          </button>
         </div>
 
-        <div class="grid md:grid-cols-2 gap-4 pt-2">
-          <div>
-            <label class="label">Dataset Activo (Validación Externa)</label>
-            <select id="env-USE_EXTERNAL_DATA" class="field">
-              <option value="true">Empresa Real (USE_EXTERNAL_DATA=true)</option>
-              <option value="false">Académico / Piloto (USE_EXTERNAL_DATA=false)</option>
-            </select>
-            <p class="text-[10px] text-slate-400 mt-1">Filtra la base de datos de cargos y CVs según el set de datos externo.</p>
-          </div>
-        </div>
-      </div>
-
-      <div class="flex justify-end gap-3">
-        <button onclick="tab('evaluar')" class="border border-slate-200 hover:bg-slate-50 text-slate-600 font-semibold py-3 px-6 rounded-xl transition-all text-sm">
-          Cancelar
-        </button>
-        <button id="btn-save-env" onclick="guardarEnv()" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-8 rounded-xl transition-all shadow-md shadow-blue-100 text-sm">
-          Guardar y Reiniciar Servidor
-        </button>
       </div>
     </div>
-  </div>
 
-</main>
+  </main>
 
-<div id="toast" class="hidden fixed bottom-5 right-5 px-4 py-3 rounded-xl shadow-xl text-sm font-medium z-50 max-w-xs"></div>
+  <footer class="bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 py-5 transition-colors text-center text-xs text-slate-400 dark:text-slate-500 font-medium">
+    <div class="max-w-6xl mx-auto px-5">
+      SISTAC © 2026 — Trabajo de Fin de Estudios (TFE) · Maestría en IA y Data Science UNIR
+    </div>
+  </footer>
 
-</div> <!-- Closing app-container -->
+  <!-- Notification Toast -->
+  <div id="toast" class="hidden fixed bottom-6 right-6 px-4 py-3.5 rounded-2xl shadow-2xl text-sm font-bold z-50 max-w-xs transition-all slide-in-bottom"></div>
 
+</div>
+
+<!-- JavaScript client-side logic -->
 <script>
 const API = '';
 let cargos = {};
@@ -804,6 +1037,40 @@ let lastFetchedMetrics = null; // caché de la corrida actual
 let chartDir = null;
 let chartEficacia = null;
 let currentUserRole = null;
+
+// ── Tema Claro / Oscuro ──────────────────────────────────────────────────
+function initTheme() {
+  const current = localStorage.getItem('sistac_theme') || 'light';
+  if (current === 'dark') {
+    document.documentElement.classList.add('dark');
+    document.getElementById('theme-icon-sun').classList.remove('hidden');
+    document.getElementById('theme-icon-moon').classList.add('hidden');
+  } else {
+    document.documentElement.classList.remove('dark');
+    document.getElementById('theme-icon-sun').classList.add('hidden');
+    document.getElementById('theme-icon-moon').classList.remove('hidden');
+  }
+}
+
+function toggleTheme() {
+  const isDark = document.documentElement.classList.toggle('dark');
+  localStorage.setItem('sistac_theme', isDark ? 'dark' : 'light');
+  
+  const sun = document.getElementById('theme-icon-sun');
+  const moon = document.getElementById('theme-icon-moon');
+  if (isDark) {
+    sun.classList.remove('hidden');
+    moon.classList.add('hidden');
+  } else {
+    sun.classList.add('hidden');
+    moon.classList.remove('hidden');
+  }
+  
+  // Re-dibujar gráficos con los nuevos colores del tema si están renderizados
+  if (lastFetchedMetrics) {
+    renderMetricasUI(lastFetchedMetrics);
+  }
+}
 
 // ── Login & Roles ────────────────────────────────────────────────────────
 function login() {
@@ -836,7 +1103,7 @@ function logout() {
   document.getElementById('app-container').classList.add('hidden');
   document.getElementById('login-container').classList.remove('hidden');
   
-  // Clear credentials inputs
+  // Clear inputs
   document.getElementById('login-username').value = '';
   document.getElementById('login-password').value = '';
 }
@@ -846,14 +1113,13 @@ function showApp(role) {
   document.getElementById('login-container').classList.add('hidden');
   document.getElementById('app-container').classList.remove('hidden');
 
-  // Update header badge
   const badge = document.getElementById('lbl-user-role');
   const userHeader = document.getElementById('user-info-header');
   
-  badge.className = "text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider";
+  badge.className = "text-[9px] font-extrabold px-2.5 py-1 rounded-md uppercase tracking-wider transition-colors";
   if (role === 'admin') {
     badge.textContent = 'Administrador';
-    badge.classList.add('bg-purple-100', 'text-purple-700');
+    badge.classList.add('bg-purple-100', 'text-purple-700', 'dark:bg-purple-950/40', 'dark:text-purple-400');
     
     // Show Admin features
     document.getElementById('tb-gold').classList.remove('hidden');
@@ -862,7 +1128,7 @@ function showApp(role) {
     document.getElementById('actions-azure-panel').classList.remove('hidden');
   } else {
     badge.textContent = 'Gestión Humana';
-    badge.classList.add('bg-teal-100', 'text-teal-700');
+    badge.classList.add('bg-teal-100', 'text-teal-700', 'dark:bg-teal-950/40', 'dark:text-teal-400');
     
     // Hide Admin features
     document.getElementById('tb-gold').classList.add('hidden');
@@ -870,7 +1136,7 @@ function showApp(role) {
     document.getElementById('tb-env').classList.add('hidden');
     document.getElementById('actions-azure-panel').classList.add('hidden');
     
-    // If we were in an admin tab, redirect to evaluar
+    // Switch to evaluar tab if active tab was admin-only
     const activeTab = document.querySelector('.active-tab');
     if (activeTab && (activeTab.id === 'tb-gold' || activeTab.id === 'tb-metricas' || activeTab.id === 'tb-env')) {
       tab('evaluar');
@@ -878,32 +1144,11 @@ function showApp(role) {
   }
   userHeader.classList.remove('hidden');
   
-  // Reload cargos to apply delete permissions
+  // Reload cargos list to apply admin rules
   renderCargos();
 }
 
-// ── Init ──────────────────────────────────────────────────────────────────
-document.addEventListener('DOMContentLoaded', () => {
-  const loggedIn = localStorage.getItem('sistac_logged_in') === 'true';
-  const role = localStorage.getItem('sistac_user_role');
-
-  if (loggedIn && role) {
-    showApp(role);
-  } else {
-    document.getElementById('app-container').classList.add('hidden');
-    document.getElementById('login-container').classList.remove('hidden');
-  }
-
-  checkHealth();
-  cargarCargos();
-  checkEstadoExperimento();
-  checkEstadoIndexacion();
-  setInterval(checkHealth, 30000);
-  setupDragDrop('dz-cvs', addFiles);
-  setupDragDrop('dz-jd',  f => { jdFile = f; showJDPreview(f); });
-});
-
-// ── Tabs ──────────────────────────────────────────────────────────────────
+// ── Tabs Switching ────────────────────────────────────────────────────────
 function tab(t) {
   ['evaluar','cargos','historial','gold','metricas','env'].forEach(x => {
     document.getElementById(`p-${x}`).classList.add('hidden');
@@ -911,6 +1156,7 @@ function tab(t) {
   });
   document.getElementById(`p-${t}`).classList.remove('hidden');
   document.getElementById(`tb-${t}`).classList.add('active-tab');
+  
   if (t === 'historial') cargarHistorial();
   if (t === 'cargos')    renderCargos();
   if (t === 'gold')      cargarGoldCargos();
@@ -921,21 +1167,21 @@ function tab(t) {
   if (t === 'env')       cargarEnv();
 }
 
-// ── Health ────────────────────────────────────────────────────────────────
+// ── Server Health check ───────────────────────────────────────────────────
 async function checkHealth() {
   try {
     const d = await fetch(`${API}/health`).then(r => r.json());
     const b = document.getElementById('hbadge');
-    b.className = 'text-xs px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-700';
+    b.className = 'text-[9px] font-bold px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-450 uppercase tracking-wider transition-colors';
     b.textContent = `● Online · ${d.cargos} cargo${d.cargos!==1?'s':''}`;
   } catch {
     const b = document.getElementById('hbadge');
-    b.className = 'text-xs px-2.5 py-1 rounded-full bg-red-100 text-red-600';
+    b.className = 'text-[9px] font-bold px-2.5 py-1 rounded-full bg-red-100 text-red-600 dark:bg-red-950/30 dark:text-red-400 uppercase tracking-wider transition-colors';
     b.textContent = '● Sin conexión';
   }
 }
 
-// ── Drag & drop ───────────────────────────────────────────────────────────
+// ── Drag & Drop handlers ──────────────────────────────────────────────────
 function setupDragDrop(dzId, onFile) {
   const dz = document.getElementById(dzId);
   dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('over'); });
@@ -989,15 +1235,19 @@ function renderQueue() {
 
   list.innerHTML = cvFiles.map((f, i) => {
     const ext = f.name.slice(f.name.lastIndexOf('.')+1).toUpperCase();
-    const extColor = {PDF:'bg-red-100 text-red-600', DOCX:'bg-blue-100 text-blue-600',
-      PNG:'bg-purple-100 text-purple-600', JPG:'bg-amber-100 text-amber-600',
-      JPEG:'bg-amber-100 text-amber-600'}[ext] || 'bg-slate-100 text-slate-500';
+    const extColor = {
+      PDF: 'bg-red-100 text-red-700 dark:bg-red-950/40 dark:text-red-400',
+      DOCX: 'bg-blue-100 text-blue-700 dark:bg-blue-950/40 dark:text-blue-400',
+      PNG: 'bg-purple-100 text-purple-700 dark:bg-purple-950/40 dark:text-purple-400',
+      JPG: 'bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-400',
+      JPEG: 'bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-400'
+    }[ext] || 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400';
     return `
-      <div class="cv-item-enter flex items-center gap-2 bg-slate-50 rounded-lg px-2.5 py-1.5">
-        <span class="text-xs font-bold px-1.5 py-0.5 rounded ${extColor}">${ext}</span>
-        <span class="text-xs text-slate-600 truncate flex-1">${f.name}</span>
-        <span class="text-xs text-slate-400 shrink-0">${(f.size/1024).toFixed(0)}KB</span>
-        <button onclick="removeFile(${i})" class="text-slate-300 hover:text-red-400 shrink-0 text-base leading-none">×</button>
+      <div class="cv-item-enter flex items-center gap-2 bg-white dark:bg-slate-900 border border-slate-150 dark:border-slate-800 rounded-xl px-3 py-2 shadow-sm">
+        <span class="text-[10px] font-extrabold px-2 py-0.5 rounded-md ${extColor}">${ext}</span>
+        <span class="text-xs text-slate-600 dark:text-slate-350 truncate flex-1 font-medium">${f.name}</span>
+        <span class="text-[10px] text-slate-400 shrink-0 font-mono">${(f.size/1024).toFixed(0)} KB</span>
+        <button onclick="removeFile(${i})" class="text-slate-300 dark:text-slate-600 hover:text-red-500 dark:hover:text-red-400 shrink-0 text-lg leading-none transition-colors">×</button>
       </div>`;
   }).join('');
 }
@@ -1010,7 +1260,7 @@ async function evaluarBatch() {
   if (!cargoId)       { toast('Seleccioná un cargo.', 'err'); return; }
   if (!cvFiles.length) { toast('Agregá al menos un CV.', 'err'); return; }
 
-  // Mostrar loader
+  // Toggle loaders
   document.getElementById('ph-eval').classList.add('hidden');
   document.getElementById('res-batch').classList.add('hidden');
   document.getElementById('detalle-panel').classList.add('hidden');
@@ -1040,7 +1290,7 @@ async function evaluarBatch() {
 
 function renderBatch(d) {
   document.getElementById('rb-cargo').textContent  = d.cargo_nombre;
-  document.getElementById('rb-config').textContent = `Config: ${(d.resultados[0]?.config||'').toUpperCase()}`;
+  document.getElementById('rb-config').textContent = `CONFIG: ${(d.resultados[0]?.config||'').toUpperCase()}`;
   document.getElementById('rb-aptos').textContent    = d.aptos;
   document.getElementById('rb-no-aptos').textContent = d.no_aptos;
   document.getElementById('rb-total').textContent    = d.total;
@@ -1050,27 +1300,38 @@ function renderBatch(d) {
     const apto  = r.decision === 'APTO';
     const error = r.decision === 'ERROR';
     const score = r.score ?? '—';
-    const bgScore = apto ? '#ecfdf5' : error ? '#f8fafc' : '#fef2f2';
-    const fgScore = apto ? '#059669' : error ? '#94a3b8' : '#dc2626';
-    const rank  = error ? '—' : `#${i+1}`;
+    
+    let pillBg, pillFg;
+    if (apto) {
+      pillBg = 'bg-emerald-50 dark:bg-emerald-950/20';
+      pillFg = 'text-emerald-600 dark:text-emerald-450';
+    } else if (error) {
+      pillBg = 'bg-slate-100 dark:bg-slate-800';
+      pillFg = 'text-slate-400 dark:text-slate-500';
+    } else {
+      pillBg = 'bg-red-50 dark:bg-red-950/20';
+      pillFg = 'text-red-500 dark:text-red-400';
+    }
+    
+    const rank = error ? '—' : `#${i+1}`;
 
     return `
-      <div class="flex items-center gap-3 px-4 py-3 hover:bg-slate-50 cursor-pointer transition-colors"
+      <div class="flex items-center gap-4 px-5 py-3.5 hover:bg-slate-50/50 dark:hover:bg-slate-800/40 cursor-pointer transition-colors"
         onclick="${error ? '' : `abrirDetalle(${i})`}">
-        <span class="text-xs text-slate-300 w-5 shrink-0 text-right">${rank}</span>
-        <div class="score-pill shrink-0" style="background:${bgScore};color:${fgScore}">${score}</div>
+        <span class="text-xs font-bold text-slate-350 dark:text-slate-600 w-5 shrink-0 text-right">${rank}</span>
+        <div class="score-pill shrink-0 ${pillBg} ${pillFg}">${score}</div>
         <div class="flex-1 min-w-0">
-          <p class="text-sm font-medium text-slate-800 truncate">${r.candidato_nombre || r.archivo_cv}</p>
-          <p class="text-xs text-slate-400 truncate">${r.archivo_cv}</p>
-          ${r.error ? `<p class="text-xs text-red-400">${r.error}</p>` : ''}
+          <p class="text-sm font-semibold text-slate-800 dark:text-slate-200 truncate">${r.candidato_nombre || r.archivo_cv}</p>
+          <p class="text-[10px] text-slate-400 truncate mt-0.5">${r.archivo_cv}</p>
+          ${r.error ? `<p class="text-xs text-red-500 mt-1">${r.error}</p>` : ''}
         </div>
         <div class="text-right shrink-0">
-          <span class="inline-block text-xs font-semibold px-2 py-0.5 rounded-full ${apto ? 'bg-emerald-100 text-emerald-700' : error ? 'bg-slate-100 text-slate-400' : 'bg-red-100 text-red-600'}">
+          <span class="inline-block text-[10px] font-extrabold px-3 py-1 rounded-full ${apto ? 'bg-emerald-100/70 text-emerald-800 dark:bg-emerald-950/30 dark:text-emerald-400' : error ? 'bg-slate-100 text-slate-500' : 'bg-red-100/70 text-red-800 dark:bg-red-950/30 dark:text-red-400'}">
             ${apto ? 'APTO' : error ? 'ERROR' : 'NO APTO'}
           </span>
-          ${r.tiempo_segundos ? `<p class="text-xs text-slate-300 mt-0.5">${r.tiempo_segundos}s</p>` : ''}
+          ${r.tiempo_segundos ? `<p class="text-[10px] text-slate-400 font-mono mt-1">${r.tiempo_segundos}s</p>` : ''}
         </div>
-        ${!error ? '<span class="text-slate-200 shrink-0">›</span>' : ''}
+        ${!error ? '<span class="text-slate-300 dark:text-slate-700 shrink-0 text-lg">›</span>' : ''}
       </div>`;
   }).join('');
 
@@ -1085,22 +1346,23 @@ function abrirDetalle(idx) {
     { k:'competencias_tecnicas', label:'Competencias técnicas', pct:'40%' },
     { k:'experiencia',           label:'Experiencia relevante', pct:'30%' },
     { k:'formacion',             label:'Formación académica',   pct:'20%' },
-    { k:'soft_skills',           label:'Soft skills',           pct:'10%' },
+    { k:'soft_skills',           label:'Habilidades blandas (Soft)', pct:'10%' },
   ];
   const dims = r.dimensiones || {};
   document.getElementById('det-dims').innerHTML = dimCfg.map(({ k, label, pct }) => {
     const v  = dims[k] ?? 0;
-    const bc = v >= 70 ? 'bg-emerald-500' : v >= 50 ? 'bg-amber-400' : 'bg-red-400';
+    const bc = v >= 70 ? 'bg-emerald-500' : v >= 50 ? 'bg-amber-400' : 'bg-red-500';
     return `<div>
-      <div class="flex justify-between text-xs mb-1">
-        <span class="text-slate-600 font-medium">${label}</span>
-        <span class="text-slate-400">${pct} · <strong class="text-slate-700">${v}/100</strong></span>
+      <div class="flex justify-between text-xs mb-1.5 font-medium">
+        <span class="text-slate-650 dark:text-slate-300">${label}</span>
+        <span class="text-slate-400 text-[10px] font-semibold">${pct} · <strong class="text-slate-700 dark:text-slate-200 text-xs">${v}/100</strong></span>
       </div>
-      <div class="w-full bg-slate-100 rounded-full h-1.5">
-        <div class="bar ${bc} h-1.5 rounded-full" style="width:${v}%"></div>
+      <div class="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-2 overflow-hidden shadow-inner">
+        <div class="bar ${bc} h-2 rounded-full" style="width:${v}%"></div>
       </div>
     </div>`;
   }).join('');
+  
   document.getElementById('det-just').textContent = r.justificacion || '—';
 
   const chunks = r.chunks || [];
@@ -1110,11 +1372,11 @@ function abrirDetalle(idx) {
   if (chunks.length > 0) {
     chunkSection.classList.remove('hidden');
     chunkList.innerHTML = chunks.map((c, i) => `
-      <div class="bg-slate-50 border border-slate-150 rounded-lg p-2.5 text-xs text-slate-600 leading-relaxed font-sans">
-        <div class="flex items-center justify-between mb-1 text-[10px] text-slate-400 font-semibold uppercase tracking-wider">
-          <span>Fragmento #${i+1}</span>
+      <div class="bg-slate-50 dark:bg-slate-950 border border-slate-200/50 dark:border-slate-800 rounded-xl p-3.5 text-xs text-slate-600 dark:text-slate-350 leading-relaxed font-sans shadow-sm">
+        <div class="flex items-center justify-between mb-1.5 text-[9px] text-slate-400 font-extrabold uppercase tracking-wider">
+          <span>Fragmento de CV recuperado #${i+1}</span>
         </div>
-        <div class="whitespace-pre-wrap">${c}</div>
+        <div class="whitespace-pre-wrap font-medium">${c}</div>
       </div>
     `).join('');
   } else {
@@ -1152,11 +1414,13 @@ async function cargarCargos() {
     const d = await fetch(`${API}/api/cargos`).then(r => r.json());
     cargos = {};
     d.cargos.forEach(c => cargos[c.id] = c);
+    
     const sel = document.getElementById('sel-cargo');
     const ids = Object.keys(cargos);
     sel.innerHTML = ids.length
       ? ids.map(id => `<option value="${id}">${cargos[id].nombre}</option>`).join('')
       : '<option value="">— Creá un cargo primero —</option>';
+      
     renderCargos();
     checkHealth();
     if (document.getElementById('sel-gold-cargo')) {
@@ -1169,27 +1433,35 @@ function renderCargos() {
   const cont = document.getElementById('lista-cargos');
   const ids  = Object.keys(cargos);
   document.getElementById('c-count').textContent = `${ids.length} cargo${ids.length!==1?'s':''}`;
-  if (!ids.length) { cont.innerHTML = ''; document.getElementById('sin-cargos').classList.remove('hidden'); return; }
+  
+  if (!ids.length) {
+    cont.innerHTML = '';
+    document.getElementById('sin-cargos').classList.remove('hidden');
+    return;
+  }
+  
   document.getElementById('sin-cargos').classList.add('hidden');
   cont.innerHTML = ids.map(id => {
     const c = cargos[id];
     const deleteBtn = currentUserRole === 'admin' 
-      ? `<button onclick="event.stopPropagation(); eliminarCargo('${id}')" class="text-slate-300 hover:text-red-400 transition-colors text-xl leading-none shrink-0">×</button>` 
+      ? `<button onclick="event.stopPropagation(); eliminarCargo('${id}')" class="text-slate-350 dark:text-slate-600 hover:text-red-500 dark:hover:text-red-400 transition-colors text-2xl leading-none shrink-0">×</button>` 
       : '';
-    return `<div class="bg-white border border-slate-200 rounded-xl p-4 flex items-start justify-between gap-3 hover:border-blue-400 cursor-pointer transition-all shadow-sm" onclick="verDescripcionCargo('${id}')">
-      <div class="min-w-0">
-        <div class="flex items-center gap-2 flex-wrap">
-          <span class="text-sm font-semibold text-slate-900">${c.nombre}</span>
-          <span class="text-xs text-slate-400">${c.id}</span>
+    return `
+      <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 flex items-start justify-between gap-3 hover:border-brand-500 dark:hover:border-brand-400 cursor-pointer transition-all shadow-sm"
+        onclick="verDescripcionCargo('${id}')">
+        <div class="min-w-0 space-y-1">
+          <div class="flex items-center gap-2 flex-wrap">
+            <span class="text-sm font-bold text-slate-900 dark:text-white leading-tight">${c.nombre}</span>
+            <span class="text-[10px] font-mono text-slate-400 dark:text-slate-500 uppercase tracking-wide bg-slate-50 dark:bg-slate-950 px-1.5 py-0.5 rounded border border-slate-200/50 dark:border-slate-800/30">${c.id}</span>
+          </div>
+          <p class="text-[10px] text-slate-400 dark:text-slate-500 truncate">${c.archivo||'Ingresado manualmente'}</p>
+          <div class="flex gap-4 mt-2 text-[10px] text-slate-500 dark:text-slate-400 font-semibold uppercase tracking-wide">
+            <span class="flex items-center gap-1"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>${c.candidatos} candidato${c.candidatos!==1?'s':''}</span>
+            <span class="flex items-center gap-1"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>${new Date(c.fecha).toLocaleDateString('es-UY')}</span>
+          </div>
         </div>
-        <p class="text-xs text-slate-400 mt-0.5">${c.archivo||'Sin archivo'}</p>
-        <div class="flex gap-3 mt-1 text-xs text-slate-400">
-          <span>${c.candidatos} candidato${c.candidatos!==1?'s':''}</span>
-          <span>${new Date(c.fecha).toLocaleDateString('es-UY')}</span>
-        </div>
-      </div>
-      ${deleteBtn}
-    </div>`;
+        ${deleteBtn}
+      </div>`;
   }).join('');
 }
 
@@ -1223,8 +1495,10 @@ async function crearCargo() {
   const nombre = document.getElementById('c-nombre').value.trim();
   if (!nombre) { toast('Escribí el nombre del cargo.', 'err'); return; }
   if (!jdFile)  { toast('Subí el documento del cargo.', 'err'); return; }
+  
   const btn = document.getElementById('btn-cargo');
   btn.disabled = true; btn.textContent = 'Procesando…';
+  
   try {
     const fd = new FormData();
     fd.append('nombre', nombre);
@@ -1253,30 +1527,37 @@ async function eliminarCargo(id) {
 async function cargarHistorial() {
   try {
     const d = await fetch(`${API}/api/resultados`).then(r => r.json());
-    document.getElementById('hist-count').textContent = `${d.total} evaluación${d.total!==1?'es':''}`;
+    document.getElementById('hist-count').textContent = `${d.total} evaluación${d.total!==1?'es':''} registrada${d.total!==1?'s':''}`;
     const cont = document.getElementById('t-hist');
-    if (!d.resultados.length) { cont.innerHTML=''; document.getElementById('sin-hist').classList.remove('hidden'); return; }
+    
+    if (!d.resultados.length) {
+      cont.innerHTML = '';
+      document.getElementById('sin-hist').classList.remove('hidden');
+      return;
+    }
+    
     document.getElementById('sin-hist').classList.add('hidden');
     cont.innerHTML = d.resultados.map(r => {
-    const apto = r.decision === 'APTO';
-      return `<div class="bg-white border border-slate-200 rounded-xl p-3.5 flex items-center gap-3">
-        <div class="score-pill shrink-0" style="background:${apto?'#ecfdf5':'#fef2f2'};color:${apto?'#059669':'#dc2626'}">${r.score??'—'}</div>
-        <div class="flex-1 min-w-0">
-          <div class="flex items-center gap-2 flex-wrap">
-            <span class="font-semibold text-slate-900 text-sm">${r.candidato_nombre}</span>
-            <span class="text-xs px-2 py-0.5 rounded-full font-semibold ${apto?'bg-emerald-100 text-emerald-700':'bg-red-100 text-red-600'}">${apto?'APTO':'NO APTO'}</span>
-            <span class="text-xs text-slate-400">${r.config?.toUpperCase()}</span>
+      const apto = r.decision === 'APTO';
+      return `
+        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 flex items-center gap-4 hover:border-brand-300 dark:hover:border-slate-700 transition-colors shadow-sm">
+          <div class="score-pill shrink-0 ${apto ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-950/20 dark:text-emerald-450' : 'bg-red-50 text-red-500 dark:bg-red-950/20 dark:text-red-400'}">${r.score??'—'}</div>
+          <div class="flex-1 min-w-0 space-y-0.5">
+            <div class="flex items-center gap-2 flex-wrap">
+              <span class="font-bold text-slate-900 dark:text-white text-sm">${r.candidato_nombre}</span>
+              <span class="text-[9px] font-extrabold px-2.5 py-0.5 rounded-full ${apto ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400' : 'bg-red-100 text-red-650 dark:bg-red-950/40 dark:text-red-400'}">${apto?'APTO':'NO APTO'}</span>
+              <span class="text-[9px] font-extrabold text-slate-400 dark:text-slate-500 uppercase font-mono bg-slate-50 dark:bg-slate-950 px-1.5 py-0.5 rounded border border-slate-200/50 dark:border-slate-800/30">${r.config?.toUpperCase()}</span>
+            </div>
+            <p class="text-xs text-slate-500 dark:text-slate-400 truncate font-medium">${r.cargo_nombre} <span class="text-slate-300 dark:text-slate-700">·</span> ${r.archivo_cv||''}</p>
+            <p class="text-[10px] text-slate-400 dark:text-slate-500 font-medium">${new Date(r.fecha).toLocaleString('es-UY')}</p>
           </div>
-          <p class="text-xs text-slate-500 truncate">${r.cargo_nombre}  ·  ${r.archivo_cv||''}</p>
-          <p class="text-xs text-slate-400">${new Date(r.fecha).toLocaleString('es-UY')}</p>
-        </div>
-        <span class="text-xs text-slate-300 shrink-0">${r.tiempo_segundos}s</span>
-      </div>`;
+          <span class="text-xs font-mono font-bold text-slate-400 shrink-0">${r.tiempo_segundos}s</span>
+        </div>`;
     }).join('');
   } catch {}
 }
 
-// ── Métricas ──────────────────────────────────────────────────────────────
+// ── Métricas TFE ──────────────────────────────────────────────────────────
 async function descargarTablasZip() {
   const btn = document.getElementById('btn-descargar-tablas');
   if (btn) {
@@ -1304,7 +1585,7 @@ async function descargarTablasZip() {
   } finally {
     if (btn) {
       btn.disabled = false;
-      btn.innerHTML = '📥 Descargar Tablas (ZIP)';
+      btn.innerHTML = '📥 Descargar ZIP';
     }
   }
 }
@@ -1349,21 +1630,21 @@ function renderMetricasUI(d) {
   if (d.h1 && d.h1.length) {
     tblH1.innerHTML = d.h1.map(r => {
       const accepted = r.h1_accepted === 'Sí';
-      return `<tr class="hover:bg-slate-50 transition-colors">
-        <td class="py-3 px-3 font-medium text-slate-800">${r.config}</td>
-        <td class="py-3 px-3 text-center text-slate-600 font-semibold">${r.median_c0}</td>
-        <td class="py-3 px-3 text-center text-slate-600 font-semibold">${r.median_cx}</td>
-        <td class="py-3 px-3 text-center text-emerald-600 font-bold">${r.speedup}</td>
-        <td class="py-3 px-3 text-center text-slate-600 font-mono">${r.p_value}</td>
-        <td class="py-3 px-3 text-center">
-          <span class="inline-block text-xs font-semibold px-2.5 py-0.5 rounded-full ${accepted ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-600'}">
+      return `<tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/20 transition-colors border-b border-slate-100 dark:border-slate-800/50">
+        <td class="py-3 px-4 font-bold text-slate-800 dark:text-slate-200">${r.config}</td>
+        <td class="py-3 px-4 text-center text-slate-650 dark:text-slate-350 font-semibold font-mono">${r.median_c0}</td>
+        <td class="py-3 px-4 text-center text-slate-650 dark:text-slate-350 font-semibold font-mono">${r.median_cx}</td>
+        <td class="py-3 px-4 text-center text-emerald-600 dark:text-emerald-450 font-black font-mono">${r.speedup}</td>
+        <td class="py-3 px-4 text-center text-slate-500 dark:text-slate-400 font-mono">${r.p_value}</td>
+        <td class="py-3 px-4 text-center">
+          <span class="inline-block text-[10px] font-extrabold px-3 py-1 rounded-full ${accepted ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-400' : 'bg-red-100 text-red-800 dark:bg-red-950/40 dark:text-red-400'}">
             ${r.h1_accepted}
           </span>
         </td>
       </tr>`;
     }).join('');
   } else {
-    tblH1.innerHTML = `<tr><td colspan="6" class="py-4 text-center text-slate-400">Sin datos de H1.</td></tr>`;
+    tblH1.innerHTML = `<tr><td colspan="6" class="py-4 text-center text-slate-450">Sin datos de H1.</td></tr>`;
   }
 
   // Render H2
@@ -1371,19 +1652,19 @@ function renderMetricasUI(d) {
   if (d.h2 && d.h2.length) {
     tblH2.innerHTML = d.h2.map(r => {
       const accepted = parseFloat(r.f1) >= 0.85 && parseFloat(r.auc_roc) >= 0.90;
-      return `<tr class="hover:bg-slate-50 transition-colors">
-        <td class="py-3 px-3 font-medium text-slate-800">${r.config}</td>
-        <td class="py-3 px-3 text-center text-slate-600 font-mono">${r.f1}</td>
-        <td class="py-3 px-3 text-center text-slate-600 font-mono">${r.auc_roc}</td>
-        <td class="py-3 px-3 text-center">
-          <span class="inline-block text-xs font-semibold px-2.5 py-0.5 rounded-full ${accepted ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-600'}">
+      return `<tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/20 transition-colors border-b border-slate-100 dark:border-slate-800/50">
+        <td class="py-3 px-4 font-bold text-slate-800 dark:text-slate-200">${r.config}</td>
+        <td class="py-3 px-4 text-center text-slate-650 dark:text-slate-350 font-bold font-mono">${r.f1}</td>
+        <td class="py-3 px-4 text-center text-slate-650 dark:text-slate-350 font-bold font-mono">${r.auc_roc}</td>
+        <td class="py-3 px-4 text-center">
+          <span class="inline-block text-[10px] font-extrabold px-3 py-1 rounded-full ${accepted ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-400' : 'bg-red-100 text-red-800 dark:bg-red-950/40 dark:text-red-400'}">
             ${accepted ? 'Sí' : 'No'}
           </span>
         </td>
       </tr>`;
     }).join('');
   } else {
-    tblH2.innerHTML = `<tr><td colspan="4" class="py-4 text-center text-slate-400">Sin datos de H2.</td></tr>`;
+    tblH2.innerHTML = `<tr><td colspan="4" class="py-4 text-center text-slate-450">Sin datos de H2.</td></tr>`;
   }
 
   // Render H3
@@ -1391,19 +1672,19 @@ function renderMetricasUI(d) {
   if (d.h3 && d.h3.length) {
     tblH3.innerHTML = d.h3.map(r => {
       const accepted = parseFloat(r.dir) >= 0.80;
-      return `<tr class="hover:bg-slate-50 transition-colors">
-        <td class="py-3 px-3 font-medium text-slate-800">${r.config}</td>
-        <td class="py-3 px-3 text-center text-slate-600 font-mono">${r.dir}</td>
-        <td class="py-3 px-3 text-center text-slate-600 font-mono">${r.spd}</td>
-        <td class="py-3 px-3 text-center">
-          <span class="inline-block text-xs font-semibold px-2.5 py-0.5 rounded-full ${accepted ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-600'}">
+      return `<tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/20 transition-colors border-b border-slate-100 dark:border-slate-800/50">
+        <td class="py-3 px-4 font-bold text-slate-800 dark:text-slate-200">${r.config}</td>
+        <td class="py-3 px-4 text-center text-slate-650 dark:text-slate-350 font-bold font-mono">${r.dir}</td>
+        <td class="py-3 px-4 text-center text-slate-650 dark:text-slate-350 font-bold font-mono">${r.spd}</td>
+        <td class="py-3 px-4 text-center">
+          <span class="inline-block text-[10px] font-extrabold px-3 py-1 rounded-full ${accepted ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-400' : 'bg-red-100 text-red-800 dark:bg-red-950/40 dark:text-red-400'}">
             ${accepted ? 'Sí' : 'No'}
           </span>
         </td>
       </tr>`;
     }).join('');
   } else {
-    tblH3.innerHTML = `<tr><td colspan="4" class="py-4 text-center text-slate-400">Sin datos de H3.</td></tr>`;
+    tblH3.innerHTML = `<tr><td colspan="4" class="py-4 text-center text-slate-455">Sin datos de H3.</td></tr>`;
   }
 
   // Render RAGAS
@@ -1412,25 +1693,31 @@ function renderMetricasUI(d) {
   if (d.ragas && d.ragas.length) {
     if (ragasCard) ragasCard.classList.remove('hidden');
     const metricsList = [
-      { k: 'faithfulness', label: 'Faithfulness (Fidelidad)', desc: 'Respuestas respaldadas por el contexto recuperado' },
-      { k: 'answer_relevancy', label: 'Answer Relevancy (Relevancia)', desc: 'Relevancia de la justificación frente a la JD' },
-      { k: 'context_precision', label: 'Context Precision (Precisión)', desc: 'Proporción de fragmentos útiles recuperados del CV' }
+      { k: 'faithfulness', label: 'Faithfulness (Fidelidad)', desc: 'Respuestas respaldas por el contexto recuperado' },
+      { k: 'answer_relevancy', label: 'Answer Relevancy (Relevancia)', desc: 'Pertinencia de la justificación frente a la JD' },
+      { k: 'context_precision', label: 'Context Precision (Precisión)', desc: 'Porcentaje de fragmentos clave recuperados del CV' }
     ];
     const rRow = d.ragas[0];
     if (tblRagas) {
       tblRagas.innerHTML = metricsList.map(m => {
         const val = rRow[m.k] !== undefined ? parseFloat(rRow[m.k]).toFixed(3) : 'N/A';
-        return `<tr class="hover:bg-slate-50 transition-colors">
-          <td class="py-3 px-3 font-medium text-slate-800">${m.label}</td>
-          <td class="py-3 px-3 text-center font-mono font-bold text-blue-600">${val}</td>
-          <td class="py-3 px-3 text-slate-500">${m.desc}</td>
-          <td class="py-3 px-3 text-slate-400 font-mono text-[10px]">${rRow.method || 'Ragas/Claude'}</td>
-        </tr>`;
+        return `
+          <tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/20 transition-colors border-b border-slate-100 dark:border-slate-800/50">
+            <td class="py-3.5 px-4 font-bold text-slate-800 dark:text-slate-200">${m.label}</td>
+            <td class="py-3.5 px-4 text-center font-mono font-black text-brand-600 dark:text-brand-400 text-sm">${val}</td>
+            <td class="py-3.5 px-4 text-slate-500 dark:text-slate-400 font-medium">${m.desc}</td>
+            <td class="py-3.5 px-4 text-slate-400 font-mono text-[9px] uppercase font-bold">${rRow.method || 'Ragas/Claude'}</td>
+          </tr>`;
       }).join('');
     }
   } else {
     if (ragasCard) ragasCard.classList.add('hidden');
   }
+
+  // Configuración de Colores de los Gráficos de acuerdo al Tema (Claro u Oscuro)
+  const isDarkTheme = document.documentElement.classList.contains('dark');
+  const gridColor = isDarkTheme ? '#1e293b' : '#f1f5f9';
+  const labelColor = isDarkTheme ? '#94a3b8' : '#64748b';
 
   // Draw charts using Chart.js
   const dirCanvas = document.getElementById('chart-dir');
@@ -1441,7 +1728,7 @@ function renderMetricasUI(d) {
 
   // DIR Chart
   if (d.h3 && d.h3.length) {
-    const h3Labels = d.h3.map(x => x.config);
+    const h3Labels = d.h3.map(x => x.config.toUpperCase());
     const h3DirValues = d.h3.map(x => parseFloat(x.dir) || 0.0);
 
     chartDir = new Chart(dirCanvas, {
@@ -1451,10 +1738,11 @@ function renderMetricasUI(d) {
         datasets: [{
           label: 'Impacto Dispar (DIR)',
           data: h3DirValues,
-          backgroundColor: h3DirValues.map(v => v >= 0.80 ? 'rgba(16, 185, 129, 0.6)' : 'rgba(239, 68, 68, 0.6)'),
+          backgroundColor: h3DirValues.map(v => v >= 0.80 ? 'rgba(16, 185, 129, 0.7)' : 'rgba(239, 68, 68, 0.7)'),
           borderColor: h3DirValues.map(v => v >= 0.80 ? '#10b981' : '#ef4444'),
           borderWidth: 1.5,
-          barThickness: 40
+          borderRadius: 8,
+          barThickness: 32
         }]
       },
       options: {
@@ -1467,12 +1755,12 @@ function renderMetricasUI(d) {
           y: {
             min: 0,
             max: 1.2,
-            grid: { color: '#f1f5f9' },
-            ticks: { font: { size: 10 } }
+            grid: { color: gridColor },
+            ticks: { color: labelColor, font: { size: 10, weight: 'bold' } }
           },
           x: {
             grid: { display: false },
-            ticks: { font: { size: 10 } }
+            ticks: { color: labelColor, font: { size: 10, weight: 'bold' } }
           }
         }
       }
@@ -1481,7 +1769,7 @@ function renderMetricasUI(d) {
 
   // Eficacia Chart
   if (d.h2 && d.h2.length) {
-    const h2Labels = d.h2.map(x => x.config);
+    const h2Labels = d.h2.map(x => x.config.toUpperCase());
     const h2F1Values = d.h2.map(x => parseFloat(x.f1) || 0.0);
     const h2AucValues = d.h2.map(x => parseFloat(x.auc_roc) || 0.0);
 
@@ -1493,18 +1781,20 @@ function renderMetricasUI(d) {
           {
             label: 'F1-score',
             data: h2F1Values,
-            backgroundColor: 'rgba(59, 130, 246, 0.6)',
-            borderColor: '#3b82f6',
+            backgroundColor: 'rgba(59, 94, 252, 0.7)',
+            borderColor: '#3b5efc',
             borderWidth: 1.5,
+            borderRadius: 6,
             barPercentage: 0.6,
             categoryPercentage: 0.8
           },
           {
             label: 'AUC-ROC',
             data: h2AucValues,
-            backgroundColor: 'rgba(139, 92, 246, 0.6)',
-            borderColor: '#8b5cf6',
+            backgroundColor: 'rgba(99, 102, 241, 0.7)',
+            borderColor: '#6366f1',
             borderWidth: 1.5,
+            borderRadius: 6,
             barPercentage: 0.6,
             categoryPercentage: 0.8
           }
@@ -1516,19 +1806,19 @@ function renderMetricasUI(d) {
         plugins: {
           legend: {
             position: 'top',
-            labels: { font: { size: 10 } }
+            labels: { color: labelColor, font: { size: 10, weight: 'bold' } }
           }
         },
         scales: {
           y: {
             min: 0,
             max: 1.0,
-            grid: { color: '#f1f5f9' },
-            ticks: { font: { size: 10 } }
+            grid: { color: gridColor },
+            ticks: { color: labelColor, font: { size: 10, weight: 'bold' } }
           },
           x: {
             grid: { display: false },
-            ticks: { font: { size: 10 } }
+            ticks: { color: labelColor, font: { size: 10, weight: 'bold' } }
           }
         }
       }
@@ -1545,7 +1835,7 @@ async function cargarHistorialMetricas() {
     const d = await r.json();
     if (d.status === 'success') {
       const opciones = [
-        '<option value="">-- Ver Historial de Métricas --</option>'
+        '<option value="">-- Ver Historial de Corrida TFE --</option>'
       ];
       d.versiones.forEach(v => {
         const fechaStr = new Date(v.fecha).toLocaleString('es-UY');
@@ -1560,15 +1850,15 @@ async function cargarHistorialMetricas() {
 
 async function guardarMetricasMongo() {
   if (!lastFetchedMetrics || lastFetchedMetrics.status === 'no_data') {
-    toast("No hay métricas calculadas en la corrida actual para guardar. Corré el experimento de la tesis primero.", "err");
+    toast("No hay métricas activas para guardar. Ejecutá el experimento primero.", "err");
     return;
   }
-  let comentario = prompt("Ingrese un comentario o descripción para identificar esta corrida de métricas:");
-  if (comentario === null) return; // cancelado
+  let comentario = prompt("Ingresá un comentario o título para identificar esta corrida del TFE:");
+  if (comentario === null) return;
   
   comentario = comentario.trim();
   if (!comentario) {
-    comentario = "Corrida sin descripción";
+    comentario = "Corrida sin título";
   }
   
   const btn = document.getElementById('btn-save-metrics');
@@ -1596,14 +1886,12 @@ async function guardarMetricasMongo() {
       throw new Error(errData.detail || 'Error al guardar la corrida');
     }
     const d = await r.json();
-    toast("Métricas guardadas en MongoDB con éxito.", "ok");
+    toast("Métricas guardadas exitosamente en MongoDB.", "ok");
     
-    // Recargar historial y seleccionar la versión guardada
     await cargarHistorialMetricas();
     const sel = document.getElementById('sel-metrics-version');
     if (sel && d.version_id) {
       sel.value = d.version_id;
-      // Mostrar modo historial
       await cargarVersionMetricas(d.version_id);
     }
   } catch(e) {
@@ -1625,7 +1913,6 @@ async function cargarVersionMetricas(versionId) {
   const btnDescargar = document.getElementById('btn-descargar-tablas');
   
   if (!versionId) {
-    // Si se selecciona la opción vacía, volver al modo "live"
     if (banner) banner.classList.add('hidden');
     await cargarMetricas();
     return;
@@ -1639,7 +1926,7 @@ async function cargarVersionMetricas(versionId) {
     if (d.status === 'success') {
       if (nodata) nodata.classList.add('hidden');
       if (content) content.classList.remove('hidden');
-      if (btnDescargar) btnDescargar.classList.add('hidden'); // Ocultar descargar ZIP en historial
+      if (btnDescargar) btnDescargar.classList.add('hidden'); // Ocultar ZIP en historial
       
       if (banner) {
         const fechaStr = new Date(d.fecha).toLocaleString('es-UY');
@@ -1651,7 +1938,7 @@ async function cargarVersionMetricas(versionId) {
       renderMetricasUI(d);
     }
   } catch(e) {
-    toast(`Fallo al cargar versión de métricas: ${e.message}`, 'err');
+    toast(`Error al cargar corrida histórica: ${e.message}`, 'err');
   }
 }
 
@@ -1663,16 +1950,21 @@ async function volverALive() {
   await cargarVersionMetricas("");
 }
 
-// ── Toast ──────────────────────────────────────────────────────────────────
+// ── Toast notification system ─────────────────────────────────────────────
 function toast(msg, type='info') {
   const el = document.getElementById('toast');
-  const cls = { ok:'bg-emerald-600 text-white', err:'bg-red-600 text-white', info:'bg-slate-800 text-white' };
-  el.className = `fixed bottom-5 right-5 px-4 py-3 rounded-xl shadow-xl text-sm font-medium z-50 max-w-xs ${cls[type]||cls.info}`;
+  const cls = {
+    ok: 'bg-emerald-600 text-white dark:bg-emerald-500',
+    err: 'bg-red-650 text-white dark:bg-red-500',
+    info: 'bg-slate-800 text-white dark:bg-slate-800'
+  };
+  
+  el.className = `fixed bottom-6 right-6 px-4 py-3.5 rounded-2xl shadow-xl text-sm font-bold z-50 max-w-xs transition-all ${cls[type]||cls.info}`;
   el.textContent = msg;
   el.classList.remove('hidden');
+  
   setTimeout(() => el.classList.add('hidden'), 4000);
 }
-
 
 // ── Generar Gold Standard (Matriz) ─────────────────────────────────────────
 let goldCandidatoActual = null;
@@ -1692,11 +1984,12 @@ async function generarCandidato() {
   const cargoId = document.getElementById('sel-gold-cargo').value;
   if (!cargoId) { toast('Seleccioná un cargo.', 'err'); return; }
 
-  // Restablecer interfaz
+  // Reset ui
   stopGoldTimer();
   goldDecision = null;
-  document.getElementById('btn-dec-apto').className = "border border-slate-200 hover:border-emerald-500 hover:bg-emerald-50 text-slate-600 font-semibold py-3 rounded-xl transition-all text-sm flex items-center justify-center gap-1.5";
-  document.getElementById('btn-dec-noapto').className = "border border-slate-200 hover:border-red-500 hover:bg-red-50 text-slate-600 font-semibold py-3 rounded-xl transition-all text-sm flex items-center justify-center gap-1.5";
+  
+  document.getElementById('btn-dec-apto').className = "border border-slate-200 dark:border-slate-800 hover:border-emerald-500 hover:bg-emerald-50/50 dark:hover:bg-emerald-950/20 text-slate-600 dark:text-slate-350 font-bold py-3.5 rounded-xl transition-all text-sm flex items-center justify-center gap-1.5 shadow-sm";
+  document.getElementById('btn-dec-noapto').className = "border border-slate-200 dark:border-slate-800 hover:border-red-500 hover:bg-red-50/50 dark:hover:bg-red-950/20 text-slate-600 dark:text-slate-350 font-bold py-3.5 rounded-xl transition-all text-sm flex items-center justify-center gap-1.5 shadow-sm";
   document.getElementById('btn-gold-guardar').disabled = true;
   document.getElementById('gold-decision-panel').classList.add('hidden');
   document.getElementById('gold-cv-text').classList.add('hidden');
@@ -1721,25 +2014,30 @@ async function generarCandidato() {
 
     goldCandidatoActual = d;
 
-    // Mostrar metadatos demográficos
+    // Render metadata
     document.getElementById('gold-meta-genero').textContent = d.gender === 'F' ? 'Femenino (F)' : 'Masculino (M)';
     document.getElementById('gold-meta-edad').textContent = `${d.age} años (Grupo ${d.age_group})`;
     
-    const afinidadColor = d.afinidad === 'alto' ? 'bg-emerald-100 text-emerald-700' : d.afinidad === 'medio' ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-600';
+    const afinidadColor = d.afinidad === 'alto' 
+      ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/30 dark:text-emerald-400 border border-emerald-200/50 dark:border-emerald-800/30' 
+      : d.afinidad === 'medio' 
+      ? 'bg-amber-100 text-amber-800 dark:bg-amber-950/30 dark:text-amber-400 border border-amber-200/50 dark:border-amber-800/30' 
+      : 'bg-red-100 text-red-800 dark:bg-red-950/30 dark:text-red-400 border border-red-200/50 dark:border-red-800/30';
+      
     const afinLabel = document.getElementById('gold-meta-afinidad');
-    afinLabel.className = `inline-block text-xs font-semibold px-2.5 py-1 rounded-full uppercase ${afinidadColor}`;
+    afinLabel.className = `inline-block text-xs font-bold px-3 py-1 rounded-full uppercase ${afinidadColor}`;
     afinLabel.textContent = d.afinidad;
 
-    // Colocar CV text
+    // Load text
     const textEl = document.getElementById('gold-cv-text');
     textEl.value = d.cv_text;
     textEl.classList.remove('hidden');
 
     document.getElementById('gold-decision-panel').classList.remove('hidden');
 
-    // Empezar cronómetro
+    // Timer start
     startGoldTimer();
-    toast('Candidato simulado. Leé su CV y tomá una decisión.', 'ok');
+    toast('Candidato simulado con éxito. Auditá el perfil.', 'ok');
   } catch(e) {
     toast(`Error: ${e.message}`, 'err');
     document.getElementById('gold-cv-placeholder').classList.remove('hidden');
@@ -1773,11 +2071,11 @@ function setDecision(dec) {
   const noaptoBtn = document.getElementById('btn-dec-noapto');
 
   if (dec === 'APTO') {
-    aptoBtn.className = "bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3 rounded-xl transition-all text-sm flex items-center justify-center gap-1.5 shadow-md shadow-emerald-100";
-    noaptoBtn.className = "border border-slate-200 hover:border-red-500 hover:bg-red-50 text-slate-400 font-semibold py-3 rounded-xl transition-all text-sm flex items-center justify-center gap-1.5";
+    aptoBtn.className = "bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3.5 rounded-xl transition-all text-sm flex items-center justify-center gap-1.5 shadow-md shadow-emerald-100 dark:shadow-none";
+    noaptoBtn.className = "border border-slate-200 dark:border-slate-800 hover:border-red-500 hover:bg-red-50/50 text-slate-400 font-bold py-3.5 rounded-xl transition-all text-sm flex items-center justify-center gap-1.5";
   } else {
-    aptoBtn.className = "border border-slate-200 hover:border-emerald-500 hover:bg-emerald-50 text-slate-400 font-semibold py-3 rounded-xl transition-all text-sm flex items-center justify-center gap-1.5";
-    noaptoBtn.className = "bg-red-600 hover:bg-red-700 text-white font-semibold py-3 rounded-xl transition-all text-sm flex items-center justify-center gap-1.5 shadow-md shadow-red-100";
+    aptoBtn.className = "border border-slate-200 dark:border-slate-800 hover:border-emerald-500 hover:bg-emerald-50/50 text-slate-400 font-bold py-3.5 rounded-xl transition-all text-sm flex items-center justify-center gap-1.5";
+    noaptoBtn.className = "bg-red-600 hover:bg-red-700 text-white font-bold py-3.5 rounded-xl transition-all text-sm flex items-center justify-center gap-1.5 shadow-md shadow-red-100 dark:shadow-none";
   }
 
   document.getElementById('btn-gold-guardar').disabled = false;
@@ -1808,9 +2106,9 @@ async function guardarDecisionGold() {
     if (!r.ok) throw new Error((await r.json()).detail || r.statusText);
     const d = await r.json();
 
-    toast(`Candidato guardado como ${d.cv_id} (${goldDecision}) en ${d.time_seconds}s.`, 'ok');
+    toast(`Candidato guardado exitosamente (${goldDecision}) en ${d.time_seconds}s.`, 'ok');
 
-    // Limpiar panel
+    // Clean ui
     document.getElementById('gold-decision-panel').classList.add('hidden');
     document.getElementById('gold-cv-text').classList.add('hidden');
     document.getElementById('gold-cv-placeholder').classList.remove('hidden');
@@ -1825,8 +2123,9 @@ async function guardarDecisionGold() {
     startGoldTimer();
   }
 }
+
 async function resetIndiceAzure() {
-  if (!confirm("¿Estás seguro de que deseas ELIMINAR y recrear el índice 'sistac-cvs' en Azure AI Search? Esto borrará de la nube todos los CVs indexados actualmente.")) return;
+  if (!confirm("¿Deseas ELIMINAR y recrear el índice en el vector store? Esto borrará de la nube todos los CVs indexados actualmente.")) return;
 
   const btn = document.getElementById('btn-admin-reset');
   const runBtn = document.getElementById('btn-admin-run');
@@ -1873,7 +2172,6 @@ async function checkEstadoExperimento() {
           toast('¡El experimento de la tesis ha finalizado con éxito!', 'ok');
           btn.disabled = false;
           btn.textContent = '🚀 Correr Tesis';
-          // Si estamos en la pestaña de métricas, refrescar automáticamente
           const activeTab = document.querySelector('.active-tab');
           if (activeTab && activeTab.id === 'tb-metricas') {
             await cargarMetricas();
@@ -1909,9 +2207,9 @@ async function checkEstadoIndexacion() {
         }
       } else {
         if (btn.disabled && btn.textContent === 'Indexando…') {
-          toast('La indexación de CVs ha finalizado en Azure.', 'ok');
+          toast('La indexación de CVs ha finalizado exitosamente.', 'ok');
           btn.disabled = false;
-          btn.textContent = '📥 Indexar CVs por Reclutadores';
+          btn.textContent = '📥 Indexar';
           if (resetBtn) resetBtn.disabled = false;
           if (runBtn) runBtn.disabled = false;
         }
@@ -1927,7 +2225,7 @@ async function checkEstadoIndexacion() {
 }
 
 async function indexarCorpusAzure() {
-  if (!confirm("¿Iniciar la indexación y carga de todos los CVs en Azure AI Search? (Esto generará embeddings y subirá los chunks en segundo plano).")) return;
+  if (!confirm("¿Iniciar la indexación y carga de todos los CVs en el vector store activo en segundo plano?")) return;
 
   const btn = document.getElementById('btn-admin-index');
   const resetBtn = document.getElementById('btn-admin-reset');
@@ -1946,14 +2244,14 @@ async function indexarCorpusAzure() {
   } catch(e) {
     toast(`Error: ${e.message}`, 'err');
     btn.disabled = false;
-    btn.textContent = '📥 Indexar CVs por Reclutadores';
+    btn.textContent = '📥 Indexar';
     if (resetBtn) resetBtn.disabled = false;
     if (runBtn) runBtn.disabled = false;
   }
 }
 
 async function correrExperimentoTesis() {
-  if (!confirm("¿Iniciar la ejecución del experimento completo con los 300 CVs del Gold Standard en segundo plano? (Este proceso llamará masivamente a Claude y puede tomar tiempo).")) return;
+  if (!confirm("¿Iniciar la ejecución del experimento completo de los 300 CVs del Gold Standard en segundo plano? (Este proceso llamará masivamente a los modelos de lenguaje y tardará unos minutos).")) return;
 
   const btn = document.getElementById('btn-admin-run');
   btn.disabled = true;
@@ -2005,7 +2303,7 @@ async function cargarEnv() {
 }
 
 async function guardarEnv() {
-  if (!confirm("¿Guardar la configuración de variables de entorno? Esto reiniciará el servidor de FastAPI.")) return;
+  if (!confirm("¿Guardar cambios en el archivo .env? Esto reiniciará temporalmente el servidor de backend.")) return;
   
   const btn = document.getElementById('btn-save-env');
   btn.disabled = true;
@@ -2032,19 +2330,17 @@ async function guardarEnv() {
       body: JSON.stringify({ variables: vars })
     });
     if (!r.ok) throw new Error((await r.json()).detail || r.statusText);
-    const d = await r.json();
     
-    toast("Configuración guardada. Reiniciando servidor...", "info");
+    toast("Variables guardadas. Reiniciando servidor...", "info");
     
-    // Polling /health to wait for uvicorn to come back online
+    // Polling /health to wait for backend to restart
     setTimeout(async function poll() {
       try {
         const res = await fetch(`${API}/health`);
         if (res.ok) {
-          toast("¡Servidor reiniciado con éxito y online!", "ok");
+          toast("¡Servidor en línea de nuevo!", "ok");
           btn.disabled = false;
           btn.textContent = 'Guardar y Reiniciar Servidor';
-          // Force reload the page so the new config takes effect in static assets
           location.reload();
         } else {
           setTimeout(poll, 1000);
@@ -2055,11 +2351,35 @@ async function guardarEnv() {
     }, 1500);
     
   } catch(e) {
-    toast(`Error al guardar configuración: ${e.message}`, 'err');
+    toast(`Error al guardar: ${e.message}`, 'err');
     btn.disabled = false;
     btn.textContent = 'Guardar y Reiniciar Servidor';
   }
 }
+
+// ── DOM Initializer ───────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  initTheme();
+  
+  const loggedIn = localStorage.getItem('sistac_logged_in') === 'true';
+  const role = localStorage.getItem('sistac_user_role');
+
+  if (loggedIn && role) {
+    showApp(role);
+  } else {
+    document.getElementById('app-container').classList.add('hidden');
+    document.getElementById('login-container').classList.remove('hidden');
+  }
+
+  checkHealth();
+  cargarCargos();
+  checkEstadoExperimento();
+  checkEstadoIndexacion();
+  
+  setInterval(checkHealth, 30000);
+  setupDragDrop('dz-cvs', addFiles);
+  setupDragDrop('dz-jd',  f => { jdFile = f; showJDPreview(f); });
+});
 </script>
 </body>
 </html>
