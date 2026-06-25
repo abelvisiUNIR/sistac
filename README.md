@@ -1,32 +1,34 @@
-# SISTAC — Sistema Inteligente de Selección de Talento y Análisis Curricular
+# Talento sin nombre: anonimización, LLMs y RAG en el cribado curricular
+
+Repositorio de código del sistema **SISTAC** (Sistema Inteligente de Selección de Talento y Análisis Curricular).
 
 **Trabajo Fin de Estudios — Máster en Inteligencia Artificial y Data Science**  
 Universidad Internacional de La Rioja (UNIR) · Entrega: 15 julio 2026
 
-**Equipo:**
-- David I. Madrid Oyanadel — Lead Engineer H2 (Pipeline RAG y scoring semántico)
-- Mario A. Belvisi Lescano — Lead Analyst H3 (Módulo PII y equidad algorítmica)
-
-**Socio organizacional:** Matriz Uruguay  
-**Tutora:** Marta María Arguedas Lafuente
+**Autores:**
+- David I. Madrid Oyanadel
+- Mario A. Belvisi Lescano
 
 ---
 
 ## ¿Qué es SISTAC?
 
-SISTAC evalúa cuatro configuraciones de pre-selección de CVs con modelos de lenguaje (LLMs), midiendo su eficiencia, eficacia y equidad algorítmica mediante un diseño factorial:
+SISTAC es un sistema que ayuda a filtrar currículums en la primera etapa de un proceso de selección de personal con apoyo de inteligencia artificial. El proyecto no propone una única herramienta, sino que compara **cuatro formas distintas de hacer ese filtrado** para entender qué aporta cada pieza:
 
-| Config | Nombre | Descripción |
-|--------|--------|-------------|
-| **C0** | Screening Manual | Revisor humano RRHH (línea base) |
-| **C1** | LLM Puro | Claude Sonnet sin contexto externo |
-| **C2** | LLM + RAG | Claude Sonnet + Azure AI Search (retrieval híbrido) |
-| **C3** | LLM + RAG + PII | C2 con anonimización de datos personales (Presidio + spaCy) |
+- **Revisión manual:** una persona de Recursos Humanos revisa los currículums, como se hace habitualmente. Es el punto de comparación.
+- **Inteligencia artificial sola:** un modelo de lenguaje lee el currículum y la descripción del puesto y decide por su cuenta, solo con lo que aprendió durante su entrenamiento.
+- **Inteligencia artificial con apoyo de contexto:** el mismo modelo, pero antes de decidir busca y recupera la información más relevante del currículum para fundamentar mejor su evaluación.
+- **Inteligencia artificial con anonimización:** igual que la anterior, pero primero se borran del currículum los datos personales (nombre, contacto, etc.) para que no influyan en la decisión.
 
-**Hipótesis:**
-- **H1** — El sistema LLM es significativamente más rápido que el screening manual
-- **H2** — Las configuraciones RAG alcanzan F1 >= 0.85 frente al Gold Standard
-- **H3** — La anonimización PII reduce significativamente DIR y SPD respecto a C1/C2
+Sobre estas cuatro formas se midieron tres cosas, planteadas como preguntas:
+
+- **¿Cuánto tiempo ahorra?** Mucho: las versiones automáticas reducen la revisión por candidato de varios minutos a unos pocos segundos.
+- **¿Decide tan bien como un experto humano?** No del todo: la coincidencia con el criterio de un panel de especialistas se queda por debajo del nivel exigido, en buena parte por cómo está fijado el punto de corte que separa "apto" de "no apto".
+- **¿Es más justa al anonimizar?** No se puede afirmar: las diferencias de trato entre hombres y mujeres no resultan estadísticamente concluyentes, sobre todo porque el grupo de mujeres analizado es muy pequeño.
+
+> **Tecnología empleada:** el evaluador principal es el modelo Claude Sonnet 4.5; Gemini 2.5 Flash actúa como segunda opinión para comprobar la solidez de los resultados y para leer documentos escaneados. La búsqueda de contexto se apoya en Google Vertex AI Search y la anonimización en Microsoft Presidio con spaCy.
+
+**Datos:** la evaluación se hizo sobre un conjunto público de 150 currículums (la mitad adecuados para el puesto y la mitad no), traducidos al español rioplatense. Un panel de especialistas de Recursos Humanos construyó la referencia de decisiones correctas, con un alto grado de acuerdo entre ellos.
 
 ---
 
@@ -93,8 +95,10 @@ Variables clave:
 - `CHUNK_SIZE = 512`, `CHUNK_OVERLAP = 64` — hiperparametros de chunking
 - `SCORE_THRESHOLD = 70` — umbral de decision APTO/NO_APTO
 - `RANDOM_SEED = 42` — semilla global de reproducibilidad
-- `AZURE_SEARCH_ENDPOINT`, `AZURE_SEARCH_KEY`, `AZURE_SEARCH_INDEX` — leidas de `.env`
-- `LLM_MODEL_PROD = "claude-sonnet-4-5-20241022"` — modelo activo del experimento
+- `VECTORSTORE_PROVIDER` — vector store activo (`google` por defecto; `azure` alternativo)
+- `GCP_PROJECT_ID`, `GCP_DATA_STORE_ID`, `GCP_SEARCH_APP_ID` — config de Vertex AI Search (`.env`)
+- `AZURE_SEARCH_ENDPOINT`, `AZURE_SEARCH_KEY`, `AZURE_SEARCH_INDEX` — config de Azure (`.env`, alternativa)
+- `LLM_MODEL_PROD = "claude-sonnet-4-5-20241022"` — modelo evaluador principal del experimento
 
 ---
 
@@ -115,14 +119,29 @@ py -3 scripts/python/data/synthetic_corpus_generator.py
 
 #### `split_corpus.py`
 
-Divide los 300 CVs en train (80% = 240) y test (20% = 60) mediante muestreo estratificado
-por `(jd_id, expected_label, group_gender)` con `RANDOM_SEED = 42`. Produce:
-
-- `data/cleaned/evaluation_sets/train_ids.csv` — IDs de los 240 CVs de entrenamiento
-- `data/cleaned/evaluation_sets/test_ids.csv` — IDs de los 60 CVs de test
+Divide el corpus en train/test mediante muestreo estratificado por
+`(jd_id, expected_label, group_gender)` con `RANDOM_SEED = 42`. Produce los archivos de
+IDs en `data/cleaned/evaluation_sets/`.
 
 ```bash
 py -3 scripts/python/data/split_corpus.py
+```
+
+#### `prepare_external_validation.py`
+
+Prepara el **corpus de evaluación del experimento** a partir del dataset público
+`netsol/resume-score-details` (Hugging Face): descarga 150 pares CV–JD balanceados
+(75 APTO / 75 NO_APTO), los traduce al español rioplatense, infiere el género e imputa los
+rangos de edad y los tiempos de la línea base C0. Cachea la muestra en JSON para
+reproducibilidad. Produce el `ground_truth.csv` y los `c0_times.csv` en
+`data/raw/gold_standard_external/`.
+
+> El corpus sintético de 300 CVs (generado por `synthetic_corpus_generator.py`) se usó como
+> banco de pruebas durante el desarrollo; el experimento formal se ejecuta sobre el corpus
+> externo preparado por este script.
+
+```bash
+py -3 scripts/python/data/prepare_external_validation.py
 ```
 
 ---
@@ -143,9 +162,11 @@ Funciones expuestas:
 
 #### `create_index.py`
 
-Crea el indice vectorial `sistac-cvs` en Azure AI Search con el schema correcto:
-9 campos (id, cv_id, jd_id, textos, embedding 768 dims, anonymized, chunk_index),
-busqueda hibrida y Semantic Ranker activado.
+Crea el índice vectorial en el vector store activo. En la ruta **Vertex AI Search** (activa
+en el experimento) la indexación es asíncrona desde un bucket de Google Cloud Storage; en la
+ruta **Azure AI Search** (alternativa evaluada) crea el índice `sistac-cvs` con su schema
+(9 campos: id, cv_id, jd_id, textos, embedding 768 dims, anonymized, chunk_index), búsqueda
+híbrida y Semantic Ranker.
 
 ```bash
 py -3 scripts/python/rag/create_index.py
@@ -297,7 +318,15 @@ Métricas de equidad algorítmica:
 
 #### `consolidate_comparison.py`
 
-Consolida los resultados experimentales de las hipótesis H1, H2 y H3 de todos los proveedores activos (Claude, Gemini, GPT) en una única tabla unificada de comparación de robustez, exportando los resultados a `paper/tables/` en formatos CSV, Markdown y Word (.docx).
+Consolida los resultados experimentales de las tres hipótesis de todos los proveedores activos (Claude, Gemini, GPT) en una única tabla unificada de comparación de robustez, exportando los resultados a `paper/tables/` en formatos CSV, Markdown y Word (.docx).
+
+#### `analisis_mejoras_estadisticas.py`
+
+Análisis estadístico complementario (sin volver a llamar a los modelos), a partir de los caches `data/eval_cache_anthropic.json` y `data/eval_cache_google.json`. Calcula el umbral de decisión óptimo (Youden y F1-óptimo) y la curva F1-vs-umbral, los intervalos de confianza por bootstrap y el test exacto de Fisher para DIR/SPD por género y edad, y los recuentos por subgrupo. Salidas en `paper/tables/mejoras/`.
+
+```bash
+py -3 scripts/python/evaluation/analisis_mejoras_estadisticas.py
+```
 
 ---
 
@@ -305,9 +334,9 @@ Consolida los resultados experimentales de las hipótesis H1, H2 y H3 de todos l
 
 #### `orquestador_c0_c3.py`
 
-**Orquestador del experimento factorial.** Ejecuta las cuatro configuraciones sobre los
-60 CVs de test, invoca los modulos de metricas y genera las tablas de resultados
-para el Capitulo 7 del TFE.
+**Orquestador del experimento factorial.** Ejecuta las cuatro configuraciones sobre el
+corpus de evaluación, invoca los modulos de metricas y genera las tablas de resultados
+del Capítulo 5 (Validación experimental y resultados) del TFE.
 
 ```bash
 py -3 scripts/python/experiments/orquestador_c0_c3.py
@@ -347,10 +376,29 @@ Output: `paper/figures/cap5/*.png`
 py -3 scripts/python/figures/gen_cap5_figures.py
 ```
 
+#### `gen_cap6_figures.py`
+
+Genera los gráficos de resultados (distribución de tiempos, curva ROC, impacto dispar)
+en PNG (300 dpi). Output: `paper/figures/cap6/*.png`.
+
+```bash
+py -3 scripts/python/figures/gen_cap6_figures.py
+```
+
+#### `gen_track3_figures.py`
+
+Genera las figuras del análisis estadístico complementario (F₁ vs. umbral y DIR por género
+con intervalos de confianza) a partir de los CSV de `paper/tables/mejoras/`. Output:
+`paper/figures/mejoras/*.png`.
+
+```bash
+py -3 scripts/python/figures/gen_track3_figures.py
+```
+
 #### `insert_cap5_docx.py`
 
-Inserta el contenido completo del Capitulo 5 en `paper/SISTAC_TFE.docx` generando
-XML compatible con la plantilla UNIR. Crea backup automatico antes de modificar.
+Inserta el contenido de los capítulos técnicos en el `.docx` generando XML compatible
+con la plantilla UNIR. Crea backup automatico antes de modificar.
 
 ```bash
 py -3 -X utf8 scripts/python/figures/insert_cap5_docx.py
@@ -361,23 +409,29 @@ py -3 -X utf8 scripts/python/figures/insert_cap5_docx.py
 ## Flujo de trabajo del experimento
 
 ```
-1. Generar corpus sintetico
-   py -3 scripts/python/data/synthetic_corpus_generator.py
+1. Preparar el corpus de evaluación (dataset externo netsol/resume-score-details)
+   py -3 scripts/python/data/prepare_external_validation.py
+   # (opcional) corpus sintético de desarrollo:
+   # py -3 scripts/python/data/synthetic_corpus_generator.py
 
 2. Dividir en train/test (stratified, seed=42)
    py -3 scripts/python/data/split_corpus.py
 
-3. Crear indice en Azure AI Search
+3. Crear el índice en el vector store activo (Google Vertex AI Search por defecto)
    py -3 scripts/python/rag/create_index.py
 
-4. Indexar los 240 CVs de entrenamiento
+4. Indexar el split de entrenamiento
    py -3 scripts/python/rag/index_corpus.py --split train             # indice C2
    py -3 scripts/python/rag/index_corpus.py --split train --config c3 # indice C3
 
-5. Ejecutar el experimento factorial (C0-C3) sobre los 60 CVs de test
+5. Ejecutar el experimento factorial (C0-C3) sobre el split de test
    py -3 scripts/python/experiments/orquestador_c0_c3.py
 
-6. Resultados: paper/tables/ y paper/figures/
+6. (Opcional) Análisis estadístico complementario y figuras
+   py -3 scripts/python/evaluation/analisis_mejoras_estadisticas.py
+   py -3 scripts/python/figures/gen_track3_figures.py
+
+7. Resultados: paper/tables/ y paper/figures/
 ```
 
 ---
@@ -392,8 +446,8 @@ LLM_PROVIDER=anthropic         # anthropic | google | openai
 ANTHROPIC_API_KEY=...          # Claude Sonnet (LLM principal)
 GOOGLE_API_KEY=...             # Gemini 2.5 Flash (extracción de documentos y LLM de Google)
 
-# Vector Store Activo (azure | google)
-VECTORSTORE_PROVIDER=azure     # azure | google
+# Vector Store Activo (google | azure)
+VECTORSTORE_PROVIDER=google    # google (activo en el experimento) | azure (alternativa evaluada)
 
 # Azure AI Search (si VECTORSTORE_PROVIDER=azure)
 AZURE_SEARCH_ENDPOINT=...      # https://xxx.search.windows.net
