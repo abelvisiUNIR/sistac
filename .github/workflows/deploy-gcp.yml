@@ -50,6 +50,7 @@ jobs:
 
     - name: Build and Push Docker Image
       run: |
+        mkdir -p paper
         docker build --platform linux/amd64 -t ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.GAR_REPO }}/${{ env.SERVICE }}:${{ github.sha }} .
         docker push ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.GAR_REPO }}/${{ env.SERVICE }}:${{ github.sha }}
 
