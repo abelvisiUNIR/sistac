@@ -72,6 +72,12 @@ jobs:
           AZURE_SEARCH_ENDPOINT=${{ secrets.AZURE_SEARCH_ENDPOINT }}
           AZURE_SEARCH_KEY=${{ secrets.AZURE_SEARCH_KEY }}
           AZURE_SEARCH_INDEX=${{ secrets.AZURE_SEARCH_INDEX }}
+          GCP_PROJECT_ID=${{ secrets.GCP_PROJECT_ID || 'bps-process-gen' }}
+          GCP_LOCATION=${{ secrets.GCP_LOCATION || 'global' }}
+          GCP_DATA_STORE_ID=${{ secrets.GCP_DATA_STORE_ID || 'sistac-cvs-datastore-v2' }}
+          GCP_SEARCH_APP_ID=${{ secrets.GCP_SEARCH_APP_ID || 'sistac-search-app' }}
+          GCP_SEARCH_APP_ID_EXTERNAL=${{ secrets.GCP_SEARCH_APP_ID_EXTERNAL || 'sistac-search-app-external-v2' }}
+          USE_EXTERNAL_DATA=${{ secrets.USE_EXTERNAL_DATA || 'true' }}
 
     - name: Show Deploy URL
       run: |

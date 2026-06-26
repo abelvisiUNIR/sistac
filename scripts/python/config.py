@@ -179,7 +179,7 @@ def check_gcp_config() -> bool:
         missing.append("GCP_PROJECT_ID")
     if not GCP_SEARCH_APP_ID:
         missing.append("GCP_SEARCH_APP_ID")
-    if "GOOGLE_APPLICATION_CREDENTIALS" not in os.environ:
+    if "K_SERVICE" not in os.environ and "GOOGLE_APPLICATION_CREDENTIALS" not in os.environ:
         missing.append("GOOGLE_APPLICATION_CREDENTIALS")
     if missing:
         raise EnvironmentError(
