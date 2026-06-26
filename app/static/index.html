@@ -1254,13 +1254,30 @@ function renderQueue() {
 
 // ── Evaluación batch ──────────────────────────────────────────────────────
 async function evaluarBatch() {
-  const cargoId = document.getElementById('sel-cargo').value;
-  const config  = document.querySelector('input[name="cfg"]:checked')?.value || 'c2';
+  console.log("[evaluarBatch] Iniciando proceso de evaluación...");
+  const cargoSelect = document.getElementById('sel-cargo');
+  const cargoId = cargoSelect ? cargoSelect.value : null;
+  const configEl = document.querySelector('input[name="cfg"]:checked');
+  const config  = configEl ? configEl.value : 'c2';
+  
+  console.log("[evaluarBatch] Cargo ID seleccionado:", cargoId);
+  console.log("[evaluarBatch] Config de Experimento (cfg):", config);
 
-  if (!cargoId)       { toast('Seleccioná un cargo.', 'err'); return; }
-  if (!cvFiles.length) { toast('Agregá al menos un CV.', 'err'); return; }
+  if (!cargoId) { 
+    console.warn("[evaluarBatch] Validación fallida: No hay cargo seleccionado.");
+    toast('Seleccioná un cargo.', 'err'); 
+    return; 
+  }
+  
+  console.log("[evaluarBatch] Cola de CVs actuales:", cvFiles.length, cvFiles);
+  if (!cvFiles.length) { 
+    console.warn("[evaluarBatch] Validación fallida: Cola de CVs vacía.");
+    toast('Agregá al menos un CV.', 'err'); 
+    return; 
+  }
 
   // Toggle loaders
+  console.log("[evaluarBatch] Activando loader visual en UI...");
   document.getElementById('ph-eval').classList.add('hidden');
   document.getElementById('res-batch').classList.add('hidden');
   document.getElementById('detalle-panel').classList.add('hidden');
@@ -1272,17 +1289,33 @@ async function evaluarBatch() {
     const fd = new FormData();
     fd.append('cargo_id', cargoId);
     fd.append('config', config);
-    cvFiles.forEach(f => fd.append('archivos_cv', f));
+    cvFiles.forEach((f, idx) => {
+      console.log(`[evaluarBatch] Agregando archivo [${idx}]:`, f.name, `(${f.size} bytes)`);
+      fd.append('archivos_cv', f);
+    });
 
-    const r = await fetch(`${API}/api/evaluar/batch`, { method:'POST', body:fd });
-    if (!r.ok) throw new Error((await r.json()).detail || r.statusText);
+    const targetUrl = `${API}/api/evaluar/batch`;
+    console.log("[evaluarBatch] Enviando solicitud POST a:", targetUrl);
+    const r = await fetch(targetUrl, { method:'POST', body:fd });
+    
+    console.log("[evaluarBatch] Respuesta recibida con código HTTP:", r.status);
+    if (!r.ok) {
+      const errBody = await r.json().catch(() => ({}));
+      const errMsg = errBody.detail || r.statusText || `Error HTTP ${r.status}`;
+      console.error("[evaluarBatch] Error de API:", errMsg);
+      throw new Error(errMsg);
+    }
+    
     const d = await r.json();
+    console.log("[evaluarBatch] Datos procesados correctamente:", d);
     lastBatchData = d;
     renderBatch(d);
   } catch(e) {
+    console.error("[evaluarBatch] Excepción atrapada:", e);
     toast(`Error: ${e.message}`, 'err');
     document.getElementById('ph-eval').classList.remove('hidden');
   } finally {
+    console.log("[evaluarBatch] Proceso finalizado. Restaurando botones...");
     document.getElementById('ld-eval').classList.add('hidden');
     document.getElementById('btn-eval').disabled = false;
   }

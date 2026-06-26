@@ -225,10 +225,14 @@ async def evaluar_batch(
     Evalúa varios CVs a la vez contra un cargo.
     Retorna lista ordenada por score descendente.
     """
+    print(f"[API] Invocando evaluar_batch: cargo_id={cargo_id}, config={config}, num_cvs={len(archivos_cv)}")
+
     if cargo_id not in _cargos:
+        print(f"[API ERROR] Cargo {cargo_id} no encontrado.")
         raise HTTPException(status_code=404, detail="Cargo no encontrado.")
 
     if len(archivos_cv) > 50:
+        print(f"[API ERROR] Exceso de CVs: {len(archivos_cv)}")
         raise HTTPException(status_code=400, detail="Máximo 50 CVs por lote.")
 
     cargo = _cargos[cargo_id]
@@ -237,13 +241,16 @@ async def evaluar_batch(
     # Instanciar pipeline UNA SOLA VEZ para todo el batch, en thread pool para
     # no bloquear el event loop de FastAPI durante la carga del modelo de embeddings
     from rag.pipeline import SistacRAGPipeline
+    print(f"[API] Instanciando SistacRAGPipeline con config={config}...")
     pipeline = await run_in_threadpool(SistacRAGPipeline, config=config)
 
     # Extraer texto de todos los archivos válidos
     valid_cvs = {}  # {cv_id: (cv_text, filename)}
     for archivo_cv in archivos_cv:
+        print(f"[API] Procesando archivo de CV: {archivo_cv.filename}")
         ext = Path(archivo_cv.filename).suffix.lower()
         if ext not in SUPPORTED_EXTENSIONS:
+            print(f"[API WARN] Formato no soportado para CV: {archivo_cv.filename} ({ext})")
             resultados_batch.append({
                 "archivo_cv": archivo_cv.filename,
                 "error": f"Formato '{ext}' no soportado.",
@@ -255,7 +262,9 @@ async def evaluar_batch(
         data = await archivo_cv.read()
         try:
             cv_text = extract_text(data, archivo_cv.filename)
+            print(f"[API] Texto extraído exitosamente de {archivo_cv.filename} ({len(cv_text)} caracteres)")
         except Exception as exc:
+            print(f"[API ERROR] Fallo al extraer texto de {archivo_cv.filename}: {exc}")
             resultados_batch.append({
                 "archivo_cv": archivo_cv.filename,
                 "error": f"No se pudo leer el archivo: {exc}",
@@ -265,6 +274,7 @@ async def evaluar_batch(
             continue
 
         if len(cv_text.strip()) < 50:
+            print(f"[API WARN] CV {archivo_cv.filename} parece vacío o muy corto.")
             resultados_batch.append({
                 "archivo_cv": archivo_cv.filename,
                 "error": "Documento vacío o ilegible.",
@@ -279,17 +289,20 @@ async def evaluar_batch(
     # Indexar todos los CVs válidos juntos en Azure AI Search (si C2/C3)
     if config in {"c2", "c3"} and valid_cvs:
         try:
+            print(f"[API] Iniciando indexación de {len(valid_cvs)} CVs para cargo {cargo_id}...")
             cv_texts_to_index = {cid: val[0] for cid, val in valid_cvs.items()}
             await run_in_threadpool(
                 pipeline.index,
                 cv_texts=cv_texts_to_index,
                 jd_texts={cargo_id: cargo["descripcion"]}
             )
+            print(f"[API] Indexación completada exitosamente.")
         except Exception as exc:
+            print(f"[API ERROR] Falló la indexación en el Vector Store: {exc}")
             for cid, (cv_text, filename) in valid_cvs.items():
                 resultados_batch.append({
                     "archivo_cv": filename,
-                    "error": f"Fallo al indexar en Azure AI Search: {exc}",
+                    "error": f"Fallo al indexar en Vector Store: {exc}",
                     "score": None,
                     "decision": "ERROR",
                 })
@@ -298,6 +311,7 @@ async def evaluar_batch(
     # Evaluar los CVs válidos
     for cv_id, (cv_text, filename) in valid_cvs.items():
         try:
+            print(f"[API] Evaluando candidato: {filename} (ID: {cv_id}) contra JD {cargo_id}...")
             resultado = await run_in_threadpool(
                 pipeline.evaluate,
                 cv_id=cv_id,
@@ -305,6 +319,8 @@ async def evaluar_batch(
                 jd_id=cargo_id,
                 jd_text=cargo["descripcion"],
             )
+            print(f"[API] Candidato {filename} evaluado. Score: {resultado.get('score')}, Decisión: {resultado.get('decision')}")
+
             entrada = {
                 "id":              str(uuid.uuid4())[:8],
                 "cv_id":           cv_id,
