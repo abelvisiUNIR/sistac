@@ -77,7 +77,7 @@ jobs:
           GCP_DATA_STORE_ID=${{ secrets.GCP_DATA_STORE_ID || 'sistac-cvs-datastore-v2' }}
           GCP_SEARCH_APP_ID=${{ secrets.GCP_SEARCH_APP_ID || 'sistac-search-app' }}
           GCP_SEARCH_APP_ID_EXTERNAL=${{ secrets.GCP_SEARCH_APP_ID_EXTERNAL || 'sistac-search-app-external-v2' }}
-          USE_EXTERNAL_DATA=${{ secrets.USE_EXTERNAL_DATA || 'true' }}
+          USE_EXTERNAL_DATA=${{ secrets.USE_EXTERNAL_DATA || 'false' }}
 
     - name: Show Deploy URL
       run: |
