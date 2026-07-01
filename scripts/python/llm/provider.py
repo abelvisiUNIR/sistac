@@ -26,7 +26,7 @@ LLM_PROVIDER: str = os.getenv("LLM_PROVIDER", "anthropic").lower()
 _ANTHROPIC_MODEL = os.getenv("ANTHROPIC_MODEL", "claude-haiku-4-5")
 _OPENAI_CHAT_MODEL = os.getenv("OPENAI_CHAT_MODEL", "gpt-4o-mini")
 _OPENAI_EMBED_MODEL = os.getenv("OPENAI_EMBED_MODEL", "text-embedding-3-small")
-_GOOGLE_MODEL = os.getenv("GOOGLE_MODEL", "gemini-1.5-flash")
+_GOOGLE_MODEL = os.getenv("GOOGLE_MODEL", "gemini-2.5-flash")
 
 _MAX_RETRIES = 3
 _RETRY_BASE_DELAY = 2.0  # segundos

@@ -35,7 +35,7 @@ if str(_SCRIPTS_DIR) not in sys.path:
 SUPPORTED_EXTENSIONS = {".pdf", ".docx", ".doc", ".txt", ".png", ".jpg", ".jpeg", ".webp"}
 IMAGE_EXTENSIONS     = {".png", ".jpg", ".jpeg", ".webp"}
 
-_GEMINI_MODEL = os.getenv("GEMINI_DOC_MODEL", "gemini-1.5-flash")
+_GEMINI_MODEL = os.getenv("GEMINI_DOC_MODEL", "gemini-2.5-flash")
 
 _EXTRACT_PROMPT = (
     "Extraé todo el texto de este documento de forma fiel y completa. "
