@@ -244,7 +244,7 @@ def _error_result(raw: str, mode: str) -> dict:
     return {
         "score":         None,
         "dimensions":    {},
-        "justification": f"[ERROR] LLM no retornó JSON válido: {raw[:200]}",
+        "justification": f"[ERROR] LLM no retornó JSON válido: {raw}",
         "evidence_gaps": "N/A",
         "decision":      "ERROR",
         "mode":          mode,
