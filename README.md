@@ -60,9 +60,7 @@ sistac/
 ├── thesis_experiments/              <- Experimentos de validación y generación de tesis
 │   ├── data_prep/                   <- Transferencia de datos y preparación
 │   ├── evaluation/                  <- Métricas H1, H2, H3 y análisis estadísticos
-│   ├── experiments/                 <- Orquestador del experimento factorial
-│   ├── figures/                     <- Generación de figuras para los capítulos
-│   └── document_builders/           <- Inserción automatizada en el Word (.docx)
+│   └── experiments/                 <- Orquestador del experimento factorial
 │
 ├── app/                             <- Aplicación web FastAPI / Interfaz de usuario
 │   ├── main.py                      <- Backend en FastAPI (seeding y endpoints)
@@ -355,47 +353,6 @@ Extractor especifico para `.docx`, preservando estructura de parrafos y tablas.
 
 ---
 
-### `thesis_experiments/figures/`
-
-#### `gen_cap5_figures.py`
-
-Genera las 6 figuras de arquitectura del Capitulo 5 en PNG (300 dpi) usando matplotlib.
-Output: `paper/figures/cap5/*.png`
-
-```bash
-python thesis_experiments/figures/gen_cap5_figures.py
-```
-
-#### `gen_cap6_figures.py`
-
-Genera los gráficos de resultados (distribución de tiempos, curva ROC, impacto dispar)
-en PNG (300 dpi). Output: `paper/figures/cap6/*.png`.
-
-```bash
-python thesis_experiments/figures/gen_cap6_figures.py
-```
-
-#### `gen_track3_figures.py`
-
-Genera las figuras del análisis estadístico complementario (F₁ vs. umbral y DIR por género
-con intervalos de confianza) a partir de los CSV de `paper/tables/mejoras/`. Output:
-`paper/figures/mejoras/*.png`.
-
-```bash
-python thesis_experiments/figures/gen_track3_figures.py
-```
-
-#### `insert_cap5_docx.py`
-
-Inserta el contenido de los capítulos técnicos en el `.docx` generando XML compatible
-con la plantilla UNIR. Crea backup automatico antes de modificar.
-
-```bash
-python thesis_experiments/document_builders/insert_cap5_docx.py
-```
-
----
-
 ## Flujo de trabajo del experimento
 
 ```
@@ -417,11 +374,8 @@ python thesis_experiments/document_builders/insert_cap5_docx.py
 5. Ejecutar el experimento factorial (C0-C3) sobre el split de test
    python thesis_experiments/experiments/orquestador_c0_c3.py
 
-6. (Opcional) Análisis estadístico complementario y figuras
+6. (Opcional) Análisis estadístico complementario:
    python thesis_experiments/evaluation/analisis_mejoras_estadisticas.py
-   python thesis_experiments/figures/gen_track3_figures.py
-
-7. Resultados: paper/tables/ y paper/figures/
 ```
 
 ---

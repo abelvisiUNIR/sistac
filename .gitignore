@@ -50,3 +50,7 @@ MEMORY.md
 
 # Thesis drafts and document
 paper/
+
+# Thesis building/figures scripts (private)
+thesis_experiments/document_builders/
+thesis_experiments/figures/
