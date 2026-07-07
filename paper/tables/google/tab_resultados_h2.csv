@@ -1,4 +1,0 @@
-﻿config,f1,auc_roc
-C1 (LLM puro),0.567,0.665
-C2 (LLM + RAG),0.494,0.629
-C3 (LLM + RAG + PII),0.587,0.695

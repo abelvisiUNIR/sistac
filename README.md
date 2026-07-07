@@ -37,18 +37,9 @@ Sobre estas cuatro formas se midieron tres cosas, planteadas como preguntas:
 ```
 sistac/
 ├── README.md                        <- Este archivo
-├── CLAUDE.md                        <- Contexto y reglas para el agente Claude
-├── MEMORY.md                        <- Decisiones aprendidas entre sesiones
 ├── CHANGELOG.md                     <- Historial de cambios del proyecto
 ├── .env.example                     <- Variables de entorno requeridas (sin valores)
 ├── requirements.txt                 <- Dependencias de Python del proyecto (raíz)
-│
-├── paper/                           <- Documento TFE (fuente de verdad)
-│   ├── SISTAC_TFE.docx              <- Documento principal Word
-│   ├── sections/                    <- Capítulos redactados en Markdown (Cap 0 a 6 + Anexo)
-│   ├── figures/                     <- Figuras generadas por scripts (.png 300 dpi)
-│   ├── tables/                      <- Tablas estadísticas (.csv / .docx / .xlsx)
-│   └── backups/                     <- Copias de seguridad automáticas del .docx
 │
 ├── data/
 │   ├── raw/
