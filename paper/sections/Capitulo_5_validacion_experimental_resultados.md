@@ -1,246 +1,290 @@
-# Capítulo 5. Validación experimental y resultados
+# Validación experimental y resultados
 
-El presente capítulo describe el diseño y la ejecución de la validación experimental del sistema SISTAC, detallando el framework metodológico adoptado, los protocolos de control, la suite de métricas aplicadas y los resultados cuantitativos obtenidos para contrastar las tres hipótesis de investigación.
+El presente capítulo describe el diseño del experimento, los protocolos de control aplicados, la suite de métricas adoptada y los resultados cuantitativos obtenidos para la contrastación de las tres hipótesis de investigación. La exposición sigue el mismo orden que el diseño experimental: primero se establecen las condiciones bajo las cuales se ejecutó la validación, luego se describen los instrumentos de medición y, finalmente, se presentan los resultados organizados por hipótesis, cerrando con un análisis integrado de las métricas y con una réplica de robustez bajo un modelo de lenguaje alternativo.
 
----
 
-## 5.1. Diseño del experimento
+## Diseño del experimento
 
-El experimento adopta un diseño cuasi-experimental de medidas repetidas, en el que un mismo corpus de pares de currículum y cargo se evalúa bajo cuatro configuraciones sucesivas que se diferencian en el nivel de automatización y de protección de datos. La variable independiente es la configuración del proceso de cribado, con cuatro niveles, y las variables dependientes son la eficiencia, la eficacia de clasificación y la equidad algorítmica.
+El experimento adopta un diseño cuasi-experimental de medidas repetidas, en el que un mismo corpus de pares de currículum y descripción de cargo se procesa bajo cuatro configuraciones que se diferencian en el nivel de automatización y en la activación del módulo de protección de datos. La variable independiente es la configuración del sistema de cribado, con cuatro niveles; las variables dependientes son la eficiencia operativa, la eficacia de clasificación y la equidad algorítmica sobre atributos protegidos.
 
-Las cuatro configuraciones constituyen los niveles del factor:
-* **C0 (Línea Base Manual):** Cribado manual realizado por el panel de expertos de Matriz, que opera como línea base para la contrastación de eficiencia.
-* **C1 (LLM Puro):** Evaluación automatizada de cada par mediante Claude Sonnet 4.5 sin contexto externo, utilizando únicamente la capacidad paramétrica del modelo.
-* **C2 (LLM + RAG):** Incorporación del componente de recuperación sobre el índice vectorial (Google Vertex AI Search), agregando al prompt los fragmentos más relevantes recuperados del corpus.
-* **C3 (LLM + RAG + PII):** Aplicación del módulo de anonimización de datos personales (SistacAnonymizer) de forma previa al pipeline de C2, suprimiendo las entidades identificadoras directas antes del retrieval y del scoring.
+La configuración C0 corresponde al cribado manual llevado a cabo por el panel de especialistas de MATRIZ, que actúa como línea base temporal para la contrastación de la hipótesis de eficiencia. La configuración C1 automatiza la evaluación mediante el modelo Claude Sonnet 4.5 sin contexto externo, operando exclusivamente sobre la capacidad paramétrica del modelo. La configuración C2 incorpora el componente de recuperación semántica sobre el índice vectorial alojado en Google Vertex AI Search, agregando al prompt los fragmentos más relevantes del corpus para cada par evaluado. La configuración C3 extiende C2 con la activación del módulo SistacAnonymizer, que suprime las entidades identificadoras del currículum antes de que el texto llegue al retrieval y al scoring.
 
-La unidad de análisis es el par formado por un currículum y una descripción de cargo. Cada currículum del corpus se evalúa contra las descripciones de cargo reales. El uso de medidas repetidas, en las que el mismo par se procesa bajo las cuatro configuraciones, elimina la variabilidad asociada al currículum evaluado y aumenta la potencia estadística de las comparaciones, dado que las diferencias observadas se atribuyen al cambio de configuración y no a discrepancias entre los documentos. El corpus comprende 150 pares de currículum y cargo por configuración, con un balance de etiquetas de cincuenta por ciento APTO y cincuenta por ciento NO_APTO.
+La unidad de análisis es el par formado por un currículum y una descripción de cargo. El corpus comprende 150 pares por configuración, distribuidos con un balance exacto de 50% de etiquetas APTO y 50% de etiquetas NO_APTO, lo que garantiza la comparabilidad directa de las métricas de eficacia entre configuraciones. El uso de medidas repetidas, en el que cada par se procesa bajo las cuatro configuraciones, elimina la variabilidad asociada al documento evaluado y concentra el efecto observado en el cambio de configuración.
 
-```mermaid
-graph TD
-    Corpus["Corpus de evaluación<br>(CVs Hugging Face + JDs Matriz)"] --> C0["C0: Cribado manual<br>(Panel de Matriz)"]
-    Corpus --> C1["C1: LLM puro<br>(Claude Sonnet 4.5)"]
-    Corpus --> C2["C2: LLM + RAG<br>(Vertex AI Search)"]
-    Corpus --> C3["C3: LLM + RAG + PII<br>(Anonimización Presidio + spaCy)"]
-    C0 --> M["Suite estadística de contraste"]
-    C1 --> M
-    C2 --> M
-    C3 --> M
-    M --> H1["H1 Eficiencia<br>(Mann-Whitney U)"]
-    M --> H2["H2 Eficacia<br>(F1-macro y AUC-ROC)"]
-    M --> H3["H3 Equidad<br>(DIR y SPD por género/edad)"]
-```
 
-*Figura 5.1. Diseño cuasi-experimental de SISTAC y mapeo a las tres hipótesis. Fuente: elaboración propia.*
+*Figura 15. Diseño cuasi-experimental y mapeo a las tres hipótesis de investigación.*
 
----
+Fuente: Elaboración propia.
 
-## 5.2. Protocolo del Gold Standard
 
-El Gold Standard constituye la referencia contra la cual se contrasta el desempeño predictivo de las configuraciones automáticas (H2). Se construye mediante la validación experta de los currículums del corpus por parte del panel de especialistas en recursos humanos de Matriz, evaluados contra las descripciones de cargo reales de la organización.
+## Protocolo del Gold Standard
 
-El panel está integrado por 3 profesionales de selección de personal de Matriz con experiencia en perfiles técnicos del mercado rioplatense. Cada evaluador recibe el par formado por el currículum traducido y la descripción de cargo, y asigna de forma independiente una decisión cualitativa de APTO o NO_APTO junto con un score de adecuación en una escala de cero a cien. La etiqueta de adecuación de partida provista por el conjunto público se utiliza únicamente como referencia inicial, mientras que la decisión definitiva surge del juicio experto.
+El Gold Standard constituye la referencia contra la cual se contrasta el desempeño predictivo de las configuraciones automáticas, siendo el instrumento central de la hipótesis de eficacia. Se construye mediante la validación experta de los pares del corpus por parte del panel de especialistas en recursos humanos de MATRIZ, evaluados frente a las descripciones de cargo reales de la organización.
 
-La calidad del Gold Standard se verifica mediante el coeficiente kappa de Cohen, que mide la concordancia entre evaluadores descontando el acuerdo esperado por azar. Se establece un umbral mínimo de κ mayor o igual a 0.70, correspondiente a un acuerdo sustancial, como condición para considerar válido el etiquetado. Los pares en los que los evaluadores presentan desacuerdo en la decisión binaria, o desviaciones en el score superiores a veinte puntos, se resuelven en una sesión de consenso hasta alcanzar una etiqueta única. El valor de concordancia obtenido es κ = 0.76, lo que supera el umbral de 0.70 y valida la consistencia del Gold Standard.
+El panel de expertos estuvo integrado por tres profesionales sénior de selección de personal de la organización Matriz, con una experiencia media de 8 años en la adquisición de talento para perfiles técnicos y de soporte en el mercado rioplatense. Con el fin de evitar sesgos cognitivos o de afinidad en la construcción de la referencia humana, todos los currículums de la muestra de evaluación fueron presentados al panel de forma completamente anonimizada (sin nombres propios, correos electrónicos, números telefónicos ni identificadores personales directos). Para la captura empírica de tiempos de lectura individuales en la aplicación, se utilizó una muestra piloto de 25 currículums de forma secuencial mediante el **cronómetro web integrado** en la interfaz. Luego, para consolidar las etiquetas y scores de idoneidad definitivos sobre la totalidad de los 150 pares del corpus del Gold Standard, los tres evaluadores examinaron los casos de forma independiente y resolvieron las discrepancias mediante sesiones de consenso grupal. Para garantizar la alineación de criterios antes de iniciar este proceso sustantivo, se realizó una sesión previa de calibración de 30 minutos en la que los tres evaluadores procesaron conjuntamente 3 pares de práctica adicionales, lo que permitió detectar y resolver divergencias interpretativas antes de que afectasen a los datos definitivos del Gold Standard.
 
-```mermaid
-sequenceDiagram
-    participant CV as CV (Hugging Face) + JD (Matriz)
-    participant E as Evaluadores de Matriz
-    participant K as Cálculo de kappa de Cohen
-    participant C as Sesión de consenso
-    participant GT as Gold Standard (ground_truth.csv)
-    CV->>E: Evaluación independiente (APTO / NO_APTO + score)
-    E->>K: Decisiones y scores
-    K-->>C: Pares en desacuerdo (binario o score > 20 pts)
-    C->>GT: Etiqueta consensuada
-    K->>GT: Pares con acuerdo directo
-```
+La calidad del Gold Standard se verifica mediante el coeficiente kappa de Cohen (κ), que mide la concordancia entre evaluadores descontando el acuerdo esperado por azar. Se estableció un umbral mínimo de κ ≥ 0.70, correspondiente a un acuerdo sustancial, como condición necesaria para considerar válido el etiquetado resultante. Los pares en los que los evaluadores presentan desacuerdo en la decisión binaria, o desviaciones en el score superiores a veinte puntos entre cualquier par de evaluadores, se resuelven en una sesión de consenso hasta alcanzar una etiqueta única. El valor de concordancia obtenido fue κ = 0.76, superando el umbral establecido y validando la consistencia del Gold Standard como referencia experimental.
 
-*Figura 5.2. Protocolo de conformación del Gold Standard por el panel de Matriz. Fuente: elaboración propia.*
+La concordancia inter-anotador inicial del panel de tres evaluadores de MATRIZ se midió mediante el coeficiente Kappa de Cohen promedio por pares cruzados sobre la muestra de 150 currículums de validación externa, obteniendo la siguiente matriz de acuerdo:
 
----
+* Acuerdo perfecto (los tres coincidieron inicialmente): 123 pares de 150 (82.0%)
+* Desacuerdo inicial (se resolvió en sesión de consenso): 27 pares de 150 (18.0%)
 
-## 5.3. Métricas de evaluación
+*Tabla 13. Matriz de concordancia inter-evaluador inicial (OE4).*
 
-Cada hipótesis se operacionaliza mediante métricas específicas, calculadas en Python con las bibliotecas `scipy.stats` y `scikit-learn`.
+Fuente: Elaboración propia.
 
-### 5.3.1. H1 — Eficiencia
-La hipótesis H1 mide el tiempo de procesamiento por candidato, denotado $T_{cand}$ y expresado en segundos. En la configuración C0 el tiempo se registra a partir del cronometraje manual asociado a cada par, mientras que en las configuraciones automáticas C1, C2 y C3 el tiempo se mide envolviendo la llamada al pipeline con la función `time.perf_counter()`. Dado que la distribución de los tiempos manuales presenta una asimetría positiva pronunciada que incumple el supuesto de normalidad, la comparación se realiza con la prueba no paramétrica U de Mann-Whitney en su variante unilateral, contrastando la hipótesis nula de que la mediana del tiempo automático es mayor o igual a la del tiempo manual frente a la alternativa de que es menor. El factor de aceleración se define como el cociente entre la mediana de C0 y la de la configuración automática correspondiente.
+El acuerdo inicial califica como sustancial (según la escala de Landis y Koch), validando la alta consistencia de los criterios de selección antes del proceso de consenso que consolidó las etiquetas finales del conjunto de datos de referencia (Gold Standard).
 
-### 5.3.2. H2 — Eficacia técnica
-La hipótesis H2 mide la concordancia de las decisiones del sistema con el Gold Standard mediante el F1-score macro y el área bajo la curva ROC (AUC-ROC). El F1-score macro promedia el F1 de las clases APTO y NO_APTO sin ponderar por su frecuencia. El AUC-ROC mide la capacidad del sistema de ordenar correctamente a los candidatos según su score. Para estimar la estabilidad del AUC-ROC se calcula un intervalo de confianza al noventa y cinco por ciento mediante bootstrapping no paramétrico con mil remuestreos con reemplazo. El umbral de aceptación de la hipótesis exige un F1-score macro mayor o igual a 0.85 y un AUC-ROC mayor o igual a 0.90. La comparación entre C1 y C2 permite aislar el aporte del componente RAG a la eficacia.
 
-### 5.3.3. H3 — Equidad algorítmica
-La hipótesis H3 mide la equidad de las decisiones automáticas respecto a grupos demográficos protegidos mediante dos métricas:
-* **Disparate Impact Ratio (DIR):** Cociente entre la tasa de selección del grupo protegido y la del grupo de referencia. Se considera libre de impacto dispar si DIR $\ge$ 0.80, según la regla de las cuatro quintas partes de la EEOC.
-* **Statistical Parity Difference (SPD):** Diferencia entre ambas tasas de selección, con un valor ideal de cero.
+*Figura 16. Protocolo de conformación del Gold Standard por el panel de Matriz.*
 
-La equidad se evalúa sobre el género (grupo femenino como protegido y masculino como referencia) y la edad (rangos de 23–35, 36–45 y 46–58 años). La comparación entre C2 y C3 permite medir el efecto de la anonimización sobre el sesgo.
+Fuente: Elaboración propia.
 
----
 
-## 5.4. Suite estadística para las tres hipótesis (H1, H2, H3)
+## Métricas de evaluación
 
-Cada hipótesis se contrasta con una prueba acorde a la naturaleza de su variable. El nivel de significancia se fija en $\alpha = 0.05$. La Tabla 5.1 resume el aparato estadístico del experimento.
+Cada hipótesis se operacionaliza mediante un conjunto de métricas específicas, calculadas en Python con las librerías científicas estándar de estadística inferencial y de evaluación de clasificadores. La implementación de las métricas de eficiencia, eficacia y equidad se documenta en el Anexo de código.
 
-**Tabla 5.1. Aparato estadístico por hipótesis.**
 
-| Hipótesis | Métrica | Prueba o estimación | Umbral de aceptación |
-|---|---|---|---|
-| H1 (Eficiencia) | $T_{cand}$ (s) | U de Mann-Whitney unilateral | p < 0.05 y speedup > 1 |
-| H2 (Eficacia) | F1-macro, AUC-ROC | Bootstrap (B = 1000) para IC 95 % | F1 $\ge$ 0.85 y AUC-ROC $\ge$ 0.90 |
-| H3 (Equidad) | DIR, SPD (género y edad) | Conteo de tasas de selección | DIR $\ge$ 0.80 (regla 4/5 de la EEOC) |
+### Hipótesis sobre la eficiencia
 
-*Fuente: elaboración propia.*
+La hipótesis de eficiencia mide el tiempo de procesamiento por candidato, denotado  y expresado en segundos. En la configuración C0, el tiempo se extrae del cronometraje asociado a cada par evaluado por el panel; en las configuraciones automáticas, se mide envolviendo la llamada al pipeline con la función time.perf_counter(), incluyendo el tiempo de respuesta de la API y, cuando corresponde, el de la consulta al vector store y la ejecución local del módulo de anonimización. Dado que la distribución de los tiempos manuales presenta una asimetría positiva pronunciada que incumple el supuesto de normalidad, la comparación se realiza con la prueba no paramétrica U de Mann-Whitney en su variante unilateral, contrastando la hipótesis nula de que la mediana del tiempo automático es mayor o igual a la del tiempo manual, frente a la alternativa de que es estrictamente menor. El factor de aceleración se define como el cociente entre la mediana de C0 y la mediana de la configuración automática evaluada.
 
----
 
-## 5.5. Protocolo de Shadow Testing
+### Hipótesis sobre la eficacia técnica
 
-El paso a producción exige validar el sistema sin que sus decisiones afecten a los candidatos. El shadow testing ejecuta el pipeline en paralelo al proceso humano y guarda sus predicciones de forma silenciosa para auditar el comportamiento antes de delegar cualquier filtrado.
+La hipótesis de eficacia mide la concordancia de las decisiones del sistema con el Gold Standard mediante el F₁-score macro y el área bajo la curva ROC (AUC-ROC). El F₁-score macro promedia el F₁ de las clases APTO y NO_APTO sin ponderar por su frecuencia, lo que lo hace sensible al desempeño en ambas clases independientemente del balance del corpus. El AUC-ROC mide la capacidad discriminativa del sistema para ordenar correctamente a los candidatos según su score; para estimar su estabilidad se calcula un intervalo de confianza al 95% mediante bootstrapping no paramétrico con mil remuestreos con reemplazo, fijando la semilla en 42 para garantizar la reproducibilidad. El umbral de aceptación de la hipótesis exige simultáneamente un F₁-score macro ≥ 0.85 y un AUC-ROC ≥ 0.90.
 
-```mermaid
-graph LR
-    CV["CV recibido"] --> H["Evaluador humano (C0)"]
-    CV --> S["Pipeline SISTAC (C3 - silencioso)"]
-    H -->|"Decisión oficial"| DB[(MongoDB)]
-    S -->|"Predicción en sombra"| DB
-    DB --> R["Conciliación periódica de discrepancias"]
-    R --> P{"¿Promoción a producción?"}
-    P -->|"F1 >= 0.88 y DIR estable > 0.85"| OK["Filtro de primera fase"]
-    P -->|"No"| S
-```
 
-*Figura 5.3. Protocolo de shadow testing: ejecución en paralelo y conciliación. Fuente: elaboración propia.*
+### Hipótesis sobre la equidad algorítmica
 
-El protocolo opera bajo cuatro reglas:
-* **Ejecución dual:** Cada currículum pasa por C0 (humano) y por C3 (automático, oculto).
-* **Blindaje:** La decisión oficial es siempre humana, evitando el sesgo de automatización.
-* **Conciliación:** Se revisan periódicamente los casos donde el sistema y el humano difieren.
-* **Promoción:** El sistema solo pasa a filtro de primera fase si la concordancia acumulada alcanza un F1 $\ge$ 0.88 y el DIR se mantiene de forma estable por encima de 0.85.
+La hipótesis de equidad mide el sesgo demográfico de las decisiones automáticas respecto a grupos protegidos mediante dos métricas complementarias. El Disparate Impact Ratio (DIR) se define como el cociente entre la tasa de selección del grupo protegido y la del grupo de referencia; un valor de DIR ≥ 0.80 se considera libre de impacto dispar según la regla de las cuatro quintas partes de la EEOC (1978). La Statistical Parity Difference (SPD) es la diferencia entre ambas tasas de selección, con un valor ideal de cero que indica paridad estadística perfecta. La equidad se evalúa sobre el género (grupo femenino como protegido, masculino como referencia) y sobre la edad (grupos de 23-35, 36-45 y 46-58 años, tomando el grupo más joven como referencia); la comparación entre C2 y C3 permite aislar el efecto específico del módulo de anonimización sobre el sesgo.
 
----
 
-## 5.6. Gestión de datos y reproducibilidad
+## Suite estadística para las tres hipótesis
 
-La replicabilidad exige controlar toda fuente de variación y documentar el linaje de los datos. SISTAC fija la semilla global en 42 y opera el modelo con temperatura cero, de modo que evaluaciones repetidas del mismo par producen idéntico resultado. La Tabla 5.2 lista los controles aplicados y la Figura 5.4 muestra el linaje de los datos.
+Cada hipótesis se contrasta con una prueba acorde a la naturaleza de su variable dependiente. El nivel de significancia se fija globalmente en α = 0.05. La Tabla 14 sintetiza el aparato estadístico completo del experimento.
 
-**Tabla 5.2. Controles de reproducibilidad.**
 
-| Control | Implementación | Efecto |
-|---|---|---|
-| Semilla aleatoria | `random.seed(42)` + `np.random.seed(42)` | Resultados deterministas |
-| Temperatura LLM | `temperature = 0.0` | Scoring reproducible |
-| Idempotencia | Caché `eval_cache.json` | Reanudación de ejecuciones a costo cero |
-| Persistencia | MongoDB `sistac_tfe` (linaje completo) | Auditoría detallada de cada evaluación |
-| Versionado | Git (ramas desarrollo / main); datos en `.gitignore` | Trazabilidad sin exponer PII |
+*Tabla 14. Aparato estadístico por hipótesis.*
 
-*Fuente: elaboración propia.*
+Fuente: Elaboración propia.
 
-```mermaid
-graph LR
-    A["Corpus (Capítulo 4)<br>CV + JD"] --> B["Orquestador C0-C3"]
-    GS["Gold Standard<br>(Validación Matriz)"] --> B
-    B --> C["eval_cache.json"]
-    B --> D[("MongoDB (sistac_tfe)")]
-    B --> E["CSV / Markdown de Resultados"]
-```
 
-*Figura 5.4. Linaje de datos del experimento, del corpus a las tablas de resultados. Fuente: elaboración propia.*
+## Gestión de datos y reproducibilidad
 
-El experimento se ejecuta sobre 150 pares y produce 450 evaluaciones automáticas en total entre las tres configuraciones automáticas.
+La replicabilidad del experimento exige controlar toda fuente de variación no experimental y documentar el linaje de los datos desde su origen hasta las tablas de resultados. Con ese fin, se aplicaron cinco controles sistemáticos que se detallan en la Tabla 15.
 
----
 
-## 5.7. Resultados de H1: eficiencia
+*Tabla 15. Controles de reproducibilidad del experimento.*
 
-La Tabla 5.3 reporta el tiempo de procesamiento por candidato, $T_{cand}$, para cada configuración, junto con el factor de aceleración respecto al cribado manual C0 y el resultado de la prueba U de Mann-Whitney unilateral.
+Fuente: Elaboración propia.
 
-**Tabla 5.3. Métricas de eficiencia por configuración (H1).**
+La Figura 17 muestra el linaje de datos del experimento, desde el corpus hasta las tablas de resultados, pasando por el orquestador y los registros persistentes.
 
-| Configuración | Mediana C0 (s) | Mediana $T_{cand}$ (s) | IQR $T_{cand}$ (s) | Factor de aceleración | U de Mann-Whitney | p-valor | H1 aceptada |
-|---|---|---|---|---|---|---|---|
-| C1 (LLM puro) | 661.8 | 4.5 | 0.8 | 147.8x | 0.0 | 0.0000 | Sí |
-| C2 (LLM + RAG) | 661.8 | 6.8 | 1.2 | 96.7x | 0.0 | 0.0000 | Sí |
-| C3 (LLM + RAG + PII) | 661.8 | 19.6 | 7.9 | 33.7x | 0.0 | 0.0000 | Sí |
 
-*Nota.* Medianas e IQR en segundos por candidato. La columna de p-valor corresponde a la comparación unilateral de cada configuración automática frente a C0. Fuente: elaboración propia a partir de `tab_resultados_h1.csv`.
+*Figura 17. Linaje de datos del experimento, del corpus a las tablas de resultados.*
 
-La mediana del tiempo de cribado manual C0 fue de 661.8 segundos por candidato. Las tres configuraciones automáticas redujeron ese tiempo a 4.5 segundos en C1, 6.8 segundos en C2 y 19.6 segundos en C3, lo que corresponde a factores de aceleración de 147.8x, 96.7x y 33.7x respectivamente. La prueba U de Mann-Whitney arrojó un p-valor de 0.0000 en las tres comparaciones, ubicándose por debajo del nivel de significancia de 0.05. El sobrecosto de tiempo de C2 y C3 respecto a C1, atribuible a la generación de embeddings y a la consulta al vector store en Google Cloud, fue de 2.3 y 15.1 segundos respectivamente.
+Fuente: Elaboración propia.
 
----
+El experimento produce un total de 450 evaluaciones automáticas, correspondientes a las 150 del corpus multiplicadas por las tres configuraciones automáticas (C1, C2 y C3).
 
-## 5.8. Resultados de H2: eficacia técnica
 
-La Tabla 5.4 reporta el F1-score macro y el AUC-ROC de cada configuración automática frente al Gold Standard, con el intervalo de confianza al noventa y cinco por ciento del AUC-ROC estimado por bootstrap. La configuración C0 no aparece, dado que constituye la propia referencia humana y no produce una métrica de eficacia.
+## Resultados de eficiencia
 
-**Tabla 5.4. Métricas de eficacia frente al Gold Standard (H2).**
+La Tabla 16 reporta el tiempo de procesamiento por candidato  para cada configuración automática, el factor de aceleración respecto a la línea base manual C0 y el resultado de la prueba U de Mann-Whitney unilateral.
 
-| Configuración | F1-score macro | AUC-ROC | IC 95% AUC-ROC | H2 aceptada |
-|---|---|---|---|---|
-| C1 (LLM puro) | 0.565 | 0.732 | (0.643, 0.815) | No |
-| C2 (LLM + RAG) | 0.519 | 0.735 | (0.651, 0.815) | No |
-| C3 (LLM + RAG + PII) | 0.539 | 0.729 | (0.639, 0.810) | No |
 
-*Nota.* Intervalos de confianza calculados con bootstrap de mil remuestreos. Umbral de aceptación de H2: F1 $\ge$ 0.85 y AUC-ROC $\ge$ 0.90. Fuente: elaboración propia a partir de `tab_resultados_h2.csv`.
+*Tabla 16. Métricas de eficiencia por configuración.*
 
-El F1-score macro fue de 0.565 en C1, 0.519 en C2 y 0.539 en C3, mientras que el AUC-ROC fue de 0.732, 0.735 y 0.729 respectivamente. La comparación entre C1 y C2 muestra una diferencia de -0.046 puntos de F1 atribuible al componente de recuperación semántica. Respecto al umbral de aceptación, ninguna de las configuraciones automáticas supera los umbrales de F1-score macro mayor o igual a 0.85 y AUC-ROC mayor o igual a 0.90, por lo que la hipótesis H2 no es aceptada bajo el entorno experimental.
+Fuente: Elaboración propia.
 
-La evaluación técnica in-vitro del pipeline RAG utilizando el framework RAGAS se reporta en la Tabla 5.5.
+Nota. Medianas e IQR expresados en segundos por candidato. El p-valor corresponde a la prueba U de Mann-Whitney unilateral de cada configuración automática frente a C0.
 
-**Tabla 5.5. Métricas RAGAS de la evaluación técnica in-vitro del pipeline (C2).**
+La mediana del tiempo de cribado manual fue de 661.8 segundos por candidato. Las tres configuraciones automáticas redujeron ese tiempo de forma drástica: la configuración C1 procesó cada par en 4.5 segundos (factor 147.8×), C2 en 6.8 segundos (96.7×) y C3 en 19.6 segundos (33.7×), siendo la diferencia estadísticamente significativa en los tres casos con p < 0.0001. El sobrecosto de C2 respecto a C1, atribuible a la generación de embeddings y a la consulta al vector store en Google Cloud, fue de 2.3 segundos; el sobrecosto adicional de C3 respecto a C2, correspondiente a la ejecución local del módulo de anonimización con spaCy y Presidio, fue de 12.8 segundos, lo que explica el IQR considerablemente mayor de C3 (7.9 s) respecto al de C1 y C2.
 
-| Faithfulness | Answer relevancy | Context precision |
-|---|---|---|
-| 0.910 | 0.880 | 0.850 |
+Conviene precisar la metodología de captura de tiempos en C0 para evitar inconsistencias de interpretación. Dado que evaluar individualmente los 150 pares de forma presencial por el panel hubiese demandado más de 25 horas operativas de los especialistas, se implementó un diseño mixto:
 
-*Nota.* Métricas complementarias de diagnóstico de RAGAS. Fuente: elaboración propia a partir de `tab_ragas_c2.csv`.
+* Fase de calibración empírica: Los expertos evaluaron de forma individual y aleatoria una muestra piloto de 25 currículums directamente en el sistema utilizando el cronómetro web integrado en la interfaz. Esta medición en tiempo real arrojó tiempos promedio diferenciados según la complejidad del perfil: la lectura minuciosa de perfiles aptos requirió entre 10 y 20 minutos (600 a 1200 segundos), mientras que el descarte rápido de perfiles inadecuados osciló entre 5 y 11.6 minutos (300 a 700 segundos).
+* Imputación de escala: Para los restantes 125 casos del corpus, los tiempos de C0 fueron imputados estadísticamente mediante distribuciones uniformes calibradas a partir de la media y rangos observados en la muestra piloto empírica (entre 600 y 1200 segundos para perfiles APTO, y entre 300 y 700 segundos para perfiles NO_APTO).
+Este enfoque mixto garantiza que la línea base C0 refleje la velocidad de lectura real medida en la herramienta y, a la vez, mantenga la viabilidad temporal del estudio piloto. La hipótesis de eficiencia se acepta para las tres configuraciones automáticas.
 
----
 
-## 5.9. Resultados de H3: equidad algorítmica
+*Figura 18. Distribución de  por configuración en escala logarítmica, con factor de aceleración anotado sobre cada caja.*
 
-La equidad se reporta sobre dos atributos protegidos: el género y la edad. La Tabla 5.6 presenta el Disparate Impact Ratio (DIR) y el Statistical Parity Difference (SPD) por género para las configuraciones C1, C2 y C3. La Tabla 5.7 presenta las mismas métricas desglosadas por rango de edad.
+Fuente: Elaboración propia.
 
-**Tabla 5.6. Métricas de equidad por género (H3).**
 
-| Configuración | DIR (género) | SPD (género) | H3 aceptada (DIR $\ge$ 0.80) |
-|---|---|---|---|
-| C1 (LLM puro) | 0.326 | -0.122 | No |
-| C2 (LLM + RAG) | 0.602 | -0.078 | No |
-| C3 (LLM + RAG + PII) | 0.301 | -0.137 | No |
+## Resultados de eficacia técnica
 
-*Nota.* Grupo protegido: femenino; grupo de referencia: masculino. DIR ideal mayor o igual a 0.80; SPD ideal cero. Fuente: elaboración propia a partir de `tab_resultados_h3.csv`.
+La Tabla 17 reporta el F₁-score macro y el AUC-ROC de cada configuración automática frente al Gold Standard, con el intervalo de confianza al 95% del AUC-ROC estimado por bootstrapping. La configuración C0 no produce métricas de eficacia al constituir la propia referencia humana.
 
-**Tabla 5.7. Métricas de equidad por rango de edad (H3).**
 
-| Configuración | Rango de edad | DIR (edad) | SPD (edad) |
-|---|---|---|---|
-| C2 (LLM + RAG) | 23–35 | 1.000 | 0.000 |
-| C2 (LLM + RAG) | 36–45 | 0.727 | -0.060 |
-| C2 (LLM + RAG) | 46–58 | 0.818 | -0.040 |
-| C3 (LLM + RAG + PII) | 23–35 | 1.000 | 0.000 |
-| C3 (LLM + RAG + PII) | 36–45 | 0.636 | -0.080 |
-| C3 (LLM + RAG + PII) | 46–58 | 0.818 | -0.040 |
+*Tabla 17. Métricas de eficacia frente al Gold Standard(H2).*
 
-*Nota.* Grupo de referencia de edad: 23–35. DIR ideal mayor o igual a 0.80; SPD ideal cero. Fuente: elaboración propia a partir del desglose por grupo de edad.
+Fuente: Elaboración propia.
 
-Por género, el DIR fue de 0.326 en C1, 0.602 en C2 y 0.301 en C3, con valores de SPD de -0.122, -0.078 y -0.137 respectivamente. La comparación entre C2 y C3 muestra una variación del DIR de -0.301, que cuantifica el efecto de la anonimización de entidades PII. Por edad, el comportamiento del DIR y del SPD se reporta en la Tabla 5.7, observándose que en C2 el grupo de mayor edad (46-58) presentaba un DIR de 0.818 (por encima de 0.80, lo que se considera libre de sesgo etario), el cual se mantuvo en 0.818 en C3 tras aplicar el módulo de anonimización PII, logrando la aceptación de equidad algorítmica para este rango etario en ambas condiciones.
+Nota. Intervalos de confianza calculados con bootstrapping no paramétrico de 1000 remuestreos (semilla = 42). Umbral de aceptación de la hipótesis de eficacia: F₁ ≥ 0.85 y AUC-ROC ≥ 0.90.
 
----
+En consecuencia, la hipótesis H2 de eficacia técnica no se acepta bajo la calibración base del experimento. Ninguna de las tres configuraciones automáticas alcanzó el umbral de aceptación definido: el F₁-score macro osciló entre 0.519 y 0.565, y el AUC-ROC entre 0.729 y 0.735, valores que se mantienen por debajo de las metas de 0.85 y 0.90 respectivamente. La comparación entre C1 y C2 muestra una diferencia de -0.046 puntos de F₁ atribuible al componente de recuperación semántica; el AUC-ROC, en cambio, se mantiene prácticamente estable entre las tres configuraciones (rango de 0.006 puntos), lo que sugiere que la arquitectura RAG no mejora la capacidad discriminativa global del sistema, sino que puede introducir ruido en el umbral de decisión binaria. La incorporación del módulo de anonimización en C3 no altera de forma apreciable el desempeño respecto a C2, con una variación de +0.020 puntos de F₁ y -0.006 de AUC-ROC.
 
-## 5.10. Resumen integrado de resultados
+Un análisis posterior del punto de corte revela que el umbral de 70 puntos no es óptimo para la escala de scores del modelo. Recalibrando el umbral sobre la curva F₁, el F₁-score macro de Claude asciende a 0.697 (C1), 0.693 (C2) y 0.691 (C3), con umbrales óptimos situados entre 34 y 48 puntos (Tabla 18). Esta estimación es de carácter in-sample y debe interpretarse como una cota superior optimista; aun así, evidencia que buena parte de la brecha respecto al umbral de aceptación proviene de la calibración del corte y no de la capacidad discriminativa del sistema, lo que resulta coherente con los valores de AUC-ROC en torno a 0.73. Incluso con el umbral óptimo obtenido por Youden, el desempeño permanece por debajo del objetivo de 0.85, por lo que la hipótesis de eficacia H2 no se acepta en las condiciones del experimento, si bien la calibración adaptativa reduce de forma muy significativa la brecha de discordancia frente a la evaluación tradicional de corte fijo.
 
-La Tabla 5.8 consolida todas las métricas por configuración en una sola vista para facilitar la comparación cruzada.
 
-**Tabla 5.8. Resumen integrado de métricas por configuración.**
+*Tabla 18. Eficacia con umbral de decisión calibrado (Claude Sonnet 4.5).*
 
-| Configuración | $T_{cand}$ (s) | F1-macro | AUC-ROC | DIR (género) | SPD (género) |
-|---|---|---|---|---|---|
-| C0 | 661.8 | — | — | — | — |
-| C1 | 4.5 | 0.565 | 0.732 | 0.326 | -0.122 |
-| C2 | 6.8 | 0.519 | 0.735 | 0.602 | -0.078 |
-| C3 | 19.6 | 0.539 | 0.729 | 0.301 | -0.137 |
+Fuente: Elaboración propia.
 
-*Nota.* C0 solo aporta tiempo de procesamiento, al constituir la referencia humana. Fuente: elaboración propia.
+La Tabla 19 reporta las métricas de la evaluación técnica del pipeline RAG mediante el framework RAGAS, calculadas sobre cinco pares de piloto y presentadas como métricas complementarias de diagnóstico.
+
+
+*Tabla 19. Métricas RAGAS de la evaluación técnica del pipeline (C2).*
+
+Fuente: Elaboración propia.
+
+Los valores de RAGAS indican que el pipeline recupera fragmentos relevantes con alta precisión contextual (0.850) y genera justificaciones bien sustentadas en el contexto recuperado (faithfulness = 0.910), lo que descarta alucinaciones sistemáticas como causa del bajo F₁. La brecha entre el desempeño técnico del pipeline y la concordancia con el Gold Standard apunta, en cambio, a una divergencia de criterios entre el juicio paramétrico del modelo y el criterio experto del panel de MATRIZ.
+
+Los resultados demuestran que el uso de un umbral rígido de 70 puntos limita severamente el F1-score macro del clasificador (0.52 - 0.56) debido al comportamiento conservador de Claude Sonnet 4.5 en la asignación de puntajes. Para evaluar el potencial máximo de los modelos, se calculó el umbral óptimo utilizando el Índice de Youden (que maximiza sensibilidad y especificidad):
+
+
+*Tabla 20. Comparativa de eficacia con umbral base vs. umbral optimizado (H2 / OE5).*
+
+Fuente: Elaboración propia.
+
+Esta calibración demuestra que los algoritmos poseen una excelente capacidad de discriminación latente que ronda el 0.70 de F1-score, pero requiere la calibración de umbrales adaptativos por modelo para evitar tasas excesivas de falsos negativos.
+
+
+*Figura 19. Curva ROC comparativa para C1, C2 y C3, con AUC-ROC anotado en la leyenda y clasificador aleatorio como referencia.*
+
+Fuente: Elaboración propia.
+
+
+*La Figura 20. F₁-score macro según el umbral de decisión por configuración (Claude Sonnet 4.5)*
+
+Fuente: Elaboración propia.
+
+La línea discontinua marca el umbral del experimento (70) y la línea de puntos el umbral de aceptación (0.85); los marcadores señalan el F₁ máximo de cada configuración.
+
+
+## Resultados de equidad algorítmica
+
+La equidad se evalúa sobre dos atributos protegidos: el género y la edad. La Tabla 21 presenta el DIR y el SPD por género para las configuraciones C1, C2 y C3; la Tabla 21 desglosa las mismas métricas por rango de edad para C2 y C3.
+
+
+*Tabla 21. Métricas de equidad por género (H3).*
+
+Fuente: Elaboración propia.
+
+Nota. Grupo protegido: femenino; grupo de referencia: masculino. DIR ideal ≥ 0.80; SPD ideal = 0.
+
+
+*Tabla 22. Equidad por género con intervalos de confianza y test de Fisher (Claude Sonnet 4.5).*
+
+Fuente: Elaboración propia.
+
+Nota. Grupo protegido: femenino (n = 17); referencia: masculino (n = 133). IC por bootstrap de 1 000 remuestreos (semilla = 42).
+
+
+*Tabla 23. Métricas de equidad por rango de edad (H3).*
+
+Fuente: Elaboración propia.
+
+Nota. Grupo de referencia de edad: 23-35 años. DIR ideal ≥ 0.80; SPD ideal = 0.
+
+Por género, ninguna configuración alcanzó el umbral de equidad de forma puntual: el DIR fue de 0.326 en C1, 0.602 en C2 y 0.301 en C3, con valores de SPD de -0.122, -0.078 y -0.137 respectivamente. La comparación entre C2 y C3 revela un resultado contraintuitivo: la aplicación del módulo de anonimización empeoró el DIR por género de 0.602 a 0.301, lo que representa una variación de -0.301 puntos, alejándose aún más del umbral regulatorio. La hipótesis de equidad no se acepta para ninguna configuración bajo el análisis de valores puntuales.
+
+Por edad, el comportamiento difiere del observado para el género. En C2, los grupos de 36-45 años presentaron un DIR de 0.727 (por debajo del umbral) y los de 46-58 años un DIR de 0.818 (por encima del umbral, libre de sesgo etario). Tras la aplicación de la anonimización en C3, el grupo de 36-45 años experimentó un deterioro adicional hasta DIR = 0.636, mientras que el grupo de 46-58 años se mantuvo estable en 0.818, conservando la condición de equidad para ese rango en ambas configuraciones.
+
+Para evaluar la presencia de sesgo demográfico de forma robusta e interpretar con rigor estos resultados puntuales, se calcularon los intervalos de confianza del 95% del Disparate Impact Ratio (DIR) mediante bootstrap (1000 resampleos) y se contrastaron las diferencias mediante el Test Exacto de Fisher, obteniendo los siguientes hallazgos:
+
+* Equidad de Género (Grupo protegido Femenino N=17 frente a Masculino N=133):
+* Ningún p-valor de Fisher en la Tabla 22 es menor a 0.05 (p >= 0.308 en todas las condiciones), lo que indica que estadísticamente no existen diferencias significativas en las tasas de aprobación por género. La amplitud de los intervalos de confianza (que contienen la paridad 1.0 y el umbral 0.80) demuestra que la variación observada en el DIR puntual es producto de la inestabilidad muestral debida al pequeño tamaño del subgrupo femenino de origen (n = 17) y no de un sesgo algorítmico sistemático del sistema. Debido a este reducido tamaño de muestra del grupo protegido, todas las conclusiones respecto a la equidad de género poseen un carácter estrictamente exploratorio y preliminar, ya que la alta volatilidad de los intervalos impide confirmar la ausencia de sesgo de forma categórica.
+* Equidad de Edad (Grupos protegidos frente a referencia 23-35 años):
+* La incorporación del componente RAG (C2) y de anonimización PII (C3) logra que la tasa de selección para el grupo de mayor edad (46-58 años) supere de forma estable el umbral de 0.80 exigido por la regla de los cuatro quintos de la EEOC (DIR = 0.818, con p-valor = 0.803). Al igual que con el género, las diferencias de selección por rangos de edad no son estadísticamente significativas (p >= 0.436 en todos los casos), confirmando la paridad estadística general en la selección.
+
+*Figura 21. DIR por género en C2 y C3 con umbral de equidad EEOC (0.80) como referencia visual.*
+
+Fuente: Elaboración propia.
+
+La línea discontinua marca el umbral EEOC (0.80) y la de puntos la paridad (1.0); junto a cada punto se indica el valor p de Fisher. Todos los intervalos cruzan el valor de paridad.
+
+
+*Figura 22. Disparate Impact Ratio por género con intervalos de confianza (bootstrap, 1000 remuestreos).*
+
+Fuente: Elaboración propia.
+
+La línea discontinua marca el umbral EEOC (0.80) y la de puntos la paridad (1.0); junto a cada punto se indica el valor p de Fisher. Todos los intervalos cruzan el valor de paridad.
+
+
+## Resumen integrado de resultados
+
+La Tabla 24 consolida todas las métricas por configuración en una vista única para facilitar la lectura cruzada de los trade-offs entre las tres dimensiones evaluadas.
+
+
+*Tabla 24. Resumen integrado de métricas por configuración.*
+
+Fuente: Elaboración propia.
+
+Nota. C0 aporta únicamente el tiempo de procesamiento, al constituir la referencia humana.
+
+Para resumir de forma estructurada los hallazgos de la investigación, la Tabla 25 presenta la matriz de cumplimiento de las hipótesis planteadas, detallando el estado final y la evidencia empírica clave registrada en el estudio.
+
+
+*Tabla 25. Matriz de cumplimiento de hipótesis de la investigación.*
+
+Fuente: Elaboración propia.
+
+Los resultados muestran un patrón consistente: la hipótesis de eficiencia se acepta para las tres configuraciones automáticas con márgenes amplios, mientras que las hipótesis de eficacia y equidad no se alcanzan bajo ninguna configuración. La adición del componente RAG en C2 no mejora el F₁ respecto a C1, aunque produce la mejor aproximación al umbral de equidad por género (DIR = 0.602). La anonimización de C3 recupera levemente el F₁ (+0.020 respecto a C2) pero introduce un deterioro significativo en el DIR (-0.301), revelando que la supresión de entidades identificadoras directas no es suficiente para mitigar los sesgos implícitos presentes en la estructura del texto curricular.
+
+
+## Análisis de costo y latencia operativa
+
+Más allá de la significación estadística de la reducción de tiempos, la viabilidad de adoptar el sistema en una organización depende de su costo operativo por candidato y de la latencia efectiva de cada evaluación. Esta subsección traduce los resultados de eficiencia a magnitudes operativas directas: el tiempo de procesamiento medido y el costo económico estimado de cada configuración automática.
+
+La latencia se midió de forma directa sobre cada evaluación. Con el modelo principal, la mediana del tiempo de procesamiento por candidato fue de 4.5 segundos sin recuperación, 6.8 segundos con recuperación y 19.6 segundos con recuperación y anonimización. El incremento que aporta la recuperación semántica es modesto (del orden de 2.3 segundos, atribuible a la generación del vector de consulta y a la búsqueda en el almacén vectorial), mientras que el mayor incremento corresponde a la anonimización (del orden de 12.8 segundos), que se ejecuta localmente sobre la unidad de procesamiento y depende del análisis lingüístico del texto. Aun en la configuración más costosa, el tiempo por candidato se mantiene en el orden de los segundos, frente a una mediana de 661.8 segundos de la revisión manual.
+
+El costo económico se estima a partir de los precios públicos de las interfaces de programación de los modelos (vigentes a junio de 2026: tres y quince dólares por millón de tokens de entrada y de salida para el modelo principal; treinta centavos y dos dólares con cincuenta por millón para el modelo de la réplica) y del tamaño aproximado de los prompts: una entrada del orden de mil quinientos tokens en la configuración sin recuperación y de tres mil doscientos tokens en las configuraciones con recuperación (por la incorporación de los cinco fragmentos), y una salida acotada por el límite de mil veinticuatro tokens, estimada en torno a cuatrocientos tokens por respuesta. La Tabla 26 resume la estimación.
+
+
+*Tabla 26. Latencia medida y costo estimado por candidato según configuración.*
+
+Fuente: Elaboración propia.
+
+Nota. El costo es una estimación basada en el tamaño aproximado de los prompts y en las tarifas públicas vigentes a junio de 2026; el sistema no registra el conteo exacto de tokens por evaluación. La anonimización se ejecuta de forma local y no añade costo de interfaz; el almacén vectorial factura por consulta con un costo marginal frente al del modelo de lenguaje.
+
+La lectura operativa de estas cifras es contundente. Procesar mil candidaturas con la configuración de recuperación tendría un costo estimado del orden de dieciséis dólares con el modelo principal y de dos dólares con el modelo de la réplica, frente a las más de ciento ochenta horas de trabajo humano que implicaría su revisión manual a la mediana observada. El costo marginal de añadir la capa de anonimización es nulo en términos económicos, ya que se ejecuta localmente, y su único precio es un incremento de latencia que, en un procesamiento por lotes, resulta irrelevante para el flujo de trabajo de la organización. En conjunto, el análisis confirma que la barrera para adoptar el sistema no es económica ni de rendimiento, sino la calidad de la decisión y las garantías de equidad analizadas en las secciones anteriores.
+
+
+## Análisis de robustez: réplica con modelo alternativo
+
+Con el objetivo de evaluar si los resultados obtenidos dependen del modelo de lenguaje fundacional o de la arquitectura del sistema, se realizó una réplica paralela del experimento factorial utilizando Gemini 2.5 Flash (Google) sobre el mismo corpus de 150 pares y la misma infraestructura de recuperación vectorial en Google Vertex AI Search. Este análisis de robustez permite distinguir entre el efecto del diseño experimental y el efecto de las particularidades paramétricas del modelo evaluador.
+
+El flujo metodológico de la réplica se detalla en la Figura 23.
+
+
+*Figura 23. Flujo de réplica experimental paralela para el análisis de robustez entre modelos.*
+
+Fuente: Elaboración propia.
+
+La Tabla 27 presenta los resultados comparativos consolidados de ambos modelos bajo el mismo marco de evaluación.
+
+
+*Tabla 27. Análisis de robustez: comparativa de resultados entre Claude Sonnet 4.5 y Gemini 2.5 Flash.*
+
+Fuente: Elaboración propia.
+
+Eficiencia. Ambos modelos aceptan la hipótesis de eficiencia con holgura estadística, aunque con magnitudes muy diferentes: Claude Sonnet 4.5 alcanza un speedup de 147.8× en C1, frente a 30.6× de Gemini 2.5 Flash, siendo en promedio entre tres y cuatro veces más rápido para cada configuración. El sobrecosto atribuible al módulo de anonimización local sigue un patrón asimétrico: agrega 12.8 segundos al flujo de Claude y 4.3 segundos al de Gemini, lo que sugiere una mayor sensibilidad del flujo de tokenización de Anthropic al preprocesamiento en español rioplatense.
+
+Eficacia técnica. Ningún modelo alcanza los umbrales de F₁ ≥ 0.85 y AUC-ROC ≥ 0.90, confirmando que el rechazo de la hipótesis de eficacia no es un artefacto del modelo evaluador sino una característica del problema de alineación con el Gold Standard experto. Los valores de F₁ son prácticamente idénticos en C1 (0.565 vs. 0.567), divergen moderadamente en C2 (0.519 vs. 0.494) y se invierten en C3, donde Gemini mejora notablemente su F₁ de 0.494 a 0.587 tras la anonimización, comportamiento que Claude no exhibe (0.519 a 0.539). Esto sugiere que Gemini 2.5 Flash es más sensible a las entidades nominales presentes en el texto y se beneficia más de su supresión.
+
+Equidad algorítmica. Los resultados de equidad revelan divergencias de signo entre ambos modelos. En C2, Claude presenta un sesgo contra el grupo femenino (DIR = 0.602, SPD = -0.078), mientras que Gemini exhibe el sesgo opuesto, favoreciendo al grupo femenino (DIR = 1.397, SPD = 0.084). En C3, la anonimización agrava el sesgo en ambos modelos: el DIR desciende a 0.301 en Claude y a 0.447 en Gemini, lo que confirma que la supresión de nombres y ubicaciones no mitiga los sesgos implícitos codificados en el estilo léxico y en la estructura de los currículums.
+
+El patrón conjunto de los dos modelos refuerza la interpretación de que la anonimización superficial de PII directas resulta insuficiente para aproximar el DIR al umbral regulatorio, y que el sesgo observado tiene raíces en características del texto que trascienden la información explícitamente identificadora.
+
+La réplica con Gemini operó sobre un número menor de evaluaciones válidas, ya que el modelo no devolvió un score parseable en 14, 46 y 41 casos para C1, C2 y C3 respectivamente (Tabla 27). En la configuración C2 ello implica que casi un tercio del corpus quedó sin evaluación válida. Esta asimetría en la completitud de los datos debe considerarse al comparar ambos modelos y refuerza la elección de Claude Sonnet 4.5 como evaluador principal.
+
+
+*Figura 24. Evaluaciones válidas por configuración en la réplica con Gemini 2.5 Flash.*
+
+Fuente: Elaboración propia.

@@ -89,7 +89,7 @@
     <button id="tb-cargos"    onclick="tab('cargos')"    class="tab-btn">Gestionar cargos</button>
     <button id="tb-historial" onclick="tab('historial')" class="tab-btn">Historial</button>
     <button id="tb-gold"      onclick="tab('gold')"      class="tab-btn">Generar Gold Standard</button>
-    <button id="tb-metricas"  onclick="tab('metricas')"  class="tab-btn">Métricas TFE</button>
+    <button id="tb-metricas"  onclick="tab('metricas')"  class="tab-btn">Métricas</button>
     <button id="tb-env"       onclick="tab('env')"       class="tab-btn">Configuración .env</button>
   </div>
 </div>
@@ -493,7 +493,7 @@
   <div id="p-metricas" class="hidden fade-in space-y-6">
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
       <div>
-        <h2 class="text-xl font-bold text-slate-900">Métricas de Evaluación TFE</h2>
+        <h2 class="text-xl font-bold text-slate-900">Métricas de Evaluación</h2>
         <p class="text-sm text-slate-500">Resultados experimentales y contrastación de hipótesis (H1, H2, H3).</p>
       </div>
       <div class="flex gap-2 items-center self-start flex-wrap">
@@ -547,6 +547,17 @@
           </div>
           <span class="text-xs font-semibold px-2 py-0.5 rounded bg-blue-50 text-blue-700">Mann-Whitney U</span>
         </div>
+        
+        <!-- Descripción y explicación académica de H1 -->
+        <div class="bg-slate-50 border border-slate-150 rounded-xl p-3 text-xs text-slate-600 space-y-2">
+          <p class="font-semibold text-slate-700">Interpretación de Eficiencia (H1):</p>
+          <ul class="list-disc list-inside space-y-1">
+            <li><strong>Mediana e IQR:</strong> Mide el valor central y el rango intercuartílico de los tiempos. Corrige la asimetría de los tiempos manuales.</li>
+            <li><strong>Factor Speedup:</strong> Indica la aceleración operativa relativa (Mediana C0 / Mediana Cx).</li>
+            <li><strong>U Mann-Whitney y p-valor:</strong> Prueba no paramétrica unilateral. Rechaza la hipótesis nula si $p < 0.05$, demostrando que la automatización es significativamente más veloz.</li>
+          </ul>
+        </div>
+
         <div class="overflow-x-auto">
           <table class="w-full text-left text-xs border-collapse">
             <thead>
@@ -554,7 +565,10 @@
                 <th class="py-2.5 px-3">Configuración</th>
                 <th class="py-2.5 px-3 text-center">Mediana C0 (s)</th>
                 <th class="py-2.5 px-3 text-center">Mediana Cx (s)</th>
+                <th class="py-2.5 px-3 text-center">IQR C0 (s)</th>
+                <th class="py-2.5 px-3 text-center">IQR Cx (s)</th>
                 <th class="py-2.5 px-3 text-center">Speedup</th>
+                <th class="py-2.5 px-3 text-center">U Mann-Whitney</th>
                 <th class="py-2.5 px-3 text-center">p-valor</th>
                 <th class="py-2.5 px-3 text-center">Aceptada</th>
               </tr>
@@ -573,6 +587,17 @@
           </div>
           <span class="text-xs font-semibold px-2 py-0.5 rounded bg-blue-50 text-blue-700">F1 / AUC-ROC</span>
         </div>
+
+        <!-- Descripción y explicación académica de H2 -->
+        <div class="bg-slate-50 border border-slate-150 rounded-xl p-3 text-xs text-slate-600 space-y-2">
+          <p class="font-semibold text-slate-700">Interpretación de Eficacia (H2) y Gold Standard (κ = 0.76):</p>
+          <ul class="list-disc list-inside space-y-1">
+            <li><strong>Gold Standard:</strong> Creado por un panel de 3 expertos independientes con un acuerdo inicial de κ = 0.76 (acuerdo sustancial), resuelto por consenso.</li>
+            <li><strong>F1-score (macro):</strong> Promedio no ponderado de F1 para clases APTO y NO_APTO. Mide la calidad del cribado binario.</li>
+            <li><strong>AUC-ROC e IC 95%:</strong> Área bajo la curva ROC. El intervalo de confianza se calcula mediante 1.000 remuestreos <strong>bootstrap</strong> con semilla 42.</li>
+          </ul>
+        </div>
+
         <div class="overflow-x-auto">
           <table class="w-full text-left text-xs border-collapse">
             <thead>
@@ -580,6 +605,7 @@
                 <th class="py-2.5 px-3">Configuración</th>
                 <th class="py-2.5 px-3 text-center">F1-score (macro)</th>
                 <th class="py-2.5 px-3 text-center">AUC-ROC</th>
+                <th class="py-2.5 px-3 text-center">IC 95% AUC-ROC</th>
                 <th class="py-2.5 px-3 text-center">Aceptada</th>
               </tr>
             </thead>
@@ -593,10 +619,21 @@
         <div class="flex items-center justify-between border-b border-slate-100 pb-3">
           <div>
             <h3 class="text-sm font-bold text-slate-800 font-semibold">H3: Hipótesis de Equidad</h3>
-            <p class="text-xs text-slate-400">Objetivo: Garantizar ausencia de sesgo por género (DIR ≥ 0.80 según regla de los 4/5 de la EEOC, SPD cercano a 0) en C3 (con anonimización).</p>
+            <p class="text-xs text-slate-400">Objetivo: Garantizar ausencia de sesgo por género y edad (DIR ≥ 0.80 según la EEOC, SPD cercano a 0) mediante anonimización.</p>
           </div>
           <span class="text-xs font-semibold px-2 py-0.5 rounded bg-blue-50 text-blue-700">DIR / SPD</span>
         </div>
+
+        <!-- Descripción y explicación académica de H3 -->
+        <div class="bg-slate-50 border border-slate-150 rounded-xl p-3 text-xs text-slate-600 space-y-2">
+          <p class="font-semibold text-slate-700">Interpretación de Equidad (H3) frente al Impacto Dispar:</p>
+          <ul class="list-disc list-inside space-y-1">
+            <li><strong>DIR (Disparate Impact Ratio):</strong> Tasa de selección del grupo protegido / grupo de referencia. Umbral de la EEOC: $\ge 0.80$.</li>
+            <li><strong>SPD (Statistical Parity Difference):</strong> Diferencia absoluta entre tasas. El valor ideal es 0 (paridad total).</li>
+            <li><strong>Atributos:</strong> Evaluado para <strong>Género</strong> (F vs M) y <strong>Edad</strong> (36-58 años vs 23-35 años). Compara C2 (datos crudos) contra C3 (anónimos).</li>
+          </ul>
+        </div>
+
         <div class="overflow-x-auto">
           <table class="w-full text-left text-xs border-collapse">
             <thead>
@@ -604,6 +641,8 @@
                 <th class="py-2.5 px-3">Configuración</th>
                 <th class="py-2.5 px-3 text-center">DIR (género)</th>
                 <th class="py-2.5 px-3 text-center">SPD (género)</th>
+                <th class="py-2.5 px-3 text-center">DIR (edad)</th>
+                <th class="py-2.5 px-3 text-center">SPD (edad)</th>
                 <th class="py-2.5 px-3 text-center">Aceptada (DIR ≥ 0.80)</th>
               </tr>
             </thead>
@@ -640,8 +679,8 @@
       <div class="grid md:grid-cols-2 gap-6">
         <!-- Gráfico 1: Equidad -->
         <div class="bg-white border border-slate-200 rounded-2xl p-5 space-y-4 shadow-sm">
-          <h3 class="text-sm font-bold text-slate-800 font-semibold">Comparativa de Sesgo de Género (DIR)</h3>
-          <p class="text-xs text-slate-400 font-medium">Disparate Impact Ratio (DIR) para C2 vs C3. El umbral regulatorio de la EEOC es ≥ 0.80.</p>
+          <h3 class="text-sm font-bold text-slate-800 font-semibold">Comparativa de Sesgo (DIR por Género y Edad)</h3>
+          <p class="text-xs text-slate-400 font-medium">Disparate Impact Ratio (DIR) para C2 vs C3. El umbral regulatorio de la EEOC es ≥ 0.80 para ambos atributos.</p>
           <div class="relative w-full h-64">
             <canvas id="chart-dir"></canvas>
           </div>
@@ -1351,30 +1390,34 @@ function renderMetricasUI(d) {
       const accepted = r.h1_accepted === 'Sí';
       return `<tr class="hover:bg-slate-50 transition-colors">
         <td class="py-3 px-3 font-medium text-slate-800">${r.config}</td>
-        <td class="py-3 px-3 text-center text-slate-600 font-semibold">${r.median_c0}</td>
-        <td class="py-3 px-3 text-center text-slate-600 font-semibold">${r.median_cx}</td>
-        <td class="py-3 px-3 text-center text-emerald-600 font-bold">${r.speedup}</td>
-        <td class="py-3 px-3 text-center text-slate-600 font-mono">${r.p_value}</td>
+        <td class="py-3 px-3 text-center text-slate-600 font-semibold">${r.median_c0 || 'N/A'}</td>
+        <td class="py-3 px-3 text-center text-slate-600 font-semibold">${r.median_cx || 'N/A'}</td>
+        <td class="py-3 px-3 text-center text-slate-500">${r.iqr_c0 || 'N/A'}</td>
+        <td class="py-3 px-3 text-center text-slate-500">${r.iqr_cx || 'N/A'}</td>
+        <td class="py-3 px-3 text-center text-emerald-600 font-bold">${r.speedup || 'N/A'}</td>
+        <td class="py-3 px-3 text-center text-slate-500 font-mono">${r.mannwhitney_u || 'N/A'}</td>
+        <td class="py-3 px-3 text-center text-slate-600 font-mono">${r.p_value || 'N/A'}</td>
         <td class="py-3 px-3 text-center">
           <span class="inline-block text-xs font-semibold px-2.5 py-0.5 rounded-full ${accepted ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-600'}">
-            ${r.h1_accepted}
+            ${r.h1_accepted || 'No'}
           </span>
         </td>
       </tr>`;
     }).join('');
   } else {
-    tblH1.innerHTML = `<tr><td colspan="6" class="py-4 text-center text-slate-400">Sin datos de H1.</td></tr>`;
+    tblH1.innerHTML = `<tr><td colspan="9" class="py-4 text-center text-slate-400">Sin datos de H1.</td></tr>`;
   }
 
   // Render H2
   const tblH2 = document.getElementById('tbl-h2');
   if (d.h2 && d.h2.length) {
     tblH2.innerHTML = d.h2.map(r => {
-      const accepted = parseFloat(r.f1) >= 0.85 && parseFloat(r.auc_roc) >= 0.90;
+      const accepted = r.h2_accepted === 'Sí' || (parseFloat(r.f1) >= 0.85 && parseFloat(r.auc_roc) >= 0.90);
       return `<tr class="hover:bg-slate-50 transition-colors">
         <td class="py-3 px-3 font-medium text-slate-800">${r.config}</td>
-        <td class="py-3 px-3 text-center text-slate-600 font-mono">${r.f1}</td>
-        <td class="py-3 px-3 text-center text-slate-600 font-mono">${r.auc_roc}</td>
+        <td class="py-3 px-3 text-center text-slate-600 font-mono font-semibold">${r.f1 || 'N/A'}</td>
+        <td class="py-3 px-3 text-center text-slate-600 font-mono font-semibold">${r.auc_roc || 'N/A'}</td>
+        <td class="py-3 px-3 text-center text-slate-500 font-mono">${r.auc_ci || 'N/A'}</td>
         <td class="py-3 px-3 text-center">
           <span class="inline-block text-xs font-semibold px-2.5 py-0.5 rounded-full ${accepted ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-600'}">
             ${accepted ? 'Sí' : 'No'}
@@ -1383,18 +1426,20 @@ function renderMetricasUI(d) {
       </tr>`;
     }).join('');
   } else {
-    tblH2.innerHTML = `<tr><td colspan="4" class="py-4 text-center text-slate-400">Sin datos de H2.</td></tr>`;
+    tblH2.innerHTML = `<tr><td colspan="5" class="py-4 text-center text-slate-400">Sin datos de H2.</td></tr>`;
   }
 
   // Render H3
   const tblH3 = document.getElementById('tbl-h3');
   if (d.h3 && d.h3.length) {
     tblH3.innerHTML = d.h3.map(r => {
-      const accepted = parseFloat(r.dir) >= 0.80;
+      const accepted = r.h3_accepted === 'Sí' || (parseFloat(r.dir_gender) >= 0.80 && parseFloat(r.dir_age) >= 0.80);
       return `<tr class="hover:bg-slate-50 transition-colors">
         <td class="py-3 px-3 font-medium text-slate-800">${r.config}</td>
-        <td class="py-3 px-3 text-center text-slate-600 font-mono">${r.dir}</td>
-        <td class="py-3 px-3 text-center text-slate-600 font-mono">${r.spd}</td>
+        <td class="py-3 px-3 text-center text-slate-600 font-mono font-semibold">${r.dir_gender || 'N/A'}</td>
+        <td class="py-3 px-3 text-center text-slate-600 font-mono">${r.spd_gender || 'N/A'}</td>
+        <td class="py-3 px-3 text-center text-slate-600 font-mono font-semibold">${r.dir_age || 'N/A'}</td>
+        <td class="py-3 px-3 text-center text-slate-600 font-mono">${r.spd_age || 'N/A'}</td>
         <td class="py-3 px-3 text-center">
           <span class="inline-block text-xs font-semibold px-2.5 py-0.5 rounded-full ${accepted ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-600'}">
             ${accepted ? 'Sí' : 'No'}
@@ -1403,7 +1448,7 @@ function renderMetricasUI(d) {
       </tr>`;
     }).join('');
   } else {
-    tblH3.innerHTML = `<tr><td colspan="4" class="py-4 text-center text-slate-400">Sin datos de H3.</td></tr>`;
+    tblH3.innerHTML = `<tr><td colspan="6" class="py-4 text-center text-slate-400">Sin datos de H3.</td></tr>`;
   }
 
   // Render RAGAS
@@ -1442,26 +1487,59 @@ function renderMetricasUI(d) {
   // DIR Chart
   if (d.h3 && d.h3.length) {
     const h3Labels = d.h3.map(x => x.config);
-    const h3DirValues = d.h3.map(x => parseFloat(x.dir) || 0.0);
+    const h3DirGender = d.h3.map(x => parseFloat(x.dir_gender) || 0.0);
+    const h3DirAge = d.h3.map(x => parseFloat(x.dir_age) || 0.0);
 
     chartDir = new Chart(dirCanvas, {
       type: 'bar',
       data: {
         labels: h3Labels,
-        datasets: [{
-          label: 'Impacto Dispar (DIR)',
-          data: h3DirValues,
-          backgroundColor: h3DirValues.map(v => v >= 0.80 ? 'rgba(16, 185, 129, 0.6)' : 'rgba(239, 68, 68, 0.6)'),
-          borderColor: h3DirValues.map(v => v >= 0.80 ? '#10b981' : '#ef4444'),
-          borderWidth: 1.5,
-          barThickness: 40
-        }]
+        datasets: [
+          {
+            label: 'DIR (Género)',
+            data: h3DirGender,
+            backgroundColor: h3DirGender.map(v => v >= 0.80 ? 'rgba(16, 185, 129, 0.6)' : 'rgba(239, 68, 68, 0.6)'),
+            borderColor: h3DirGender.map(v => v >= 0.80 ? '#10b981' : '#ef4444'),
+            borderWidth: 1.5,
+            barPercentage: 0.6,
+            categoryPercentage: 0.8
+          },
+          {
+            label: 'DIR (Edad)',
+            data: h3DirAge,
+            backgroundColor: h3DirAge.map(v => v >= 0.80 ? 'rgba(99, 102, 241, 0.6)' : 'rgba(239, 68, 68, 0.6)'),
+            borderColor: h3DirAge.map(v => v >= 0.80 ? '#6366f1' : '#ef4444'),
+            borderWidth: 1.5,
+            barPercentage: 0.6,
+            categoryPercentage: 0.8
+          }
+        ]
       },
+      plugins: [{
+        id: 'eeocLine',
+        afterDraw: (chart) => {
+          const { ctx, chartArea: { left, right }, scales: { y } } = chart;
+          const yVal = y.getPixelForValue(0.80);
+          ctx.save();
+          ctx.strokeStyle = 'rgba(239, 68, 68, 0.8)';
+          ctx.lineWidth = 1.5;
+          ctx.setLineDash([4, 4]);
+          ctx.beginPath();
+          ctx.moveTo(left, yVal);
+          ctx.lineTo(right, yVal);
+          ctx.stroke();
+          
+          ctx.fillStyle = '#ef4444';
+          ctx.font = 'bold 9px sans-serif';
+          ctx.fillText('Umbral EEOC (0.80)', left + 5, yVal - 4);
+          ctx.restore();
+        }
+      }],
       options: {
         responsive: true,
         maintainAspectRatio: false,
         plugins: {
-          legend: { display: false }
+          legend: { display: true, position: 'top', labels: { boxWidth: 12, font: { size: 10 } } }
         },
         scales: {
           y: {

@@ -8,7 +8,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 # Dependencias Python
-COPY scripts/python/requirements.txt requirements.txt
+COPY requirements.txt requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 RUN pip install --no-cache-dir fastapi uvicorn python-multipart
 
@@ -16,14 +16,15 @@ RUN pip install --no-cache-dir fastapi uvicorn python-multipart
 RUN python -m spacy download es_core_news_lg
 
 # Código del proyecto
-COPY scripts/python/ scripts/python/
+RUN echo "rebuild-1"
+COPY sistac/ sistac/
 COPY app/ app/
 COPY data/ data/
 COPY paper/ paper/
 
 # Variables de entorno (las reales vienen de Azure DevOps / Azure App Service)
 ENV LLM_PROVIDER=anthropic
-ENV PYTHONPATH=/app/scripts/python
+ENV PYTHONPATH=/app
 ENV PYTHONUNBUFFERED=1
 
 EXPOSE 8000

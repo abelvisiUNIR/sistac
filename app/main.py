@@ -29,12 +29,11 @@ from starlette.concurrency import run_in_threadpool
 
 # INV-16: rutas via PROJECT_ROOT
 _PROJECT_ROOT = Path(__file__).parent.parent
-_SCRIPTS_DIR  = _PROJECT_ROOT / "scripts" / "python"
-if str(_SCRIPTS_DIR) not in sys.path:
-    sys.path.insert(0, str(_SCRIPTS_DIR))
+if str(_PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(_PROJECT_ROOT))
 
-from config import SCORE_THRESHOLD, CVS_RAW, GOLD_STANDARD_DIR, USE_EXTERNAL_DATA
-from utils.doc_extractor import extract_text, SUPPORTED_EXTENSIONS
+from sistac.config import SCORE_THRESHOLD, CVS_RAW, GOLD_STANDARD_DIR, USE_EXTERNAL_DATA
+from sistac.utils.doc_extractor import extract_text, SUPPORTED_EXTENSIONS
 
 # ── App ───────────────────────────────────────────────────────────────────────
 
@@ -81,7 +80,7 @@ if MONGO_URI:
 async def startup_event():
     if cargos_col is not None:
         try:
-            from data.seed_mongodb import seed_database
+            from sistac.utils.seed_mongodb import seed_database
             await run_in_threadpool(seed_database)
             
             db_cargos = list(cargos_col.find({}, {"_id": 0}))
@@ -158,7 +157,7 @@ async def crear_cargo(
     # Indexar en Azure Search (C2/C3)
     indexado = False
     try:
-        from rag.pipeline import SistacRAGPipeline
+        from sistac.rag.pipeline import SistacRAGPipeline
         pipeline = SistacRAGPipeline(config=config)
         if config in {"c2", "c3"}:
             pipeline.index(cv_texts={}, jd_texts={cargo_id: descripcion})
@@ -236,7 +235,7 @@ async def evaluar_batch(
 
     # Instanciar pipeline UNA SOLA VEZ para todo el batch, en thread pool para
     # no bloquear el event loop de FastAPI durante la carga del modelo de embeddings
-    from rag.pipeline import SistacRAGPipeline
+    from sistac.rag.pipeline import SistacRAGPipeline
     pipeline = await run_in_threadpool(SistacRAGPipeline, config=config)
 
     # Extraer texto de todos los archivos válidos
@@ -404,7 +403,7 @@ async def evaluar_cv(
     # (carga de SentenceTransformer + requests a Azure), correrlos en el thread pool
     # evita bloquear el event loop de FastAPI → previene "Failed to Fetch"
     def _run_pipeline() -> dict:
-        from rag.pipeline import SistacRAGPipeline
+        from sistac.rag.pipeline import SistacRAGPipeline
         p = SistacRAGPipeline(config=config)
         if config in {"c2", "c3"}:
             p.index(cv_texts={cv_id: cv_text}, jd_texts={cargo_id: cargo["descripcion"]})
@@ -482,14 +481,109 @@ async def simular_candidato(
     afinidad: Optional[str] = Form(None),
 ):
     """
-    Genera un candidato aleatorio (con PII y afinidad aleatoria o parametrizada) basado en la JD del cargo.
+    Genera o recupera un candidato basado en la JD del cargo (desde Hugging Face si USE_EXTERNAL_DATA).
     """
     if cargo_id not in _cargos:
         raise HTTPException(status_code=404, detail="Cargo no encontrado.")
     
     cargo = _cargos[cargo_id]
     jd_desc = cargo["descripcion"]
-    
+
+    # --- CASO 1: CARGAR DESDE CORPUS HUGGING FACE TRADUCIDO ---
+    if USE_EXTERNAL_DATA or cargo_id.startswith("JD_EXT_"):
+        gt_csv_path = Path("data/raw/gold_standard_external/ground_truth.csv")
+        cvs_dir = Path("data/raw/cvs_external")
+        
+        candidates = []
+        if gt_csv_path.exists():
+            try:
+                with open(gt_csv_path, mode="r", encoding="utf-8-sig") as f:
+                    reader = csv.DictReader(f)
+                    for row in reader:
+                        if row.get("jd_id") == cargo_id:
+                            candidates.append(row)
+            except Exception as e:
+                print(f"[WARN] Error leyendo external ground_truth.csv: {e}")
+        
+        filtered = candidates
+        
+        # Filtro por esperado/afinidad
+        if afinidad:
+            expected = "APTO" if afinidad in ["alto", "medio"] else "NO_APTO"
+            temp = [c for c in filtered if c.get("expected_label") == expected]
+            if temp:
+                filtered = temp
+                
+        # Filtro por género
+        if gender and gender in ["F", "M"]:
+            temp = [c for c in filtered if c.get("group_gender") == gender]
+            if temp:
+                filtered = temp
+                
+        # Filtro por rango edad
+        if age_group and age_group in ["23-35", "36-45", "46-58"]:
+            temp = [c for c in filtered if c.get("group_age") == age_group]
+            if temp:
+                filtered = temp
+                
+        if not filtered and candidates:
+            filtered = candidates
+            
+        if not filtered:
+            raise HTTPException(status_code=404, detail="No se encontraron currículums externos en el Gold Standard para este cargo.")
+            
+        selected_row = random.choice(filtered)
+        cv_id = selected_row["cv_id"]
+        row_gender = selected_row["group_gender"]
+        row_age_group = selected_row["group_age"]
+        row_label = selected_row["expected_label"]
+        
+        cv_file = cvs_dir / f"{cv_id}.txt"
+        if not cv_file.exists():
+            raise HTTPException(status_code=404, detail=f"Archivo de currículum {cv_id}.txt no encontrado.")
+            
+        cv_text = cv_file.read_text(encoding="utf-8", errors="ignore").strip()
+        if cv_text.startswith("```json") or cv_text.startswith("{"):
+            try:
+                import json
+                cleaned = cv_text
+                if cv_text.startswith("```json"):
+                    cleaned = cv_text[7:-3].strip()
+                data = json.loads(cleaned)
+                cv_text = data.get("translated_cv", cv_text)
+            except Exception:
+                pass
+                
+        lineas = [l.strip() for l in cv_text.splitlines() if l.strip()]
+        nombre_completo = "Candidato Simulado"
+        for l in lineas:
+            if not l.startswith("```") and not l.startswith("{") and len(l) < 80:
+                nombre_completo = l
+                break
+                
+        if row_age_group == "23-35":
+            age = random.randint(23, 35)
+        elif row_age_group == "36-45":
+            age = random.randint(36, 45)
+        else:
+            age = random.randint(46, 58)
+            
+        afinidad_ret = "medio"
+        if row_label == "APTO":
+            afinidad_ret = "alto" if random.random() > 0.5 else "medio"
+        else:
+            afinidad_ret = "bajo"
+            
+        return {
+            "nombre": nombre_completo,
+            "gender": row_gender,
+            "age_group": row_age_group,
+            "age": age,
+            "cv_text": cv_text.strip(),
+            "afinidad": afinidad_ret
+        }
+
+    # --- CASO 2: GENERACIÓN DE CANDIDATO SINTÉTICO (ETAPA DE DESARROLLO) ---
     # Pools locales de nombres y apellidos uruguayos (rioplatenses)
     nombres_f = [
         "Ana Laura", "María José", "Valentina", "Florencia", "Camila",
@@ -509,7 +603,6 @@ async def simular_candidato(
     barrios = ["Pocitos", "Punta Carretas", "Malvín", "Buceo", "Carrasco", "Centro", "Cordón"]
     calles = ["Av. Brasil", "Bulevar Artigas", "Av. Italia", "Av. 18 de Julio", "Calle Colonia", "Rivera"]
     
-    # Seleccionar género, edad y afinidad
     if not gender or gender not in {"F", "M"}:
         gender = random.choice(["F", "M"])
         
@@ -526,7 +619,6 @@ async def simular_candidato(
     if not afinidad or afinidad not in {"alto", "medio", "bajo"}:
         afinidad = random.choice(["alto", "medio", "bajo"])
     
-    # Generar PII
     nombre = random.choice(nombres_f if gender == "F" else nombres_m)
     apellido1 = random.choice(apellidos)
     apellido2 = random.choice(apellidos)
@@ -559,7 +651,7 @@ async def simular_candidato(
     Retorna SOLAMENTE el currículum formateado en texto plano, sin comentarios ni explicaciones adicionales, ni introducciones como 'Aquí tienes el currículum...'. Empieza directamente con el nombre del candidato.
     """
     
-    from llm.provider import get_chat_completion
+    from sistac.llm.provider import get_chat_completion
     try:
         cv_text = await run_in_threadpool(
             get_chat_completion,
@@ -730,7 +822,7 @@ async def reset_indice():
     Borra y recrea el índice sistac-cvs en Azure AI Search (create_index.py --delete).
     """
     try:
-        from rag.create_index import delete_index, create_index
+        from sistac.rag.create_index import delete_index, create_index
         await run_in_threadpool(delete_index)
         await run_in_threadpool(create_index)
         return {"status": "success", "message": "El índice vectorial en Azure AI Search ha sido borrado y recreado desde cero."}
@@ -752,7 +844,7 @@ async def indexar_corpus(background_tasks: BackgroundTasks, config: str = "c2"):
         raise HTTPException(status_code=400, detail="La indexación ya está en ejecución en segundo plano.")
 
     try:
-        from rag.index_corpus import index_corpus, load_corpus
+        from sistac.rag.index_corpus import index_corpus, load_corpus
         
         def run_indexing():
             global _indexacion_activa
@@ -833,7 +925,7 @@ def descargar_tablas(background_tasks: BackgroundTasks):
     Genera el reporte Excel, compila los gráficos y tablas en carpetas ordenadas
     y los descarga en un único archivo ZIP.
     """
-    from config import TABLES_DIR
+    from sistac.config import TABLES_DIR
     import shutil
     import tempfile
     from fastapi.responses import FileResponse
@@ -896,13 +988,17 @@ async def obtener_metricas():
     Lee las métricas consolidadas (H1, H2, H3) desde paper/tables/ si existen.
     Si no existen, retorna status "no_data".
     """
-    from config import TABLES_DIR
+    from sistac.config import TABLES_DIR
     import csv
     
-    h1_path = TABLES_DIR / "tab_resultados_h1.csv"
-    h2_path = TABLES_DIR / "tab_resultados_h2.csv"
-    h3_path = TABLES_DIR / "tab_resultados_h3.csv"
-    ragas_path = TABLES_DIR / "tab_ragas_c2.csv"
+    provider = os.getenv("LLM_PROVIDER", "anthropic").lower()
+    provider_dir = TABLES_DIR / provider
+    target_dir = provider_dir if provider_dir.exists() else TABLES_DIR
+    
+    h1_path = target_dir / "tab_resultados_h1.csv"
+    h2_path = target_dir / "tab_resultados_h2.csv"
+    h3_path = target_dir / "tab_resultados_h3.csv"
+    ragas_path = target_dir / "tab_ragas_c2.csv"
     
     if not (h1_path.exists() or h2_path.exists() or h3_path.exists()):
         return {"status": "no_data", "message": "No se encontraron archivos de métricas generados. Ejecutá el experimento primero."}
@@ -911,7 +1007,7 @@ async def obtener_metricas():
         if not path.exists():
             return []
         try:
-            with open(path, mode="r", encoding="utf-8") as f:
+            with open(path, mode="r", encoding="utf-8-sig") as f:
                 return list(csv.DictReader(f))
         except Exception as e:
             print(f"[WARN] Error leyendo {path.name}: {e}")
@@ -1101,7 +1197,7 @@ def diagnostico():
     resultado = {}
 
     # LLM keys
-    from config import ANTHROPIC_API_KEY, OPENAI_API_KEY, AZURE_SEARCH_ENDPOINT, AZURE_SEARCH_KEY, GOOGLE_API_KEY
+    from sistac.config import ANTHROPIC_API_KEY, OPENAI_API_KEY, AZURE_SEARCH_ENDPOINT, AZURE_SEARCH_KEY, GOOGLE_API_KEY
     resultado["anthropic_key"] = "OK" if ANTHROPIC_API_KEY else "FALTA (.env → ANTHROPIC_API_KEY)"
     resultado["openai_key"]    = "OK" if OPENAI_API_KEY    else "FALTA (.env → OPENAI_API_KEY) — opcional"
     resultado["google_key"]    = "OK" if GOOGLE_API_KEY    else "FALTA (.env → GOOGLE_API_KEY) — para PDF escaneados e imágenes"

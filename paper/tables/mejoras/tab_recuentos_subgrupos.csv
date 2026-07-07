@@ -1,0 +1,7 @@
+modelo,config,n_total,n_score_nulo,n_femenino,n_masculino,n_edad_23-35,n_edad_36-45,n_edad_46-58
+claude,c1,150,0,17,133,50,50,50
+claude,c2,150,0,17,133,50,50,50
+claude,c3,150,0,17,133,50,50,50
+gemini,c1,150,14,17,133,50,50,50
+gemini,c2,150,46,17,133,50,50,50
+gemini,c3,150,41,17,133,50,50,50
