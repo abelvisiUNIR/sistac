@@ -9,6 +9,13 @@ Universidad Internacional de La Rioja (UNIR) · Entrega: 15 julio 2026
 - David I. Madrid Oyanadel
 - Mario A. Belvisi Lescano
 
+> [!IMPORTANT]
+> **Nota de autoría y propiedad académica (Normativa UNIR):**
+> * Se incluye en la memoria del TFE la URL de este repositorio donde se aloja el código fuente desarrollado.
+> * Los estudiantes son los únicos autores del código y únicos propietarios del repositorio. Este repositorio no cuenta con commits de ningún otro usuario ajeno a los autores del trabajo.
+> * Los datos utilizados para el análisis están alojados en este mismo repositorio (bajo la carpeta `data/`).
+> * En caso de confidencialidad por asociación con actividades de empresa, se justifica adecuadamente en la memoria la reserva de código o datos que correspondan.
+
 ---
 
 ## ¿Qué es SISTAC?
