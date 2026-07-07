@@ -186,6 +186,67 @@ def seed_database():
         if c0_count > 0:
             print(f"[SEED] {c0_count} nuevos tiempos C0 importados a MongoDB.")
 
+    # 1.5 Importar Resultados (Evaluaciones)
+    resultados_col = db["resultados"]
+    if resultados_col.count_documents({}) == 0:
+        llm_provider = os.getenv("LLM_PROVIDER", "anthropic").lower()
+        cache_name = "eval_cache_google.json" if llm_provider == "google" else "eval_cache_anthropic.json"
+        cache_path = PROJECT_ROOT / "data" / cache_name
+        
+        if cache_path.exists():
+            import json
+            import uuid
+            from datetime import datetime
+            try:
+                with open(cache_path, encoding="utf-8") as f:
+                    cache_data = json.load(f)
+                
+                db_cargos_dict = {c["id"]: c["nombre"] for c in cargos_col.find({}, {"id": 1, "nombre": 1})}
+                resultados_to_insert = []
+                
+                for key, val in cache_data.items():
+                    cv_id = val.get("cv_id")
+                    jd_id = val.get("jd_id")
+                    config = val.get("config", "c2")
+                    
+                    cand_name = cv_id
+                    db_cv = cvs_col.find_one({"id": cv_id}, {"nombre": 1})
+                    if db_cv:
+                        cand_name = db_cv.get("nombre", cv_id)
+                    
+                    cargo_nombre = db_cargos_dict.get(jd_id, "Posición Relevante")
+                    
+                    entrada = {
+                        "id":               str(uuid.uuid4())[:8],
+                        "cv_id":            cv_id,
+                        "candidato_nombre": cand_name,
+                        "archivo_cv":       f"{cv_id}.txt",
+                        "cargo_id":         jd_id,
+                        "cargo_nombre":     cargo_nombre,
+                        "score":            val.get("score"),
+                        "decision":         val.get("decision"),
+                        "justificacion":    val.get("justification", ""),
+                        "dimensiones":      val.get("dimensions", {}),
+                        "chunks_usados":    val.get("chunks_used", 0),
+                        "chunks":           val.get("chunks", []),
+                        "anonimizado":      val.get("anonymized", False),
+                        "tiempo_segundos":  val.get("time_seconds", 0.0),
+                        "config":           config,
+                        "fecha":            datetime.now().isoformat(),
+                        "error":            None
+                    }
+                    resultados_to_insert.append(entrada)
+                
+                if resultados_to_insert:
+                    resultados_col.insert_many(resultados_to_insert)
+                    for jd_id in db_cargos_dict.keys():
+                        count = resultados_col.count_documents({"cargo_id": jd_id})
+                        cargos_col.update_one({"id": jd_id}, {"$set": {"candidatos": count}})
+                        
+                    print(f"[SEED] {len(resultados_to_insert)} evaluaciones/resultados importados a MongoDB.")
+            except Exception as e:
+                print(f"[WARN] Error al sembrar resultados desde el caché: {e}")
+
     # ==========================================
     # 2. Fase de Restauración (MongoDB -> Disco)
     # ==========================================
