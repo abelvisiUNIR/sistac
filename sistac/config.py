@@ -171,7 +171,6 @@ def check_azure_config() -> bool:
         )
     return True
 
-
 def check_gcp_config() -> bool:
     """Verificar que Google Vertex AI Search esté configurado."""
     missing = []
@@ -179,8 +178,12 @@ def check_gcp_config() -> bool:
         missing.append("GCP_PROJECT_ID")
     if not GCP_SEARCH_APP_ID:
         missing.append("GCP_SEARCH_APP_ID")
-    if "GOOGLE_APPLICATION_CREDENTIALS" not in os.environ:
+    
+    # En entornos Cloud Run (detectados via K_SERVICE), no requerimos GOOGLE_APPLICATION_CREDENTIALS
+    # ya que se resuelven las credenciales por defecto (ADC) automáticamente.
+    if "GOOGLE_APPLICATION_CREDENTIALS" not in os.environ and "K_SERVICE" not in os.environ:
         missing.append("GOOGLE_APPLICATION_CREDENTIALS")
+        
     if missing:
         raise EnvironmentError(
             f"Variables de Google Cloud no configuradas: {', '.join(missing)}\n"
