@@ -26,7 +26,8 @@ trigger:
       - main
   paths:
     include:
-      - scripts/python/**
+      - sistac/**
+      - thesis_experiments/**
       - app/**
       - Dockerfile
       - azure-pipelines.yml
@@ -41,7 +42,7 @@ pool:
 
 variables:
   PYTHON_VERSION: "3.11"
-  SCRIPTS_DIR: "scripts/python"
+  SCRIPTS_DIR: "sistac"
   IMAGE_NAME: "sistac-app"
   IMAGE_TAG: "$(Build.BuildId)"
 
@@ -59,7 +60,7 @@ stages:
             displayName: "Setup Python $(PYTHON_VERSION)"
 
           - script: |
-              pip install -r $(SCRIPTS_DIR)/requirements.txt
+              pip install -r requirements.txt
               pip install fastapi uvicorn python-multipart
             displayName: "Instalar dependencias"
 
@@ -67,11 +68,10 @@ stages:
             displayName: "Modelo spaCy español"
 
           - script: |
-              cd $(SCRIPTS_DIR)
-              python -c "from config import SCORE_THRESHOLD; assert SCORE_THRESHOLD == 70; print('OK SCORE_THRESHOLD=70')"
-              python -c "from rag.pipeline import SistacRAGPipeline; print('OK SistacRAGPipeline')"
-              python -c "from scoring.scorer import score_candidate; print('OK score_candidate')"
-              python -c "from pii.anonymizer import SistacAnonymizer; print('OK SistacAnonymizer')"
+              python -c "from sistac.config import SCORE_THRESHOLD; assert SCORE_THRESHOLD == 70; print('OK SCORE_THRESHOLD=70')"
+              python -c "from sistac.rag.pipeline import SistacRAGPipeline; print('OK SistacRAGPipeline')"
+              python -c "from sistac.scoring.scorer import score_candidate; print('OK score_candidate')"
+              python -c "from sistac.pii.anonymizer import SistacAnonymizer; print('OK SistacAnonymizer')"
             displayName: "Verificar imports críticos"
             env:
               ANTHROPIC_API_KEY: "dummy_for_import_check"
@@ -79,8 +79,7 @@ stages:
               AZURE_SEARCH_KEY: "dummy"
 
           - script: |
-              cd $(SCRIPTS_DIR)
-              python -m pytest pii/test_anonymization.py -v --tb=short \
+              python -m pytest sistac/pii/test_anonymizer.py -v --tb=short \
                 --junitxml=test-results.xml
             displayName: "Tests PII (10 tests)"
 
@@ -88,7 +87,7 @@ stages:
             condition: always()
             inputs:
               testResultsFormat: JUnit
-              testResultsFiles: "$(SCRIPTS_DIR)/test-results.xml"
+              testResultsFiles: "test-results.xml"
             displayName: "Publicar resultados de tests"
             continueOnError: true
 
