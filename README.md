@@ -41,49 +41,48 @@ sistac/
 ├── MEMORY.md                        <- Decisiones aprendidas entre sesiones
 ├── CHANGELOG.md                     <- Historial de cambios del proyecto
 ├── .env.example                     <- Variables de entorno requeridas (sin valores)
-├── Bibliography_base.bib            <- Referencias APA 7 (Mendeley/Zotero)
+├── requirements.txt                 <- Dependencias de Python del proyecto (raíz)
 │
 ├── paper/                           <- Documento TFE (fuente de verdad)
 │   ├── SISTAC_TFE.docx              <- Documento principal Word
-│   ├── sections/                    <- Capítulos redactados en Markdown (Cap 0 a 5 + Anexo)
+│   ├── sections/                    <- Capítulos redactados en Markdown (Cap 0 a 6 + Anexo)
 │   ├── figures/                     <- Figuras generadas por scripts (.png 300 dpi)
-│   │   ├── cap5/                    <- Diagramas de arquitectura del Capítulo 4
-│   │   └── cap6/                    <- Gráficos de resultados del Capítulo 5
 │   ├── tables/                      <- Tablas estadísticas (.csv / .docx / .xlsx)
 │   └── backups/                     <- Copias de seguridad automáticas del .docx
 │
 ├── data/
 │   ├── raw/
-│   │   ├── cvs/                     <- CVs sinteticos: CV_001.txt ... CV_300.txt
+│   │   ├── cvs/                     <- CVs sintéticos: CV_001.txt ... CV_300.txt
 │   │   ├── job_descriptions/        <- JDs reales de Matriz Uruguay: JD_001...JD_005.txt
 │   │   └── gold_standard/           <- ground_truth.csv + c0_times.csv
 │   └── cleaned/
 │       └── evaluation_sets/         <- train_ids.csv (240) + test_ids.csv (60)
 │
-├── scripts/python/                  <- Todo el codigo Python del proyecto
-│   ├── config.py                    <- Configuracion global y rutas
-│   ├── requirements.txt             <- Dependencias del proyecto
-│   ├── data/                        <- Generacion y division del corpus
-│   ├── evaluation/                  <- Metricas H1, H2, H3
-│   ├── experiments/                 <- Orquestador del experimento factorial
-│   ├── figures/                     <- Generacion de figuras y actualizacion del .docx
-│   ├── llm/                         <- Abstraccion del proveedor LLM
-│   ├── pii/                         <- Modulo de anonimizacion PII (H3)
-│   ├── rag/                         <- Pipeline RAG y Azure AI Search (H2)
-│   ├── scoring/                     <- Motor de scoring semantico
-│   └── utils/                       <- Extraccion de texto desde PDF/DOCX/imagenes
+├── sistac/                          <- Código fuente de la biblioteca central
+│   ├── config.py                    <- Configuración global y rutas
+│   ├── llm/                         <- Abstracción del proveedor LLM (Claude/Gemini)
+│   ├── pii/                         <- Módulo de anonimización PII (Presidio + spaCy)
+│   ├── rag/                         <- Pipeline RAG y Vertex/Azure AI Search
+│   ├── scoring/                     <- Motor de scoring semántico
+│   └── utils/                       <- Utilidades comunes (extractores, seed_mongodb, split_corpus)
 │
-├── explorations/                    <- Notebooks y scripts de investigacion exploratoria
-├── quality_reports/                 <- Planes, logs de sesion y reportes de calidad
-├── templates/                       <- Plantillas de documentos internos
-└── .claude/                         <- Reglas, agentes y skills del asistente Claude
+├── thesis_experiments/              <- Experimentos de validación y generación de tesis
+│   ├── data_prep/                   <- Transferencia de datos y preparación
+│   ├── evaluation/                  <- Métricas H1, H2, H3 y análisis estadísticos
+│   ├── experiments/                 <- Orquestador del experimento factorial
+│   ├── figures/                     <- Generación de figuras para los capítulos
+│   └── document_builders/           <- Inserción automatizada en el Word (.docx)
+│
+├── app/                             <- Aplicación web FastAPI / Interfaz de usuario
+│   ├── main.py                      <- Backend en FastAPI (seeding y endpoints)
+│   └── static/                      <- Frontend estático (HTML/JS/CSS)
 ```
 
 ---
 
 ## Scripts Python — referencia completa
 
-### `scripts/python/config.py`
+### `sistac/config.py`
 
 **Configuracion global del proyecto.** Define todas las rutas relativas al `PROJECT_ROOT`,
 constantes del experimento y variables leidas del `.env`.
@@ -102,7 +101,7 @@ Variables clave:
 
 ---
 
-### `scripts/python/data/`
+### `thesis_experiments/data_prep/`
 
 #### `synthetic_corpus_generator.py`
 
@@ -114,7 +113,7 @@ a partir del Kaggle Resume Dataset (962 CVs, 25 categorias). Produce:
 - `data/raw/gold_standard/c0_times.csv` — tiempos simulados de screening manual (C0)
 
 ```bash
-py -3 scripts/python/data/synthetic_corpus_generator.py
+py -3 thesis_experiments/data_prep/synthetic_corpus_generator.py
 ```
 
 #### `split_corpus.py`
@@ -124,7 +123,7 @@ Divide el corpus en train/test mediante muestreo estratificado por
 IDs en `data/cleaned/evaluation_sets/`.
 
 ```bash
-py -3 scripts/python/data/split_corpus.py
+py -3 sistac/utils/split_corpus.py
 ```
 
 #### `prepare_external_validation.py`
@@ -141,12 +140,12 @@ reproducibilidad. Produce el `ground_truth.csv` y los `c0_times.csv` en
 > externo preparado por este script.
 
 ```bash
-py -3 scripts/python/data/prepare_external_validation.py
+python thesis_experiments/data_prep/prepare_external_validation.py
 ```
 
 ---
 
-### `scripts/python/llm/`
+### `sistac/llm/`
 
 #### `provider.py`
 
@@ -158,7 +157,7 @@ Funciones expuestas:
 
 ---
 
-### `scripts/python/rag/`
+### `sistac/rag/`
 
 #### `create_index.py`
 
@@ -169,7 +168,7 @@ ruta **Azure AI Search** (alternativa evaluada) crea el índice `sistac-cvs` con
 híbrida y Semantic Ranker.
 
 ```bash
-py -3 scripts/python/rag/create_index.py
+py -3 sistac/rag/create_index.py
 ```
 
 #### `chunking.py`
@@ -190,9 +189,9 @@ Argumentos:
 - `--batch-size N` — chunks por batch de upload (default: 50)
 
 ```bash
-py -3 scripts/python/rag/index_corpus.py --split train             # indice C2
-py -3 scripts/python/rag/index_corpus.py --split train --config c3 # indice C3
-py -3 scripts/python/rag/index_corpus.py --split train --dry-run   # verificacion
+python -m sistac.rag.index_corpus --split train             # indice C2
+python -m sistac.rag.index_corpus --split train --config c3 # indice C3
+python -m sistac.rag.index_corpus --split train --dry-run   # verificacion
 ```
 
 #### `pipeline.py`
@@ -217,7 +216,7 @@ Evaluacion tecnica in-vitro del pipeline RAG usando RAGAS. Metricas:
 LLM juez: Claude Haiku via `ChatAnthropic` de LangChain (sin dependencia de OpenAI).
 
 ```bash
-py -3 scripts/python/rag/ragas_eval.py
+python -m sistac.rag.ragas_eval
 ```
 
 #### Archivos del piloto (referencia — David Madrid)
@@ -233,7 +232,7 @@ py -3 scripts/python/rag/ragas_eval.py
 
 ---
 
-### `scripts/python/scoring/`
+### `sistac/scoring/`
 
 #### `scorer.py`
 
@@ -257,7 +256,7 @@ Configuracion: `temperature=0.0` (deterministico), umbral decision `SCORE_THRESH
 
 ---
 
-### `scripts/python/pii/`
+### `sistac/pii/`
 
 #### `anonymizer.py`
 
@@ -292,12 +291,12 @@ formatos de telefono locales, etc.
 Suite de 10 tests unitarios — estado: **10/10 PASSED**.
 
 ```bash
-pytest scripts/python/pii/test_anonymization.py -v
+pytest sistac/pii/test_anonymizer.py -v
 ```
 
 ---
 
-### `scripts/python/evaluation/`
+### `thesis_experiments/evaluation/`
 
 #### `efficiency_metrics.py`  *(H1)*
 
@@ -325,12 +324,12 @@ Consolida los resultados experimentales de las tres hipótesis de todos los prov
 Análisis estadístico complementario (sin volver a llamar a los modelos), a partir de los caches `data/eval_cache_anthropic.json` y `data/eval_cache_google.json`. Calcula el umbral de decisión óptimo (Youden y F1-óptimo) y la curva F1-vs-umbral, los intervalos de confianza por bootstrap y el test exacto de Fisher para DIR/SPD por género y edad, y los recuentos por subgrupo. Salidas en `paper/tables/mejoras/`.
 
 ```bash
-py -3 scripts/python/evaluation/analisis_mejoras_estadisticas.py
+python thesis_experiments/evaluation/analisis_mejoras_estadisticas.py
 ```
 
 ---
 
-### `scripts/python/experiments/`
+### `thesis_experiments/experiments/`
 
 #### `orquestador_c0_c3.py`
 
@@ -339,12 +338,12 @@ corpus de evaluación, invoca los modulos de metricas y genera las tablas de res
 del Capítulo 5 (Validación experimental y resultados) del TFE.
 
 ```bash
-py -3 scripts/python/experiments/orquestador_c0_c3.py
+python thesis_experiments/experiments/orquestador_c0_c3.py
 ```
 
 ---
 
-### `scripts/python/utils/`
+### `sistac/utils/`
 
 #### `doc_extractor.py`
 
@@ -365,7 +364,7 @@ Extractor especifico para `.docx`, preservando estructura de parrafos y tablas.
 
 ---
 
-### `scripts/python/figures/`
+### `thesis_experiments/figures/`
 
 #### `gen_cap5_figures.py`
 
@@ -373,7 +372,7 @@ Genera las 6 figuras de arquitectura del Capitulo 5 en PNG (300 dpi) usando matp
 Output: `paper/figures/cap5/*.png`
 
 ```bash
-py -3 scripts/python/figures/gen_cap5_figures.py
+python thesis_experiments/figures/gen_cap5_figures.py
 ```
 
 #### `gen_cap6_figures.py`
@@ -382,7 +381,7 @@ Genera los gráficos de resultados (distribución de tiempos, curva ROC, impacto
 en PNG (300 dpi). Output: `paper/figures/cap6/*.png`.
 
 ```bash
-py -3 scripts/python/figures/gen_cap6_figures.py
+python thesis_experiments/figures/gen_cap6_figures.py
 ```
 
 #### `gen_track3_figures.py`
@@ -392,7 +391,7 @@ con intervalos de confianza) a partir de los CSV de `paper/tables/mejoras/`. Out
 `paper/figures/mejoras/*.png`.
 
 ```bash
-py -3 scripts/python/figures/gen_track3_figures.py
+python thesis_experiments/figures/gen_track3_figures.py
 ```
 
 #### `insert_cap5_docx.py`
@@ -401,7 +400,7 @@ Inserta el contenido de los capítulos técnicos en el `.docx` generando XML com
 con la plantilla UNIR. Crea backup automatico antes de modificar.
 
 ```bash
-py -3 -X utf8 scripts/python/figures/insert_cap5_docx.py
+python thesis_experiments/document_builders/insert_cap5_docx.py
 ```
 
 ---
@@ -410,26 +409,26 @@ py -3 -X utf8 scripts/python/figures/insert_cap5_docx.py
 
 ```
 1. Preparar el corpus de evaluación (dataset externo netsol/resume-score-details)
-   py -3 scripts/python/data/prepare_external_validation.py
+   python thesis_experiments/data_prep/prepare_external_validation.py
    # (opcional) corpus sintético de desarrollo:
-   # py -3 scripts/python/data/synthetic_corpus_generator.py
+   # py -3 thesis_experiments/data_prep/synthetic_corpus_generator.py
 
 2. Dividir en train/test (stratified, seed=42)
-   py -3 scripts/python/data/split_corpus.py
+   py -3 sistac/utils/split_corpus.py
 
 3. Crear el índice en el vector store activo (Google Vertex AI Search por defecto)
-   py -3 scripts/python/rag/create_index.py
+   py -3 sistac/rag/create_index.py
 
 4. Indexar el split de entrenamiento
-   py -3 scripts/python/rag/index_corpus.py --split train             # indice C2
-   py -3 scripts/python/rag/index_corpus.py --split train --config c3 # indice C3
+   python -m sistac.rag.index_corpus --split train             # indice C2
+   python -m sistac.rag.index_corpus --split train --config c3 # indice C3
 
 5. Ejecutar el experimento factorial (C0-C3) sobre el split de test
-   py -3 scripts/python/experiments/orquestador_c0_c3.py
+   python thesis_experiments/experiments/orquestador_c0_c3.py
 
 6. (Opcional) Análisis estadístico complementario y figuras
-   py -3 scripts/python/evaluation/analisis_mejoras_estadisticas.py
-   py -3 scripts/python/figures/gen_track3_figures.py
+   python thesis_experiments/evaluation/analisis_mejoras_estadisticas.py
+   python thesis_experiments/figures/gen_track3_figures.py
 
 7. Resultados: paper/tables/ y paper/figures/
 ```
@@ -513,7 +512,7 @@ source .venv/bin/activate
 ### 4. Instalar dependencias Python
 
 ```bash
-pip install -r scripts/python/requirements.txt
+pip install -r requirements.txt
 ```
 
 > La instalacion puede tardar 3-5 minutos por la descarga de `sentence-transformers`
@@ -550,10 +549,10 @@ LLM_PROVIDER=anthropic
 
 ```bash
 # Test del modulo PII (debe mostrar 10/10 PASSED)
-pytest scripts/python/pii/test_anonymization.py -v
+pytest sistac/pii/test_anonymizer.py -v
 
 # Verificar configuracion y rutas
-python -c "from scripts.python.config import PROJECT_ROOT, SCORE_THRESHOLD; print('OK — ROOT:', PROJECT_ROOT)"
+python -c "from sistac.config import PROJECT_ROOT, SCORE_THRESHOLD; print('OK — ROOT:', PROJECT_ROOT)"
 ```
 
 ---
@@ -581,10 +580,10 @@ La app permite:
 git clone https://marioagustinbelvisi204@dev.azure.com/marioagustinbelvisi204/sistac/_git/sistac
 cd sistac
 python -m venv .venv && .venv\Scripts\activate
-pip install -r scripts/python/requirements.txt
+pip install -r requirements.txt
 python -m spacy download es_core_news_lg
 copy .env.example .env        # completar con las API keys
-pytest scripts/python/pii/test_anonymization.py -v
+pytest sistac/pii/test_anonymizer.py -v
 ```
 
 ---
