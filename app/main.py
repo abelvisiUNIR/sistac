@@ -880,7 +880,7 @@ async def ejecutar_experimento(background_tasks: BackgroundTasks):
     if _experimento_activo:
         raise HTTPException(status_code=400, detail="El experimento ya está en ejecución en segundo plano.")
 
-    from experiments.orquestador_c0_c3 import main as run_experiment
+    from thesis_experiments.experiments.orquestador_c0_c3 import main as run_experiment
     try:
         def run_wrapper():
             global _experimento_activo
@@ -932,12 +932,18 @@ def descargar_tablas(background_tasks: BackgroundTasks):
     
     # 1. Intentar generar el reporte Excel actualizado
     try:
-        from evaluation.export_excel_report import generate_excel_report
+        from thesis_experiments.evaluation.export_excel_report import generate_excel_report
         generate_excel_report()
     except Exception as e:
         print(f"[WARN] No se pudo generar el reporte Excel dinámico: {e}")
         
-    if not TABLES_DIR.exists() or not any(TABLES_DIR.iterdir()):
+    src_tables_dir = TABLES_DIR
+    if not src_tables_dir.exists() or not any(src_tables_dir.iterdir()):
+        fallback_base = _PROJECT_ROOT / "data" / "cleaned" / "tables"
+        if fallback_base.exists() and any(fallback_base.iterdir()):
+            src_tables_dir = fallback_base
+            
+    if not src_tables_dir.exists() or not any(src_tables_dir.iterdir()):
         raise HTTPException(
             status_code=404,
             detail="No hay tablas ni métricas generadas para descargar. Ejecutá el experimento primero."
@@ -950,7 +956,7 @@ def descargar_tablas(background_tasks: BackgroundTasks):
     
     # Copiar tablas a /tablas
     tablas_dest = zip_dir / "tablas"
-    shutil.copytree(str(TABLES_DIR), str(tablas_dest))
+    shutil.copytree(str(src_tables_dir), str(tablas_dest))
     
     # Copiar figuras de matplotlib si existen a /graficos
     figures_source = _PROJECT_ROOT / "paper" / "figures" / "cap5"
@@ -1000,6 +1006,16 @@ async def obtener_metricas():
     h3_path = target_dir / "tab_resultados_h3.csv"
     ragas_path = target_dir / "tab_ragas_c2.csv"
     
+    # Fallback si no existen en paper/tables/ (entorno de producción Cloud Run)
+    if not (h1_path.exists() or h2_path.exists() or h3_path.exists()):
+        fallback_base = _PROJECT_ROOT / "data" / "cleaned" / "tables"
+        fallback_dir = fallback_base / provider
+        target_dir = fallback_dir if fallback_dir.exists() else fallback_base
+        h1_path = target_dir / "tab_resultados_h1.csv"
+        h2_path = target_dir / "tab_resultados_h2.csv"
+        h3_path = target_dir / "tab_resultados_h3.csv"
+        ragas_path = target_dir / "tab_ragas_c2.csv"
+        
     if not (h1_path.exists() or h2_path.exists() or h3_path.exists()):
         return {"status": "no_data", "message": "No se encontraron archivos de métricas generados. Ejecutá el experimento primero."}
         
