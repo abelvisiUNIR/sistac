@@ -2,7 +2,7 @@
 
 Repositorio de código del sistema **SISTAC** (Sistema Inteligente de Selección de Talento y Análisis Curricular).
 
-**Trabajo Fin de Estudios — Máster en Inteligencia Artificial y Data Science**  
+**Trabajo Fin de Estudios — Máster en Inteligencia Artificial**  
 Universidad Internacional de La Rioja (UNIR) · Entrega: 15 julio 2026
 
 **Autores:**
@@ -90,7 +90,7 @@ Variables clave:
 - `CHUNK_SIZE = 512`, `CHUNK_OVERLAP = 64` — hiperparametros de chunking
 - `SCORE_THRESHOLD = 70` — umbral de decision APTO/NO_APTO
 - `RANDOM_SEED = 42` — semilla global de reproducibilidad
-- `VECTORSTORE_PROVIDER` — vector store activo (`google` por defecto; `azure` alternativo)
+- `VECTORSTORE_PROVIDER` — vector store activo (`google`; `azure` descartado por costo)
 - `GCP_PROJECT_ID`, `GCP_DATA_STORE_ID`, `GCP_SEARCH_APP_ID` — config de Vertex AI Search (`.env`)
 - `AZURE_SEARCH_ENDPOINT`, `AZURE_SEARCH_KEY`, `AZURE_SEARCH_INDEX` — config de Azure (`.env`, alternativa)
 - `LLM_MODEL_PROD = "claude-sonnet-4-5-20241022"` — modelo evaluador principal del experimento
@@ -157,11 +157,7 @@ Funciones expuestas:
 
 #### `create_index.py`
 
-Crea el índice vectorial en el vector store activo. En la ruta **Vertex AI Search** (activa
-en el experimento) la indexación es asíncrona desde un bucket de Google Cloud Storage; en la
-ruta **Azure AI Search** (alternativa evaluada) crea el índice `sistac-cvs` con su schema
-(9 campos: id, cv_id, jd_id, textos, embedding 768 dims, anonymized, chunk_index), búsqueda
-híbrida y Semantic Ranker.
+Crea el índice vectorial en el vector store activo (Google Vertex AI Search). La indexación de los documentos se realiza de forma asíncrona a través de buckets de Google Cloud Storage. La opción de Azure AI Search fue descartada tras las pruebas iniciales por costos y mejor integración nativa con GCP.
 
 ```bash
 py -3 sistac/rag/create_index.py
@@ -176,7 +172,7 @@ Dos estrategias de segmentacion de texto:
 
 #### `index_corpus.py`
 
-Indexa los CVs y JDs en Azure AI Search generando embeddings para cada chunk.
+Indexa los CVs y JDs en Google Vertex AI Search generando embeddings para cada chunk.
 
 Argumentos:
 - `--split train/test/all` — indexar solo el split indicado (usar `train` para el experimento)
@@ -200,7 +196,7 @@ resultado = pipeline.evaluate(cv_id, cv_text, jd_text)
 # → {score, decision, justification, chunks_used, anonymized, time_seconds}
 ```
 
-Flujo interno: [C3 → anonimizacion PII] → [C2/C3 → retrieval hibrido Azure] → scoring LLM
+Flujo interno: [C3 → anonimizacion PII] → [C2/C3 → retrieval Vertex AI Search] → scoring LLM
 
 #### `ragas_eval.py`
 
@@ -209,13 +205,13 @@ Evaluacion tecnica in-vitro del pipeline RAG usando RAGAS. Metricas:
 - `answer_relevancy` — la justificacion responde al cargo evaluado
 - `context_precision` — los chunks recuperados son relevantes para la consulta
 
-LLM juez: Claude Haiku via `ChatAnthropic` de LangChain (sin dependencia de OpenAI).
+LLM juez: Claude Sonnet 4.5 via `ChatAnthropic` de LangChain (sin dependencia de OpenAI).
 
 ```bash
 python -m sistac.rag.ragas_eval
 ```
 
-#### Archivos del piloto (referencia — David Madrid)
+#### Archivos del piloto
 
 | Archivo | Descripcion |
 |---------|-------------|
@@ -400,17 +396,15 @@ GOOGLE_API_KEY=...             # Gemini 2.5 Flash (extracción de documentos y L
 # Vector Store Activo (google | azure)
 VECTORSTORE_PROVIDER=google    # google (activo en el experimento) | azure (alternativa evaluada)
 
-# Azure AI Search (si VECTORSTORE_PROVIDER=azure)
-AZURE_SEARCH_ENDPOINT=...      # https://xxx.search.windows.net
-AZURE_SEARCH_KEY=...           # API Key de Azure AI Search
-AZURE_SEARCH_INDEX=sistac-cvs  # Nombre del índice vectorial
-
-# Google Vertex AI Search (si VECTORSTORE_PROVIDER=google)
+# Google Vertex AI Search (VECTORSTORE_PROVIDER=google)
 GCP_PROJECT_ID=...
 GCP_LOCATION=global
-GCP_DATA_STORE_ID=sistac-cvs-datastore
+GCP_DATA_STORE_ID=sistac-cvs-datastore-v2
 GCP_SEARCH_APP_ID=sistac-search-app
 GOOGLE_APPLICATION_CREDENTIALS=...  # Ruta absoluta al archivo json de cuenta de servicio
+
+# Azure AI Search (Descartado)
+# El proyecto utiliza Google Vertex AI Search por defecto debido a costos y mejor integración con GCP.
 ```
 
 ---
@@ -423,7 +417,7 @@ Seguir estos pasos en orden la primera vez que se clona el repositorio.
 
 - Python 3.10 o superior
 - Git (con acceso al repo en Azure DevOps)
-- Credenciales de: Anthropic, Google AI Studio, Azure AI Search
+- Credenciales de: Anthropic, Google AI Studio, Google Cloud Vertex AI Search
 
 Verificar version de Python:
 ```bash
@@ -491,9 +485,11 @@ Abrir `.env` y completar los valores:
 ```
 ANTHROPIC_API_KEY=sk-ant-api03-...     # https://console.anthropic.com
 GOOGLE_API_KEY=AIza...                 # https://aistudio.google.com (gratis)
-AZURE_SEARCH_ENDPOINT=https://...      # Portal Azure → tu servicio de busqueda
-AZURE_SEARCH_KEY=...                   # Portal Azure → Claves de acceso
-AZURE_SEARCH_INDEX=sistac-cvs
+GCP_PROJECT_ID=...                     # ID de tu proyecto Google Cloud
+GCP_LOCATION=global                    # Usar global por defecto
+GCP_DATA_STORE_ID=sistac-cvs-datastore-v2
+GCP_SEARCH_APP_ID=sistac-search-app
+GOOGLE_APPLICATION_CREDENTIALS=...     # Ruta absoluta al JSON de la cuenta de servicio (local)
 LLM_PROVIDER=anthropic
 ```
 
