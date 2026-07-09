@@ -21,6 +21,7 @@ COPY sistac/ sistac/
 COPY app/ app/
 COPY data/ data/
 COPY paper/ paper/
+COPY thesis_experiments/ thesis_experiments/
 
 # Variables de entorno (las reales vienen de Azure DevOps / Azure App Service)
 ENV LLM_PROVIDER=anthropic

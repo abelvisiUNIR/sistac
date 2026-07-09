@@ -247,6 +247,44 @@ def seed_database():
             except Exception as e:
                 print(f"[WARN] Error al sembrar resultados desde el caché: {e}")
 
+        # 1.6 Importar métricas base al historial si está vacío
+        metricas_col = db["metricas_historial"]
+        if metricas_col.count_documents({}) == 0:
+            try:
+                from sistac.config import TABLES_DIR
+                import csv
+                from datetime import datetime
+                
+                # Intentar cargar para cada proveedor disponible
+                for provider in ["anthropic", "google"]:
+                    provider_dir = TABLES_DIR / provider
+                    target_dir = provider_dir if provider_dir.exists() else TABLES_DIR
+                    
+                    h1_path = target_dir / "tab_resultados_h1.csv"
+                    h2_path = target_dir / "tab_resultados_h2.csv"
+                    h3_path = target_dir / "tab_resultados_h3.csv"
+                    ragas_path = target_dir / "tab_ragas_c2.csv"
+                    
+                    if h1_path.exists() or h2_path.exists() or h3_path.exists():
+                        def _read_csv(p: Path) -> list[dict]:
+                            if not p.exists():
+                                return []
+                            with open(p, mode="r", encoding="utf-8-sig") as f:
+                                return list(csv.DictReader(f))
+                                
+                        doc = {
+                            "fecha": datetime.now().isoformat(),
+                            "comentario": f"Métricas Base {provider.capitalize()} (Sembrado Automático)",
+                            "h1": _read_csv(h1_path),
+                            "h2": _read_csv(h2_path),
+                            "h3": _read_csv(h3_path),
+                            "ragas": _read_csv(ragas_path),
+                        }
+                        metricas_col.insert_one(doc)
+                print("[SEED] Métricas base importadas a MongoDB historial.")
+            except Exception as e:
+                print(f"[WARN] No se pudieron sembrar métricas base en MongoDB: {e}")
+
     # ==========================================
     # 2. Fase de Restauración (MongoDB -> Disco)
     # ==========================================

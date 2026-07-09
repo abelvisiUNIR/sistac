@@ -1017,6 +1017,19 @@ async def obtener_metricas():
         ragas_path = target_dir / "tab_ragas_c2.csv"
         
     if not (h1_path.exists() or h2_path.exists() or h3_path.exists()):
+        if db is not None:
+            try:
+                latest_doc = db["metricas_historial"].find_one({}, sort=[("fecha", -1)])
+                if latest_doc:
+                    return {
+                        "status": "success",
+                        "h1": latest_doc.get("h1", []),
+                        "h2": latest_doc.get("h2", []),
+                        "h3": latest_doc.get("h3", []),
+                        "ragas": latest_doc.get("ragas", []),
+                    }
+            except Exception as e:
+                print(f"[WARN] Error consultando métricas desde MongoDB: {e}")
         return {"status": "no_data", "message": "No se encontraron archivos de métricas generados. Ejecutá el experimento primero."}
         
     def _cargar_csv(path: Path) -> list[dict]:
