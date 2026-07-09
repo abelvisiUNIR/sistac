@@ -1,0 +1,4 @@
+﻿config,median_c0,median_cx,iqr_c0,iqr_cx,speedup,mannwhitney_u,p_value,h1_accepted
+C1 (LLM puro),661.8,4.5,392.5,0.8,147.8x,0.0,0.0000,Sí
+C2 (LLM + RAG),661.8,6.8,392.5,1.2,96.7x,0.0,0.0000,Sí
+C3 (LLM + RAG + PII),661.8,19.6,392.5,7.9,33.7x,0.0,0.0000,Sí

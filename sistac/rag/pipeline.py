@@ -128,10 +128,8 @@ class SistacRAGPipeline:
             print("[pipeline] C1 no usa vector store — indexación omitida.")
             return
 
-        documents = []
-
+        items_to_process = []
         for cv_id, cv_text in cv_texts.items():
-            # C3: anonimizar antes de indexar
             text_to_index = (
                 self._get_anonymizer().anonymize(cv_text)
                 if self.config == "c3"
@@ -148,20 +146,37 @@ class SistacRAGPipeline:
 
                 for idx, chunk in enumerate(chunks, start=1):
                     chunk_id = f"{self.config}_{cv_id}_{jd_id}_chunk_{idx:03d}"
-                    print(f"  [index] Generando embedding: {chunk_id}")
-                    embedding = get_embedding(chunk)
-
-                    documents.append({
-                        "id":         chunk_id,
-                        "cv_id":      cv_id,
-                        "jd_id":      jd_id,
-                        "cv_text":    cv_text,    # texto original (para referencia)
-                        "jd_text":    jd_text,
-                        "chunk_text": chunk,
-                        "embedding":  embedding,
-                        "anonymized": self.config == "c3",
-                        "chunk_index": idx,
+                    items_to_process.append({
+                        "id": chunk_id,
+                        "cv_id": cv_id,
+                        "jd_id": jd_id,
+                        "cv_text": cv_text,
+                        "jd_text": jd_text,
+                        "chunk": chunk,
+                        "idx": idx,
                     })
+
+        if items_to_process:
+            from concurrent.futures import ThreadPoolExecutor
+            from sistac.llm.provider import get_embedding
+            
+            def process_item(item):
+                print(f"  [index] Generando embedding: {item['id']}")
+                embedding = get_embedding(item['chunk'])
+                return {
+                    "id":         item['id'],
+                    "cv_id":      item['cv_id'],
+                    "jd_id":      item['jd_id'],
+                    "cv_text":    item['cv_text'],
+                    "jd_text":    item['jd_text'],
+                    "chunk_text": item['chunk'],
+                    "embedding":  embedding,
+                    "anonymized": self.config == "c3",
+                    "chunk_index": item['idx'],
+                }
+            
+            with ThreadPoolExecutor(max_workers=10) as executor:
+                documents = list(executor.map(process_item, items_to_process))
 
         if documents:
             if VECTORSTORE_PROVIDER == "google":
@@ -535,9 +550,13 @@ def _search_chunks_fallback_local(
             
         query_vector = np.array(get_embedding(query_text))
         
+        from concurrent.futures import ThreadPoolExecutor
+        with ThreadPoolExecutor(max_workers=10) as executor:
+            chunk_vectors = list(executor.map(get_embedding, chunks))
+            
         scores = []
-        for chunk in chunks:
-            chunk_vector = np.array(get_embedding(chunk))
+        for chunk, chunk_vector_list in zip(chunks, chunk_vectors):
+            chunk_vector = np.array(chunk_vector_list)
             dot = np.dot(query_vector, chunk_vector)
             norm_q = np.linalg.norm(query_vector)
             norm_c = np.linalg.norm(chunk_vector)
