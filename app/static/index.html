@@ -713,6 +713,20 @@
       </div>
     </div>
 
+    <!-- Diagnostic Panel -->
+    <div class="bg-white border border-slate-200 rounded-2xl p-5 space-y-4 shadow-sm">
+      <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+        <div>
+          <h3 class="text-sm font-bold text-slate-800">Diagnóstico de Conectividad</h3>
+          <p class="text-xs text-slate-400">Verifica la conexión en tiempo real con las APIs de LLMs, bases de datos y buscadores vectoriales.</p>
+        </div>
+        <button onclick="correrDiagnostico()" id="btn-diag" class="py-1.5 px-3 text-xs bg-slate-800 text-white rounded-lg hover:bg-slate-700 transition-colors font-medium">Ejecutar Prueba</button>
+      </div>
+      <div id="diag-resultados" class="hidden text-xs space-y-2 pt-2">
+        <!-- Diagnósticos se renderizan aquí -->
+      </div>
+    </div>
+
     <!-- Env Loading Spinner -->
     <div id="env-loader" class="flex flex-col items-center justify-center py-20 gap-3 bg-white border border-slate-200 rounded-2xl">
       <div class="flex gap-2">
@@ -835,6 +849,25 @@
 
 <script>
 const API = '';
+
+async function handleResponseError(r) {
+  let errMsg = r.statusText || `Error HTTP ${r.status}`;
+  try {
+    const errData = await r.json();
+    if (errData && errData.detail) {
+      errMsg = errData.detail;
+    }
+  } catch (_) {
+    try {
+      const txt = await r.text();
+      if (txt && txt.length < 300) {
+        errMsg = txt;
+      }
+    } catch (__) {}
+  }
+  return new Error(errMsg);
+}
+
 let cargos = {};
 let cvFiles = [];   // array de File
 let jdFile  = null;
@@ -1064,7 +1097,7 @@ async function evaluarBatch() {
     cvFiles.forEach(f => fd.append('archivos_cv', f));
 
     const r = await fetch(`${API}/api/evaluar/batch`, { method:'POST', body:fd });
-    if (!r.ok) throw new Error((await r.json()).detail || r.statusText);
+    if (!r.ok) throw await handleResponseError(r);
     const d = await r.json();
     lastBatchData = d;
     renderBatch(d);
@@ -1270,7 +1303,7 @@ async function crearCargo() {
     fd.append('archivo', jdFile);
     fd.append('config', 'c2');
     const r = await fetch(`${API}/api/cargo`, { method:'POST', body:fd });
-    if (!r.ok) throw new Error((await r.json()).detail || r.statusText);
+    if (!r.ok) throw await handleResponseError(r);
     const d = await r.json();
     toast(`Cargo "${nombre}" creado (${d.chars} caracteres extraídos).`, 'ok');
     document.getElementById('c-nombre').value = '';
@@ -2138,6 +2171,65 @@ async function guardarEnv() {
     toast(`Error al guardar configuración: ${e.message}`, 'err');
     btn.disabled = false;
     btn.textContent = 'Guardar y Reiniciar Servidor';
+  }
+}
+
+async function correrDiagnostico() {
+  const btn = document.getElementById('btn-diag');
+  const resDiv = document.getElementById('diag-resultados');
+  
+  btn.disabled = true;
+  btn.textContent = 'Probando conectores...';
+  resDiv.classList.remove('hidden');
+  resDiv.innerHTML = `<div class="p-3 text-slate-500 animate-pulse bg-slate-50 border border-slate-100 rounded-xl">Iniciando verificación en tiempo real con las APIs...</div>`;
+  
+  try {
+    const r = await fetch(`${API}/api/diagnostico`);
+    if (!r.ok) throw await handleResponseError(r);
+    const d = await r.json();
+    
+    let html = `<div class="grid gap-3 md:grid-cols-3">`;
+    
+    // LLM
+    const llm = d.componentes.llm;
+    const llmOk = llm && llm.status === 'OK';
+    html += `<div class="p-3 rounded-xl border ${llmOk ? 'bg-emerald-50 border-emerald-200 text-emerald-800' : 'bg-red-50 border-red-200 text-red-800'}">
+      <div class="font-bold flex items-center gap-1.5 mb-1 text-[11px]">
+        <span>${llmOk ? '🟢' : '🔴'}</span> LLM: ${d.config_base.llm_provider.toUpperCase()}
+      </div>
+      ${llmOk ? `<p>Latencia: ${llm.latency_seconds}s</p><p class="italic text-[10px] mt-1 text-emerald-600 truncate">Test: "${llm.response}"</p>` : `<p class="font-semibold">Fallo:</p><p class="text-[10px] select-all break-words">${llm.error}</p>`}
+    </div>`;
+    
+    // Database
+    const db = d.componentes.mongodb;
+    const dbOk = db && db.status === 'OK';
+    html += `<div class="p-3 rounded-xl border ${dbOk ? 'bg-emerald-50 border-emerald-200 text-emerald-800' : 'bg-red-50 border-red-200 text-red-800'}">
+      <div class="font-bold flex items-center gap-1.5 mb-1 text-[11px]">
+        <span>${dbOk ? '🟢' : '🔴'}</span> DB: MongoDB
+      </div>
+      ${dbOk ? `<p>Latencia: ${db.latency_seconds}s</p><p class="italic text-[10px] mt-1 text-emerald-600">Base de datos online</p>` : `<p class="font-semibold">Fallo:</p><p class="text-[10px] select-all break-words">${db.error}</p>`}
+    </div>`;
+    
+    // Vector Store
+    const vs = d.componentes.vectorstore;
+    const vsOk = vs && vs.status === 'OK';
+    html += `<div class="p-3 rounded-xl border ${vsOk ? 'bg-emerald-50 border-emerald-200 text-emerald-800' : 'bg-red-50 border-red-200 text-red-800'}">
+      <div class="font-bold flex items-center gap-1.5 mb-1 text-[11px]">
+        <span>${vsOk ? '🟢' : '🔴'}</span> Búsqueda: ${d.config_base.vectorstore_provider.toUpperCase()}
+      </div>
+      ${vsOk ? `<p>Latencia: ${vs.latency_seconds}s</p><p class="italic text-[10px] mt-1 text-emerald-600 truncate">Conectado a ${vs.provider}</p>` : `<p class="font-semibold">Fallo:</p><p class="text-[10px] select-all break-words">${vs.error}</p>`}
+    </div>`;
+    
+    html += `</div>`;
+    
+    resDiv.innerHTML = html;
+    toast('Diagnóstico de conectividad completado.', 'ok');
+  } catch (e) {
+    resDiv.innerHTML = `<div class="p-3 bg-red-50 border border-red-200 text-red-800 rounded-xl font-bold select-all">Error al ejecutar diagnóstico: ${e.message}</div>`;
+    toast('Error en diagnóstico.', 'err');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Ejecutar Prueba';
   }
 }
 </script>

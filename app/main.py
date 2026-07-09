@@ -185,18 +185,8 @@ def listar_cargos():
         except Exception as e:
             print(f"[WARN] Error leyendo cargos de MongoDB: {e}")
             
-    filtered_cargos = []
-    for c in _cargos.values():
-        cid = c.get("id", "")
-        is_standard = cid in {"JD_001", "JD_002", "JD_003", "JD_004", "JD_005"}
-        if USE_EXTERNAL_DATA:
-            if not is_standard:
-                filtered_cargos.append(c)
-        else:
-            if is_standard or not cid.startswith("JD_EXT_"):
-                filtered_cargos.append(c)
-                
-    return {"cargos": filtered_cargos}
+    # Retornar todos los cargos para que sean visibles en la aplicación
+    return {"cargos": list(_cargos.values())}
 
 
 @app.delete("/api/cargo/{cargo_id}")
@@ -1217,32 +1207,135 @@ async def update_env_variables(req: EnvUpdateRequest, background_tasks: Backgrou
 # ── Diagnóstico ───────────────────────────────────────────────────────────────
 
 @app.get("/api/diagnostico")
-def diagnostico():
+async def diagnostico():
     """
-    Verifica el estado de cada componente del sistema.
-    Útil para debuggear antes de evaluar CVs.
+    Verifica el estado y conectividad real de cada componente del sistema (LLMs, DB y Search).
     """
     import importlib
-    resultado = {}
+    import time
+    resultado = {
+        "status": "success",
+        "timestamp": datetime.now().isoformat(),
+        "componentes": {}
+    }
 
-    # LLM keys
-    from sistac.config import ANTHROPIC_API_KEY, OPENAI_API_KEY, AZURE_SEARCH_ENDPOINT, AZURE_SEARCH_KEY, GOOGLE_API_KEY
-    resultado["anthropic_key"] = "OK" if ANTHROPIC_API_KEY else "FALTA (.env → ANTHROPIC_API_KEY)"
-    resultado["openai_key"]    = "OK" if OPENAI_API_KEY    else "FALTA (.env → OPENAI_API_KEY) — opcional"
-    resultado["google_key"]    = "OK" if GOOGLE_API_KEY    else "FALTA (.env → GOOGLE_API_KEY) — para PDF escaneados e imágenes"
-    resultado["azure_endpoint"] = "OK" if AZURE_SEARCH_ENDPOINT else "FALTA (.env → AZURE_SEARCH_ENDPOINT)"
-    resultado["azure_key"]      = "OK" if AZURE_SEARCH_KEY      else "FALTA (.env → AZURE_SEARCH_KEY)"
+    # 1. Chequeo de variables de entorno y llaves
+    from sistac.config import (
+        LLM_PROVIDER, VECTORSTORE_PROVIDER, USE_EXTERNAL_DATA, ANTHROPIC_API_KEY, OPENAI_API_KEY,
+        GOOGLE_API_KEY, AZURE_SEARCH_ENDPOINT, AZURE_SEARCH_KEY
+    )
+    resultado["config_base"] = {
+        "llm_provider": LLM_PROVIDER,
+        "vectorstore_provider": VECTORSTORE_PROVIDER,
+        "use_external_data": USE_EXTERNAL_DATA,
+        "anthropic_key_present": bool(ANTHROPIC_API_KEY),
+        "openai_key_present": bool(OPENAI_API_KEY),
+        "google_key_present": bool(GOOGLE_API_KEY),
+        "azure_endpoint_present": bool(AZURE_SEARCH_ENDPOINT),
+        "azure_key_present": bool(AZURE_SEARCH_KEY)
+    }
 
-    # Dependencias Python críticas
+    # 2. Prueba de LLM
+    try:
+        from sistac.llm.provider import get_chat_completion
+        t0 = time.perf_counter()
+        resp = await run_in_threadpool(
+            get_chat_completion,
+            prompt="Responde la palabra 'OK' y nada más.",
+            max_tokens=10
+        )
+        t1 = time.perf_counter()
+        resultado["componentes"]["llm"] = {
+            "status": "OK",
+            "provider": LLM_PROVIDER,
+            "latency_seconds": round(t1 - t0, 3),
+            "response": resp.strip()
+        }
+    except Exception as exc:
+        resultado["componentes"]["llm"] = {
+            "status": "ERROR",
+            "provider": LLM_PROVIDER,
+            "error": str(exc)
+        }
+
+    # 3. Prueba de MongoDB
+    if db_client is not None:
+        try:
+            t0 = time.perf_counter()
+            await run_in_threadpool(db_client.server_info)
+            t1 = time.perf_counter()
+            resultado["componentes"]["mongodb"] = {
+                "status": "OK",
+                "latency_seconds": round(t1 - t0, 3),
+                "db_name": "sistac_tfe"
+            }
+        except Exception as exc:
+            resultado["componentes"]["mongodb"] = {
+                "status": "ERROR",
+                "error": str(exc)
+            }
+    else:
+        resultado["componentes"]["mongodb"] = {
+            "status": "ERROR",
+            "error": "Base de datos MongoDB no configurada o desconectada."
+        }
+
+    # 4. Prueba del Vector Store
+    if VECTORSTORE_PROVIDER == "google":
+        try:
+            t0 = time.perf_counter()
+            from google.cloud import discoveryengine_v1beta as discoveryengine
+            client = discoveryengine.DocumentServiceClient()
+            t1 = time.perf_counter()
+            resultado["componentes"]["vectorstore"] = {
+                "status": "OK",
+                "provider": "Google Vertex AI Search",
+                "latency_seconds": round(t1 - t0, 3),
+                "project_id": os.getenv("GCP_PROJECT_ID"),
+                "location": os.getenv("GCP_LOCATION"),
+                "data_store_id": os.getenv("GCP_DATA_STORE_ID")
+            }
+        except Exception as exc:
+            resultado["componentes"]["vectorstore"] = {
+                "status": "ERROR",
+                "provider": "Google Vertex AI Search",
+                "error": str(exc)
+            }
+    elif VECTORSTORE_PROVIDER == "azure":
+        try:
+            t0 = time.perf_counter()
+            from azure.core.credentials import AzureKeyCredential
+            from azure.search.documents.indexes import SearchIndexClient
+            client = SearchIndexClient(AZURE_SEARCH_ENDPOINT, AzureKeyCredential(AZURE_SEARCH_KEY))
+            await run_in_threadpool(client.list_index_names)
+            t1 = time.perf_counter()
+            resultado["componentes"]["vectorstore"] = {
+                "status": "OK",
+                "provider": "Azure AI Search",
+                "latency_seconds": round(t1 - t0, 3),
+                "endpoint": AZURE_SEARCH_ENDPOINT
+            }
+        except Exception as exc:
+            resultado["componentes"]["vectorstore"] = {
+                "status": "ERROR",
+                "provider": "Azure AI Search",
+                "error": str(exc)
+            }
+    else:
+        resultado["componentes"]["vectorstore"] = {
+            "status": "ERROR",
+            "provider": VECTORSTORE_PROVIDER,
+            "error": f"Vector Store desconocido: {VECTORSTORE_PROVIDER}"
+        }
+
+    # 5. Dependencias
     deps = {
         "fastapi":              "fastapi",
-        "python-multipart":     "multipart",
         "pdfplumber":           "pdfplumber",
         "python-docx":          "docx",
         "anthropic":            "anthropic",
+        "google-genai":         "google.genai",
         "sentence-transformers":"sentence_transformers",
-        "langchain-text-splitters": "langchain_text_splitters",
-        "requests":             "requests",
     }
     dep_status = {}
     for nombre, modulo in deps.items():
