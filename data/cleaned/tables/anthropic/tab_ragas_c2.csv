@@ -1,2 +1,0 @@
-faithfulness,answer_relevancy,context_precision,method
-0.910,0.880,0.850,Ragas/Claude-3.5

@@ -52,7 +52,6 @@ TABLES_DIR  = PROJECT_ROOT / "paper" / "tables"
 # ── Documentos fuente ────────────────────────────────────────────────────────
 SUPPORTING_DOCS = PROJECT_ROOT / "master_supporting_docs"
 EXPLORATIONS    = PROJECT_ROOT / "explorations"
-BIB_FILE        = PROJECT_ROOT / "Bibliography_base.bib"
 SCRIPTS_DIR     = PROJECT_ROOT / "scripts" / "python"
 
 # ── Vector Store Provider (azure | google) ──────────────────────────────────

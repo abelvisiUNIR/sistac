@@ -1,3 +1,0 @@
-﻿config,dir_gender,spd_gender,dir_age,spd_age,h3_accepted
-C2 (LLM + RAG),0.602,-0.078,0.773,-0.050,No
-C3 (LLM + RAG + PII),0.301,-0.137,0.727,-0.060,No
