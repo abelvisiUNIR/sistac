@@ -1219,11 +1219,11 @@ async def diagnostico():
         "componentes": {}
     }
 
-    # 1. Chequeo de variables de entorno y llaves
     from sistac.config import (
-        LLM_PROVIDER, VECTORSTORE_PROVIDER, USE_EXTERNAL_DATA, ANTHROPIC_API_KEY, OPENAI_API_KEY,
+        VECTORSTORE_PROVIDER, USE_EXTERNAL_DATA, ANTHROPIC_API_KEY, OPENAI_API_KEY,
         GOOGLE_API_KEY, AZURE_SEARCH_ENDPOINT, AZURE_SEARCH_KEY
     )
+    from sistac.llm.provider import LLM_PROVIDER
     resultado["config_base"] = {
         "llm_provider": LLM_PROVIDER,
         "vectorstore_provider": VECTORSTORE_PROVIDER,
@@ -1342,8 +1342,8 @@ async def diagnostico():
         try:
             importlib.import_module(modulo)
             dep_status[nombre] = "OK"
-        except ImportError:
-            dep_status[nombre] = "NO INSTALADO — pip install " + nombre
+        except Exception as e:
+            dep_status[nombre] = f"NO INSTALADO/FALLIDO ({e})"
     resultado["dependencias"] = dep_status
 
     # Estado del pipeline C1 (solo LLM, sin Azure ni embeddings)
