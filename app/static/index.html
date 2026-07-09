@@ -1433,11 +1433,13 @@ function renderMetricasUI(d) {
   const tblH3 = document.getElementById('tbl-h3');
   if (d.h3 && d.h3.length) {
     tblH3.innerHTML = d.h3.map(r => {
-      const accepted = r.h3_accepted === 'Sí' || (parseFloat(r.dir_gender) >= 0.80 && parseFloat(r.dir_age) >= 0.80);
+      const dirGenderVal = r.dir_gender || r.dir;
+      const spdGenderVal = r.spd_gender || r.spd;
+      const accepted = r.h3_accepted === 'Sí' || (parseFloat(dirGenderVal) >= 0.80 && (r.dir_age === undefined || parseFloat(r.dir_age) >= 0.80));
       return `<tr class="hover:bg-slate-50 transition-colors">
         <td class="py-3 px-3 font-medium text-slate-800">${r.config}</td>
-        <td class="py-3 px-3 text-center text-slate-600 font-mono font-semibold">${r.dir_gender || 'N/A'}</td>
-        <td class="py-3 px-3 text-center text-slate-600 font-mono">${r.spd_gender || 'N/A'}</td>
+        <td class="py-3 px-3 text-center text-slate-600 font-mono font-semibold">${dirGenderVal || 'N/A'}</td>
+        <td class="py-3 px-3 text-center text-slate-600 font-mono">${spdGenderVal || 'N/A'}</td>
         <td class="py-3 px-3 text-center text-slate-600 font-mono font-semibold">${r.dir_age || 'N/A'}</td>
         <td class="py-3 px-3 text-center text-slate-600 font-mono">${r.spd_age || 'N/A'}</td>
         <td class="py-3 px-3 text-center">
@@ -1487,7 +1489,7 @@ function renderMetricasUI(d) {
   // DIR Chart
   if (d.h3 && d.h3.length) {
     const h3Labels = d.h3.map(x => x.config);
-    const h3DirGender = d.h3.map(x => parseFloat(x.dir_gender) || 0.0);
+    const h3DirGender = d.h3.map(x => parseFloat(x.dir_gender || x.dir) || 0.0);
     const h3DirAge = d.h3.map(x => parseFloat(x.dir_age) || 0.0);
 
     chartDir = new Chart(dirCanvas, {
